@@ -1,0 +1,174 @@
+// ~/.config/VSCodium/User/settings.json
+{
+  // Build-in //
+
+  "workbench.colorTheme": "GitHub Dark Default",
+  // "workbench.colorTheme": "Stylix", // TODO: proper Stylix theme
+  "workbench.iconTheme": "vscode-icons",
+  "remote.SSH.defaultExtensions": ["ms-azuretools.vscode-docker"],
+  "files.associations": {
+    "devbox.json": "jsonc"
+  },
+  "diffEditor.ignoreTrimWhitespace": false,
+  "workbench.panel.defaultLocation": "right",
+  "notebook.lineNumbers": "on",
+  "svg.preview.mode": "svg",
+  "window.zoomLevel": 0.4,
+
+  // Editor
+  "editor.fontFamily": "'Droid Sans Mono', monospace, 'MesloLGS NF'",
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.tabSize": 2,
+
+  // Git
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+
+  // Terminal
+  "terminal.external.linuxExec": "kitty",
+  "terminal.integrated.enableImages": true,
+  "terminal.integrated.mouseWheelZoom": true,
+  "terminal.integrated.defaultProfile.linux": "zsh",
+
+  // Markdown
+  "markdownlint.lintWorkspaceGlobs": [
+    "**/*.{md,qmd}",
+    "!**/.quarto",
+    "!**/.temp",
+    "!**/.tmp",
+    "!**/assets"
+  ],
+  "markdownlint.run": "onSave",
+
+  // Json
+  "json.format.enable": false,
+
+  // Extensions //
+
+  // Python
+  "pylint.args": ["--disable=missing-module-docstring"],
+  "basedpyright.importStrategy": "useBundled", // The default "fronEnvironment" does not even load the extension
+  "basedpyright.analysis.exclude": ["**/.venv", "**/.devbox"],
+
+  // Drawio
+  "hediet.vscode-drawio.theme": "Kennedy",
+  "hediet.vscode-drawio.defaultVertexStyle": {
+    "fontSize": 16
+  },
+  "hediet.vscode-drawio.defaultEdgeStyle": {
+    "fontSize": 16
+  },
+
+  // LanguageTool
+  //"ltex.languageToolHttpServerUri": "@languagetool_server@", // No need since this offline version of addon uses the build in one
+  "ltex.language": "auto",
+  "ltex.additionalRules.motherTongue": "en-US",
+  "ltex.additionalRules.enablePickyRules": true,
+  "ltex.statusBarItem": true,
+  "ltex.enabled": [
+    // Default
+    "bibtex",
+    "context",
+    "context.tex",
+    "html",
+    "latex",
+    "markdown",
+    "mdx",
+    "typst",
+    "asciidoc",
+    "neorg",
+    "org",
+    "quarto",
+    "restructuredtext",
+    "rsweave",
+
+    // Additional (comments only)
+    "shellscript",
+    "go",
+    "javascript",
+    "python",
+    "typescript"
+  ],
+
+  // Gitblame
+  "gitblame.inlineMessageEnabled": true,
+  "gitblame.inlineMessageFormat": "${author.name} (${time.ago})",
+  "gitblame.inlineMessageMargin": 6,
+
+  // cSpell
+  "cSpell.enableFiletypes": ["!jsonc", "!yaml"],
+
+  // Language specific settings //
+
+  // Quarto
+  "[quarto]": {
+    "editor.defaultFormatter": "quarto.quarto",
+    "editor.tabSize": 3,
+    "editor.insertSpaces": true
+  },
+
+  // Latex
+  "latex-workshop.latex.outDir": "%DIR%/tmp",
+  "latex-workshop.formatting.latex": "tex-fmt",
+  "[latex]": {
+    "editor.wordWrap": "on"
+  },
+
+  // Nix
+  "nix.enableLanguageServer": true,
+  "nix.serverPath": "nil",
+  "nix.serverSettings": {
+    "nixd": {
+      "formatting": {
+        "command": ["alejandra"]
+      },
+      "options": {
+        // By default, this entry will be read from `import <nixpkgs> { }`
+        // You can write arbitrary nix expression here, to produce valid "options" declaration result.
+        // Tip: for flake-based configuration, utilize `builtins.getFlake`
+        "nixos": {
+          "expr": "(builtins.getFlake (\"file://\" + toString ./.)).nixosConfigurations.personal-workstation.options"
+        },
+        "home-manager": {
+          "expr": "(builtins.getFlake (\"file://\" + toString ./.)).homeConfigurations.personal-workstation.options"
+        }
+      }
+    }
+  },
+  //"nix.hiddenLanguageServerErrors": [
+  //  "textDocument/definition",
+  //  "workspace/didChangeWatchedFiles"
+  //],
+  "[nix]": {
+    "editor.defaultFormatter": "kamadorueda.alejandra",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": false
+  },
+  "alejandra.program": "alejandra",
+
+  // HTML
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // Go
+  "[go]": {
+    "editor.defaultFormatter": "golang.go"
+  },
+  "go.diagnostic.vulncheck": "Imports",
+  "go.inlayHints.compositeLiteralFields": true,
+  "go.inlayHints.compositeLiteralTypes": true,
+  "go.inlayHints.constantValues": true,
+  "go.inlayHints.functionTypeParameters": true,
+  "go.inlayHints.parameterNames": true,
+  "go.inlayHints.rangeVariableTypes": true,
+  "go.lintTool": "golangci-lint",
+  "go.survey.prompt": false,
+  "go.toolsManagement.autoUpdate": true,
+
+  // Yaml
+  "redhat.telemetry.enabled": false
+}

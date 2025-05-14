@@ -1,0 +1,42 @@
+{
+  "modno": 6,
+  "version": 2,
+  "instance": "personal",
+  "repos": [
+    {
+      "id": "digital-identity",
+      "uri": "rclone:nextcloud-personal:/private/backups/digital-identity",
+      "password": "RESTIC_PASSWORD_FILE",
+      "env": ["RESTIC_PASSWORD_FILE=@digital_identity_password_path@"],
+      "prunePolicy": {
+        "schedule": {
+          "maxFrequencyDays": 10
+        },
+        "maxUnusedPercent": 10
+      },
+      "checkPolicy": {
+        "schedule": {
+          "maxFrequencyDays": 15
+        },
+        "readDataSubsetPercent": 25
+      },
+      "commandPrefix": {}
+    }
+  ],
+  "plans": [
+    {
+      "id": "digital-identity",
+      "repo": "digital-identity",
+      "paths": ["@homeDirectory@/Documents/digital-identity"],
+      "schedule": {
+        "cron": "0 13 * * *"
+      },
+      "retention": {
+        "policyKeepLastN": 45
+      }
+    }
+  ],
+  "auth": {
+    "disabled": true
+  }
+}

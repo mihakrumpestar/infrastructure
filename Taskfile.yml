@@ -1,0 +1,79 @@
+version: "3"
+
+includes:
+  secrets:
+    taskfile: infrastructure-secrets/Taskfile.yml
+    dir: infrastructure-secrets
+    flatten: true
+
+tasks:
+  test:
+    requires:
+      vars:
+        - HOST
+    cmds:
+      - nix build --no-link --verbose path:{{.PWD}}#nixosConfigurations.{{.HOST}}.config.system.build.toplevel --show-trace
+      #- nixos-rebuild build --flake path:{{.PWD}}#{{.HOST}}
+
+  apply:
+    requires:
+      vars:
+        - HOST
+        - REMOTE
+    # HOST=personal-workstation REMOTE=local
+    # HOST=personal-laptop REMOTE=root@10.0.200.15
+    env:
+      NIX_SSHOPTS: -p 22222
+    cmds:
+      - nixos-rebuild switch --flake path:{{.PWD}}#{{.HOST}} --target-host {{.REMOTE}}
+      #  --show-trace --verbose
+
+  transfer-secrets:
+    requires:
+      vars:
+        - HOST
+        - REMOTE
+        - PLATFORM # clients || servers
+    vars:
+      SECRETS_DIR: infrastructure-secrets/secrets
+    cmds:
+      - rsync {{.SECRETS_DIR}}/root/{{.PLATFORM}}/key.txt {{.REMOTE}}:/var/lib/sops-nix/
+      - |
+        [[ {{.PLATFORM}} == clients ]] && rsync --chown=krumpy-miha:users {{.SECRETS_DIR}}/krumpy-miha/key.txt {{.REMOTE}}:/home/krumpy-miha/.config/sops-nix/
+
+  init:
+    requires:
+      vars:
+        - HOST
+        - REMOTE # Usually nixos@{{.IP}}
+    env:
+      SSHPASS: test
+    cmds:
+      - SSH_AUTH_SOCK="" nixos-anywhere
+          --ssh-option UserKnownHostsFile=/dev/null
+          --ssh-option StrictHostKeyChecking=no
+          --env-password
+          --phases kexec,disko,install
+          --flake path:{{.PWD}}#{{.HOST}}
+          --target-host {{.REMOTE}}
+      # /mnt/var/lib...
+      #
+      #    
+
+  tidy:
+    cmds:
+      - alejandra --check --exclude ./.devbox --exclude ./secrets ./
+      - deadnix --exclude ./secrets --no-underscore
+      - statix check
+
+  update:
+    cmds:
+      - nix flake update --flake path:{{.PWD}} # Using just "path:." does not work as it wants absolute path
+
+  generations:
+    cmds:
+      - sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
+  
+  clean:
+    cmds:
+      - sudo nix-collect-garbage --delete-older-than 10d

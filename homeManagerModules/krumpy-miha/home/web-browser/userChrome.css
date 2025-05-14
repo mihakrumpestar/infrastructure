@@ -1,0 +1,31 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"); /* only needed once */
+
+/*
+#sidebar, #sidebar-header, #bookmarksPanel, #bookmarks-view, #history-panel, #historyTree {
+      background: var(--chrome-background-color) !important;
+      color: var(--chrome-color) !important;
+    }
+*/
+
+#TabsToolbar, #sidebar-header /*, #sidebar-splitter*/ {
+  display: none;
+}
+
+/* Completely (almost) hide in fullscreen */
+#main-window[inFullscreen] #appcontent {
+  margin-left: 1px;
+}
+#main-window[inFullscreen] #sidebar-box,
+#main-window[inFullscreen] #sidebar {
+  width: 1px !important;
+}
+
+#sidebar {
+  min-width: 10px !important;
+  max-width: none !important;
+}
+
+/* Disable "Bookmark this page" button in the location bar */
+#star-button-box {
+  display: none !important;
+}

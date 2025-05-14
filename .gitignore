@@ -1,0 +1,11 @@
+# Devbox
+.devbox
+devbox.d
+bin
+pkg
+
+# Nix build
+**/result
+
+# Secrets
+secrets
