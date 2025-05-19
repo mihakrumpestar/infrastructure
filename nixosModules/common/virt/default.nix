@@ -9,6 +9,8 @@ with lib; {
     kernelParams = [
       "amd_iommu=on"
       "intel_iommu=on"
+      "iommu=pt"
+      "rd.driver.pre=vfio-pci"
     ];
     extraModprobeConfig = ''
       options kvm_amd nested=1

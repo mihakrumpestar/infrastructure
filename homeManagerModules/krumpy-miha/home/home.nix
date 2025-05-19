@@ -49,7 +49,9 @@
     kdePackages.okular # PDF viewer
     kdePackages.ark # GUI to compress or uncompress data
     p7zip # Req for above
-    #peazip # TODO: dep archiver-3.5.1 is flagged as insecure # GUI archiving tool
+    unrar # Req for above
+    peazip # GUI archiving tool
+    file-roller # GUI archiving tool
     nextcloud-client
 
     # Programming
@@ -77,9 +79,10 @@
     qbittorrent-enhanced
     remmina
     moonlight-qt
+    rustdesk
 
     # Printer and scanner
-    simple-scan # Scanning (Gnome)
+    #simple-scan # Scanning (Gnome)
 
     /*
     Might use in the future:
@@ -170,7 +173,7 @@
     Service = {
       Type = "simple";
       TimeoutStartSec = 120;
-      ExecStartPre = "${pkgs.coreutils}/bin/sleep 10"; # The important thing
+      ExecStartPre = "${pkgs.coreutils}/bin/sleep 10"; # The important part
       ExecStart = "${pkgs.awatcher}/bin/awatcher";
 
       Restart = "always";

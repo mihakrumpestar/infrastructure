@@ -24,11 +24,11 @@ with lib; {
       # All services have u2fAuth enabled if it is enabled globaly with security.pam.u2f.enable
       services = {
         "sshd".u2fAuth = false;
-        "login".allowNullPassword = lib.mkForce false; # security.shadow.enable sets this to true
+        "login".allowNullPassword = mkForce false; # security.shadow.enable sets this to true
         "login".unixAuth = false;
         "sudo".unixAuth = false; # Prevent password prompts
         "kde".unixAuth = false; # KDE scrensaver
-        "kde".allowNullPassword = lib.mkForce false;
+        "kde".allowNullPassword = mkForce false;
       };
     };
 
