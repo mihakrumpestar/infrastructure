@@ -70,17 +70,19 @@ in {
   # https://olai.dev/blog/nvidia-vm-passthrough/
 
   boot = {
-    kernelParams = let
-      devices = [
-        "10de:1b38" # NVIDIA Tesla P40
-        "10de:1288" # NVIDIA GeForce GT 720 VGA
-        "10de:0e0f" # NVIDIA GeForce GT 720 Audio
-      ];
-    in [
-      "vfio-pci.ids=${lib.concatStringsSep "," devices}"
+    kernelParams =
+      #let
+      #  devices = [
+      #    "10de:1b38" # NVIDIA Tesla P40
+      #    "10de:1288" # NVIDIA GeForce GT 720 VGA
+      #    "10de:0e0f" # NVIDIA GeForce GT 720 Audio
+      #  ];
+      #in
+      [
+        #"vfio-pci.ids=${lib.concatStringsSep "," devices}"
 
-      "pcie_acs_override=downstream,multifunction" # IOMMU patch
-    ];
+        "pcie_acs_override=downstream,multifunction" # IOMMU patch
+      ];
 
     initrd.kernelModules = [
       "vfio"
@@ -90,18 +92,18 @@ in {
     ];
 
     # Blacklist the nvidia drivers to make sure they don't get loaded
-    extraModprobeConfig = ''
-      softdep nvidia pre: vfio-pci
-      softdep drm pre: vfio-pci
-      softdep nouveau pre: vfio-pci
-    '';
-    blacklistedKernelModules = [
-      "nouveau"
-      "nvidia"
-      "nvidia_drm"
-      "nvidia_modeset"
-      "i2c_nvidia_gpu"
-    ];
+    #extraModprobeConfig = ''
+    #  softdep nvidia pre: vfio-pci
+    #  softdep drm pre: vfio-pci
+    #  softdep nouveau pre: vfio-pci
+    #'';
+    #blacklistedKernelModules = [
+    #  "nouveau"
+    #  "nvidia"
+    #  "nvidia_drm"
+    #  "nvidia_modeset"
+    #  "i2c_nvidia_gpu"
+    #];
 
     ## IOMMU patch
 

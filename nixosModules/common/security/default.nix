@@ -21,6 +21,7 @@ with lib; {
           cue = true;
         };
       };
+
       # All services have u2fAuth enabled if it is enabled globaly with security.pam.u2f.enable
       services = {
         "sshd".u2fAuth = false;
@@ -32,9 +33,7 @@ with lib; {
       };
     };
 
-    sops = {
-      secrets.pam_u2f.mode = "0444"; # KDE screensaver does not have root rights to access the config
-    };
+    sops.secrets.pam_u2f.mode = "0444"; # KDE screensaver does not have root rights to access the config
 
     # Test pam:
     # nix-shell -p pamtester

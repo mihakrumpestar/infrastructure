@@ -277,9 +277,9 @@
           "scroll_anywhere" = "juraj.masiar@gmail.com_ScrollAnywhere";
           "sidebery" = "{3c078156-979c-498b-8990-85f7987dd929}";
           "cookie-autodelete" = "CookieAutoDelete@kennydo.com";
-          "javascript-restrictor" = "jsr@javascriptrestrictor"; # JShelter
+          #"javascript-restrictor" = "jsr@javascriptrestrictor"; # JShelter
           "refined-github-" = "{a4c4eda4-fb84-4a84-b4a1-f7c1cbf2a1ad}";
-          "noscript" = "{73a6fe31-595d-460b-a920-fcc0f8843232}";
+          #"noscript" = "{73a6fe31-595d-460b-a920-fcc0f8843232}";
           "karakeep" = "addon@karakeep.app";
         };
         mappedExtensions =
