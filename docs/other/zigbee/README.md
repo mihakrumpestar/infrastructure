@@ -32,3 +32,5 @@ python3 cc2538_bsl.py -e -v -w  CC1352P2_CC2652P_launchpad_router_20221102.hex
 ```
 
 Note that CH9102X seems to have a bug that will render the device unresponsive (permanently) if the user trys to change power (dB) of the device in Zigbee2MQTT.
+
+A good tool on Windows is [ZigStarGW](https://github.com/xyzroe/ZigStarGW-MT/releases/).

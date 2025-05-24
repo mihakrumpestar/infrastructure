@@ -281,6 +281,7 @@
           "refined-github-" = "{a4c4eda4-fb84-4a84-b4a1-f7c1cbf2a1ad}";
           #"noscript" = "{73a6fe31-595d-460b-a920-fcc0f8843232}";
           "karakeep" = "addon@karakeep.app";
+          "unpaywall" = "{f209234a-76f0-4735-9920-eb62507a54cd}";
         };
         mappedExtensions =
           lib.mapAttrs' (
