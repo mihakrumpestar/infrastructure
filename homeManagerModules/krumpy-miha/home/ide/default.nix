@@ -107,9 +107,11 @@ in {
           dbaeumer.vscode-eslint
           ecmel.vscode-html-css
           esbenp.prettier-vscode
+          astro-build.astro-vscode
 
           # AI
-          saoudrizwan.claude-dev
+          #saoudrizwan.claude-dev
+          kilocode.kilo-code
 
           # Rest
           humao.rest-client
