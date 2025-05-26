@@ -19,6 +19,7 @@
     audacity # Sound
     vlc # Media Player
     handbrake
+    ffmpeg
     obs-studio
     # No color picker currently works properly on KDE6 (use the self created script command `color-picker`)
     gimp # Alternative is: https://github.com/PintaProject/Pinta
