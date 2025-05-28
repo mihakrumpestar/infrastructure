@@ -31,6 +31,7 @@
   "terminal.integrated.enableImages": true,
   "terminal.integrated.mouseWheelZoom": true,
   "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.scrollback": 20000, // Default is 1000
 
   // Markdown
   "markdownlint.lintWorkspaceGlobs": [
