@@ -186,7 +186,7 @@
   programs = {
     fzf.fuzzyCompletion = true; # Command-line fuzzy finder/search
     yazi.enable = true; # Terminal file manager
-    thefuck.enable = true;
+    pay-respects.enable = true;
     command-not-found.enable = true;
 
     zsh = {
@@ -316,7 +316,7 @@
           "ssh"
           "sudo"
           "systemd"
-          "thefuck"
+          "pay-respects"
           "tldr"
           "vscode"
           "yarn"

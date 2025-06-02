@@ -155,6 +155,11 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
+  // MDX
+  "[mdx]": {
+    "editor.wordWrap": "on"
+  },
+
   // Go
   "[go]": {
     "editor.defaultFormatter": "golang.go"
