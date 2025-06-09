@@ -210,6 +210,8 @@
         # Other
         export DEVBOX_NO_PROMPT=true
 
+        eval "$(pay-respects zsh --alias)"
+
         ### Bindkeys ###
 
         # Test: showkey -a
@@ -316,7 +318,6 @@
           "ssh"
           "sudo"
           "systemd"
-          "pay-respects"
           "tldr"
           "vscode"
           "yarn"
