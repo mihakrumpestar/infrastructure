@@ -141,4 +141,18 @@ in {
     ./settings.json {
       inherit (config.my.store-secrets.secrets) languagetool_server;
     };
+
+  my.home.mutableFile.".config/VSCodium/User/globalStorage/kilocode.kilo-code/settings/mcp_settings.json".text = ''
+    {
+      "mcpServers": {
+        "context7": {
+          "command": "nix-shell",
+          "args": ["-p", "nodejs_24", "--run", "npx -y @upstash/context7-mcp"],
+          "env": {
+            "DEFAULT_MINIMUM_TOKENS": "6000"
+          }
+        }
+      }
+    }
+  '';
 }
