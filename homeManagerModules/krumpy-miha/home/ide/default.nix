@@ -42,6 +42,10 @@ in {
     # Golang
     go
     golangci-lint
+
+    # KCL
+    kcl
+    kcl-language-server
   ];
 
   programs.vscode = {
@@ -115,6 +119,9 @@ in {
 
           # Rest
           humao.rest-client
+
+          # KCL
+          kcl.kcl-vscode-extension
         ]
         ++ [
           pkgs.vscode-marketplace.casualjim.gotemplate
