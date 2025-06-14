@@ -17,7 +17,7 @@
 
   // Editor
   "editor.fontFamily": "'Droid Sans Mono', monospace, 'MesloLGS NF'",
-  "editor.formatOnPaste": true,
+  "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
   "editor.tabSize": 2,

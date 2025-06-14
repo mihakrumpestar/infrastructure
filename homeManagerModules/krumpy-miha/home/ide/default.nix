@@ -119,15 +119,15 @@ in {
 
           # Rest
           humao.rest-client
-
-          # KCL
-          kcl.kcl-vscode-extension
         ]
         ++ [
           pkgs.vscode-marketplace.casualjim.gotemplate
           pkgs.vscode-marketplace.jinliming2.vscode-go-template
           pkgs.vscode-marketplace.karyan40024.gotmpl-syntax-highlighter
           pkgs.vscode-marketplace.romantomjak.go-template
+
+          # KCL
+          pkgs.vscode-marketplace.kcl.kcl-vscode-extension # The one in VSIX is not latest
 
           vscode-ltex-plus-offline # https://ltex-plus.github.io/ltex-plus/advanced-usage.html
         ];
@@ -149,12 +149,13 @@ in {
       inherit (config.my.store-secrets.secrets) languagetool_server;
     };
 
+  # npx does not work properly for some reason
   my.home.mutableFile.".config/VSCodium/User/globalStorage/kilocode.kilo-code/settings/mcp_settings.json".text = ''
     {
       "mcpServers": {
         "context7": {
-          "command": "nix-shell",
-          "args": ["-p", "nodejs_24", "--run", "npx -y @upstash/context7-mcp"],
+          "command": "${pkgs.bun}/bin/bunx",
+          "args": ["-y", "@upstash/context7-mcp"],
           "env": {
             "DEFAULT_MINIMUM_TOKENS": "6000"
           }
