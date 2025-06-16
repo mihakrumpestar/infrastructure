@@ -98,8 +98,8 @@
       }
     },
     "git@latest": {
-      "last_modified": "2025-06-10T12:31:18Z",
-      "resolved": "github:NixOS/nixpkgs/a12f3a99614894502e73eb816e9e076b0ab05730#git",
+      "last_modified": "2025-06-13T00:58:23Z",
+      "resolved": "github:NixOS/nixpkgs/6e7721e37bf00fa7ea44ac3cfc9d2411284ec3ef#git",
       "source": "devbox-search",
       "version": "2.49.0",
       "systems": {
@@ -157,12 +157,12 @@
               "default": true
             },
             {
-              "name": "doc",
-              "path": "/nix/store/7dfxlvdhr5g57b1v8gxwpa2gs7i9g3y5-git-2.49.0-doc"
-            },
-            {
               "name": "debug",
               "path": "/nix/store/6nibw5w4xay921qx7lp74bs10qsqp0g9-git-2.49.0-debug"
+            },
+            {
+              "name": "doc",
+              "path": "/nix/store/7dfxlvdhr5g57b1v8gxwpa2gs7i9g3y5-git-2.49.0-doc"
             }
           ],
           "store_path": "/nix/store/805a5wv1cyah5awij184yfad1ksmbh9f-git-2.49.0"
@@ -170,8 +170,8 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-06-13T00:58:23Z",
-      "resolved": "github:NixOS/nixpkgs/6e7721e37bf00fa7ea44ac3cfc9d2411284ec3ef?lastModified=1749776303&narHash=sha256-OHibOvVwKqO1qvRg0r3agtd1EagW4THBcoWT7QGgcNo%3D"
+      "last_modified": "2025-06-14T12:19:57Z",
+      "resolved": "github:NixOS/nixpkgs/41da1e3ea8e23e094e5e3eeb1e6b830468a7399e?lastModified=1749903597&narHash=sha256-jp0D4vzBcRKwNZwfY4BcWHemLGUs4JrS3X9w5k%2FJYDA%3D"
     },
     "go-task@latest": {
       "last_modified": "2025-05-16T20:19:48Z",
@@ -222,50 +222,50 @@
       }
     },
     "nil@latest": {
-      "last_modified": "2025-06-10T02:39:58Z",
-      "resolved": "github:NixOS/nixpkgs/cdc68935eba9f86d155585fdf6f17af6824f38ac#nil",
+      "last_modified": "2025-06-14T03:28:56Z",
+      "resolved": "github:NixOS/nixpkgs/6afe187897bef7933475e6af374c893f4c84a293#nil",
       "source": "devbox-search",
-      "version": "2024-08-06",
+      "version": "2025-06-13",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/kzq690h7945dqs9b7sm5n0zv5hpp28lq-nil-2024-08-06",
+              "path": "/nix/store/6zi8k4kh831c5v817yihi6cxrh64yqmv-nil-2025-06-13",
               "default": true
             }
           ],
-          "store_path": "/nix/store/kzq690h7945dqs9b7sm5n0zv5hpp28lq-nil-2024-08-06"
+          "store_path": "/nix/store/6zi8k4kh831c5v817yihi6cxrh64yqmv-nil-2025-06-13"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/jfwdaa8gawkkbi422zhv4qvhh1lbcd60-nil-2024-08-06",
+              "path": "/nix/store/w724wh4nx0jbri8plhwj880j08bn3a8x-nil-2025-06-13",
               "default": true
             }
           ],
-          "store_path": "/nix/store/jfwdaa8gawkkbi422zhv4qvhh1lbcd60-nil-2024-08-06"
+          "store_path": "/nix/store/w724wh4nx0jbri8plhwj880j08bn3a8x-nil-2025-06-13"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/c4dl582sj2bvy64alp7q0r9chsxfbpx7-nil-2024-08-06",
+              "path": "/nix/store/xpilb4fvarh7psp1bg90z21yxx6h4dsy-nil-2025-06-13",
               "default": true
             }
           ],
-          "store_path": "/nix/store/c4dl582sj2bvy64alp7q0r9chsxfbpx7-nil-2024-08-06"
+          "store_path": "/nix/store/xpilb4fvarh7psp1bg90z21yxx6h4dsy-nil-2025-06-13"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/yr4f95xnm1ljh1l3zfyx9259l56akbfk-nil-2024-08-06",
+              "path": "/nix/store/yf0ngqyfc0vfvcd1v7qav008bwa3p44c-nil-2025-06-13",
               "default": true
             }
           ],
-          "store_path": "/nix/store/yr4f95xnm1ljh1l3zfyx9259l56akbfk-nil-2024-08-06"
+          "store_path": "/nix/store/yf0ngqyfc0vfvcd1v7qav008bwa3p44c-nil-2025-06-13"
         }
       }
     },

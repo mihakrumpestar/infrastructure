@@ -119,6 +119,9 @@ in {
 
           # Rest
           humao.rest-client
+
+          # HCL
+          hashicorp.hcl
         ]
         ++ [
           pkgs.vscode-marketplace.casualjim.gotemplate
