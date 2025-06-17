@@ -12,7 +12,10 @@
   "diffEditor.ignoreTrimWhitespace": false,
   "workbench.panel.defaultLocation": "right",
   "notebook.lineNumbers": "on",
-  "svg.preview.mode": "svg",
+  "workbench.editorAssociations": {
+    "*.svg": "default" // Prevent default image preview
+  },
+
   "window.zoomLevel": 0.4,
 
   // Editor

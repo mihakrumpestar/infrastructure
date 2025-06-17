@@ -68,7 +68,6 @@ in {
           github.github-vscode-theme
           hediet.vscode-drawio
           jeanp413.open-remote-ssh
-          jock.svg
           matthewpi.caddyfile-support
           pomdtr.excalidraw-editor
           redhat.vscode-yaml
