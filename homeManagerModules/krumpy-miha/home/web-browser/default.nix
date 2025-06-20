@@ -9,6 +9,7 @@
     chromium
     ladybird
     floorp
+    responsively-app # For responsive web dev
 
     zen # Custom
   ];
