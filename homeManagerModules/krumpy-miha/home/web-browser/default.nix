@@ -283,6 +283,7 @@
           #"noscript" = "{73a6fe31-595d-460b-a920-fcc0f8843232}";
           "karakeep" = "addon@karakeep.app";
           "unpaywall" = "{f209234a-76f0-4735-9920-eb62507a54cd}";
+          "enhancer-for-youtube" = "enhancerforyoutube@maximerf.addons.mozilla.org";
         };
         mappedExtensions =
           lib.mapAttrs' (
