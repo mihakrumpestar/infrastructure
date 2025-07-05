@@ -284,6 +284,7 @@
           "karakeep" = "addon@karakeep.app";
           "unpaywall" = "{f209234a-76f0-4735-9920-eb62507a54cd}";
           "enhancer-for-youtube" = "enhancerforyoutube@maximerf.addons.mozilla.org";
+          "wappalyzer" = "wappalyzer@crunchlabz.com";
         };
         mappedExtensions =
           lib.mapAttrs' (

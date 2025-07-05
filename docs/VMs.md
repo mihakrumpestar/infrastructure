@@ -14,7 +14,7 @@ cd /var/lib/libvirt/iso
 
 Just RDP optimization: https://www.reddit.com/r/sysadmin/comments/fv7d12/pushing_remote_fx_to_its_limits/
 
-Tesla GPU driver (16.10 is the last version that works): <https://cloud.google.com/compute/docs/gpus/grid-drivers-table?authuser=0#windows_drivers>. Or this guide: <https://github.com/JingShing/How-to-use-tesla-p40>,https://linustechtips.com/topic/1496913-can-i-enable-wddm-on-a-tesla-p40/page/2/ (do not use `EnableMsHybrid` if this is the only gpu in system)
+Nvidia: Tesla GPU driver (16.10 is the last version that works <https://storage.googleapis.com/nvidia-drivers-us-public/GRID/vGPU16.10/539.28_grid_win10_win11_server2019_server2022_dch_64bit_international.exe>): <https://cloud.google.com/compute/docs/gpus/grid-drivers-table?authuser=0#windows_drivers>. Or this guide: <https://github.com/JingShing/How-to-use-tesla-p40>,https://linustechtips.com/topic/1496913-can-i-enable-wddm-on-a-tesla-p40/page/2/ (do not use `EnableMsHybrid` if this is the only gpu in system)
 
 ```sh
 wget https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso
