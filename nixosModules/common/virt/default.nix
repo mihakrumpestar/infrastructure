@@ -50,9 +50,15 @@ with lib; {
               target = {
                 path = "/var/lib/libvirt/images";
                 permissions = {
-                  mode = "0755";
-                  owner = "1000";
-                  group = "100";
+                  mode = {
+                    octal = "0755";
+                  };
+                  owner = {
+                    uid = 1000;
+                  };
+                  group = {
+                    gid = 100;
+                  };
                 };
               };
             };
@@ -61,8 +67,8 @@ with lib; {
             active = true;
             definition = nixvirt.lib.pool.writeXML {
               name = "iso";
-              uuid = "5f67b3f0-148e-4c7d-ae37-fa82e3a44d0d";
               type = "dir";
+              uuid = "5f67b3f0-148e-4c7d-ae37-fa82e3a44d0d";
               target.path = "/var/lib/libvirt/iso";
             };
           }

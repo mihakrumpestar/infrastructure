@@ -58,6 +58,10 @@
           "privacy.resistFingerprinting" = true; # Instead of using CanvasBlocker extension
           "privacy.resistFingerprinting.pbmode" = true;
           "privacy.resistFingerprinting.autoDeclineNoUserInputCanvasPrompts" = true;
+
+          #"privacy.fingerprintingProtection" = true; # Still want time zone
+          #"privacy.fingerprintingProtection.overrides" = "+AllTargets,-JSDateTimeUTC";
+
           "privacy.donottrackheader.enabled" = true;
 
           "general.useragent.override" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0"; # Does not work when resistFingerprinting is enabled
@@ -285,6 +289,7 @@
           "unpaywall" = "{f209234a-76f0-4735-9920-eb62507a54cd}";
           "enhancer-for-youtube" = "enhancerforyoutube@maximerf.addons.mozilla.org";
           "wappalyzer" = "wappalyzer@crunchlabz.com";
+          "spoof-timezone" = "{55f61747-c3d3-4425-97f9-dfc19a0be23c}";
         };
         mappedExtensions =
           lib.mapAttrs' (
