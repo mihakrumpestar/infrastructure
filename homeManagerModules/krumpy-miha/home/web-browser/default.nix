@@ -7,9 +7,8 @@
   home.packages = with pkgs; [
     brave
     chromium
-    ladybird
+    # ladybird # Build unstable-2025-06-27 fails
     floorp
-    responsively-app # For responsive web dev
 
     zen # Custom
   ];
