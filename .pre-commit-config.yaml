@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.27.2
+    rev: v8.28.0
     hooks:
       - id: gitleaks
 
@@ -10,7 +10,7 @@ repos:
 #      - id: alejandra
 
   - repo: https://github.com/astro/deadnix
-    rev: v1.3.0
+    rev: v1.3.1
     hooks:
       - id: deadnix
         stages: [pre-commit]
