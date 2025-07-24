@@ -32,21 +32,26 @@ with lib; {
     xorg.fontadobe100dpi
   ];
 
-  # Printing https://nixos.wiki/wiki/Printing
-  services.printing = mkIf (!config.my.server.enable) {
-    enable = true; # CUPS
-    #logLevel = "debug"; # journalctl --follow --unit=cups
-    drivers = [
-      #brother-hll3270cdw
-    ];
-  };
+  services = mkIf (!config.my.server.enable) {
+    # Printing https://nixos.wiki/wiki/Printing
+    printing = {
+      enable = true; # CUPS
+      #logLevel = "debug"; # journalctl --follow --unit=cups
+      drivers = [
+        #brother-hll3270cdw
+      ];
+    };
 
-  # Scanning and printing
-  services.avahi = mkIf (!config.my.server.enable) {
-    # Network scanning: printing and scanning mDNS discovery won't work without it
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
+    # Scanning and printing
+    avahi = {
+      # Network scanning: printing and scanning mDNS discovery won't work without it
+      enable = true;
+      nssmdns4 = true;
+      openFirewall = true;
+    };
+
+    # Tool for monitoring, configuring and overclocking GPUs.
+    lact.enable = true;
   };
 
   # Bluetooth
