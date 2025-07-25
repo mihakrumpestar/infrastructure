@@ -69,7 +69,8 @@
     # Tools
     gsmartcontrol
     gnome-disk-utility
-    #ventoy-full # use "sudo ventoy-web" for GUI, alternative is popsicle # error: Package ‘ventoy-1.1.05’ in "" is marked as insecure, refusing to evaluate.
+    # error: Package ‘ventoy-1.1.05’ in "" is marked as insecure, refusing to evaluate.
+    # NIXPKGS_ALLOW_INSECURE=1 nix-shell -p ventoy-full-qt --run ventoy-gui
     android-tools # adb
     scrcpy # adb
     universal-android-debloater # CLI: uad-ng

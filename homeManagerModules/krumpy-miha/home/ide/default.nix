@@ -100,6 +100,8 @@ in {
           quarto.quarto
 
           # MD
+          foam.foam-vscode
+          yzhang.markdown-all-in-one
           davidanson.vscode-markdownlint
 
           # MDX
