@@ -103,6 +103,7 @@ in {
           foam.foam-vscode
           yzhang.markdown-all-in-one
           davidanson.vscode-markdownlint
+          shd101wyy.markdown-preview-enhanced
 
           # MDX
           unifiedjs.vscode-mdx

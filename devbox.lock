@@ -125,12 +125,12 @@
               "default": true
             },
             {
-              "name": "doc",
-              "path": "/nix/store/kj8r3acr12x0hkxs0hyrpd8wknvvwhd2-git-2.50.0-doc"
-            },
-            {
               "name": "debug",
               "path": "/nix/store/dajrhy2l14ghs5awaag5n8yj62lwsyg9-git-2.50.0-debug"
+            },
+            {
+              "name": "doc",
+              "path": "/nix/store/kj8r3acr12x0hkxs0hyrpd8wknvvwhd2-git-2.50.0-doc"
             }
           ],
           "store_path": "/nix/store/7mp9n7lbilhk56s842rigrjclbr5ipdj-git-2.50.0"
@@ -170,8 +170,8 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-07-24T23:24:55Z",
-      "resolved": "github:NixOS/nixpkgs/0d00f23f023b7215b3f1035adb5247c8ec180dbc?lastModified=1753399495&narHash=sha256-7XG%2FQBqhrYOyA2houjRTL2NMa7IKZZ%2FsomBqr%2BQ%2F6Wo%3D"
+      "last_modified": "2025-07-25T08:26:56Z",
+      "resolved": "github:NixOS/nixpkgs/6027c30c8e9810896b92429f0092f624f7b1aace?lastModified=1753432016&narHash=sha256-cnL5WWn%2FxkZoyH%2F03NNUS7QgW5vI7D1i74g48qplCvg%3D"
     },
     "go-task@latest": {
       "last_modified": "2025-07-13T22:45:35Z",
