@@ -36,6 +36,9 @@ in {
     # nixd # Before
     nil
 
+    # Quarto
+    quarto
+
     # Dockerfile
     hadolint
 
@@ -74,7 +77,6 @@ in {
           ritwickdey.liveserver
           #streetsidesoftware.code-spell-checker
           tamasfe.even-better-toml
-          tomoki1207.pdf
           tumido.cron-explained
 
           # Latex
@@ -103,7 +105,8 @@ in {
           foam.foam-vscode
           yzhang.markdown-all-in-one
           davidanson.vscode-markdownlint
-          shd101wyy.markdown-preview-enhanced
+          # shd101wyy.markdown-preview-enhanced # Does not support Alerts: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
+          bierner.markdown-preview-github-styles
 
           # MDX
           unifiedjs.vscode-mdx
