@@ -160,7 +160,8 @@
 
   // MDX
   "[mdx]": {
-    "editor.wordWrap": "on"
+    "editor.wordWrap": "on",
+    "editor.defaultFormatter": "unifiedjs.vscode-mdx"
   },
 
   // Go

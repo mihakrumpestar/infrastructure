@@ -33,7 +33,6 @@
 
           # UI modifications
           "browser.aboutConfig.showWarning" = false; # disable about:config warning
-          "browser.display.use_document_fonts" = 0; # Disable "Allow pages to choose their own fonts, instead of your selections above" as those fonts are pixelated
           "reader.parse-on-load.enabled" = false; # Disable "Reader view"
 
           "ui.systemUsesDarkTheme" = 1; # Dark theme prefered
@@ -52,6 +51,15 @@
           "dom.events.asyncClipboard.clipboardItem" = true;
 
           "network.protocol-handler.external.mailto" = false; # Remove annoying "add application for mailto links"
+
+          # Fix font
+          "gfx.font_rendering.cleartype_params.force_gdi_classic_for_families" = "";
+          "gfx.font_rendering.cleartype_params.force_gdi_classic_max_size" = 6;
+          "gfx.font_rendering.directwrite.use_gdi_table_loading" = false;
+          "gfx.font_rendering.cleartype_params.rendering_mode" = 5;
+
+          "gfx.webrender.quality.force-subpixel-aa-where-possible" = true;
+          "browser.display.use_document_fonts" = 1; # Enable "Allow pages to choose their own fonts"
 
           # Privacy
           "privacy.resistFingerprinting" = true; # Instead of using CanvasBlocker extension
