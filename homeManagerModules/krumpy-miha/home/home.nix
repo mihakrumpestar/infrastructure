@@ -83,7 +83,7 @@
     qbittorrent-enhanced
     remmina
     moonlight-qt
-    rustdesk
+    #rustdesk # Always has to be compiled
 
     # Printer and scanner
     #simple-scan # Scanning (Gnome)
