@@ -32,6 +32,9 @@ with lib; {
       networkmanager.enable = config.my.client.enable;
       firewall = {
         enable = !config.my.server.enable;
+        allowedTCPPorts = [
+          8080 # Development
+        ];
         trustedInterfaces = mkIf config.my.server.enable ["virbr0" "br0" "br1"];
         # TODO: not working
         extraInputRules = ''
