@@ -102,7 +102,6 @@ in {
           quarto.quarto
 
           # MD
-          foam.foam-vscode
           yzhang.markdown-all-in-one
           davidanson.vscode-markdownlint
           # shd101wyy.markdown-preview-enhanced # Does not support Alerts: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
