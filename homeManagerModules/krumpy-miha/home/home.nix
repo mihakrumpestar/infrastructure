@@ -48,6 +48,9 @@
     #onlyoffice-bin
 
     # File Management
+    xfce.thunar # Because Dolphin has memory leaks
+    xfce.thunar-volman
+    xfce.thunar-archive-plugin
     kdePackages.okular # PDF viewer
     kdePackages.ark # GUI to compress or uncompress data
     p7zip # Req for above
