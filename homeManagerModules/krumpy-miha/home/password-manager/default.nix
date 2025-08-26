@@ -1,11 +1,11 @@
 {pkgs, ...}: {
-  imports = [
-    ./onlykey-app
-  ];
+  #imports = [
+  #  ./onlykey-app
+  #];
 
   home.packages = with pkgs; [
     keepassxc
-    #onlykey      # Does not work, using custom one
+    #onlykey # Does not work, using custom one
     onlykey-cli
     openssh # ssh-agent
     kdePackages.ksshaskpass
