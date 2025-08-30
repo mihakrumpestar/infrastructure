@@ -62,4 +62,9 @@ with lib; {
     adb.enable = true; # Adb, fastboot
     fuse.userAllowOther = true; # Allow (non-root) users mounting their own storage
   };
+
+  environment.systemPackages = with pkgs;
+    mkIf (!config.my.server.enable) [
+      kdePackages.krfb # Enables virtual-display for kdeconnect
+    ];
 }
