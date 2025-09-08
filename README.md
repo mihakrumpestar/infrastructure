@@ -15,3 +15,4 @@ Reference configs:
 TODO:
 
 - https://github.com/yorukot/superfile
+- https://github.com/amadejkastelic/nixos-config/tree/main/hosts/server

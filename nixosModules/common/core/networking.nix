@@ -34,6 +34,7 @@ with lib; {
         enable = !config.my.server.enable;
         allowedTCPPorts = [
           8080 # Development
+          5901 # KDE Connect - Virtual Display - VNC
         ];
         trustedInterfaces = mkIf config.my.server.enable ["virbr0" "br0" "br1"];
         # TODO: not working

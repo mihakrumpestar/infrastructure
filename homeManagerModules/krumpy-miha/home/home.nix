@@ -42,6 +42,8 @@
     #drawio # Drawing tool # UNFREE license
     kdePackages.kcalc # Calculator
     freecad-wayland # 3D design tool
+    #jan # Has hardcoded providers and endpoints
+    cherry-studio # AI chat app, app list https://github.com/billmei/every-chatgpt-gui
 
     # Office Suite
     libreoffice-fresh
@@ -49,7 +51,8 @@
 
     # File Management
     #xfce.thunar # Settings don't get saved, too basic
-    nautilus
+    #nautilus # Too basic
+    nemo-with-extensions
     kdePackages.okular # PDF viewer
     kdePackages.ark # GUI to compress or uncompress data
     p7zip # Req for above
