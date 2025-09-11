@@ -11,18 +11,13 @@
     in {
       smtp = {
         inherit host;
-        port = 587;
-        tls = {
-          enable = true;
-          useStartTls = true;
-        };
+        port = 465;
+        tls.enable = true;
       };
       imap = {
         inherit host;
         port = 993;
-        tls = {
-          enable = true;
-        };
+        tls.enable = true;
       };
       inherit address;
       primary = true;

@@ -34,6 +34,7 @@ in {
 
   programs.ssh = {
     enable = true;
+    enableDefaultConfig = false;
     matchBlocks = {
       "local" = {
         hostname = "localhost";
@@ -107,6 +108,19 @@ in {
         user = sshU.fri.email;
         identityFile = "~/.ssh/identities/fri.pub";
         identitiesOnly = true;
+      };
+
+      "*" = {
+        forwardAgent = false;
+        addKeysToAgent = "no";
+        compression = false;
+        serverAliveInterval = 0;
+        serverAliveCountMax = 3;
+        hashKnownHosts = false;
+        userKnownHostsFile = "~/.ssh/known_hosts";
+        controlMaster = "no";
+        controlPath = "~/.ssh/master-%r@%n:%p";
+        controlPersist = "no";
       };
     };
   };
