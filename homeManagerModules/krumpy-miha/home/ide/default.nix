@@ -48,7 +48,7 @@ in {
 
     # KCL
     kcl
-    kcl-language-server
+    #kcl-language-server # TODO: report compile errors
   ];
 
   programs.vscode = {

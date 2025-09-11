@@ -297,6 +297,7 @@
           "enhancer-for-youtube" = "enhancerforyoutube@maximerf.addons.mozilla.org";
           "wappalyzer" = "wappalyzer@crunchlabz.com";
           "spoof-timezone" = "{55f61747-c3d3-4425-97f9-dfc19a0be23c}";
+          "simplelogin" = "addon@simplelogin";
         };
         mappedExtensions =
           lib.mapAttrs' (
