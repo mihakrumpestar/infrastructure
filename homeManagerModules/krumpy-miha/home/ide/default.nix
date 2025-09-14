@@ -44,6 +44,15 @@ in {
 
     # Golang
     go
+    # Next pkgs are for the extension
+    gopls
+    delve # dlv
+    #vscgo
+    #goplay
+    impl
+    gotests
+    go-tools # staticcheck
+
     golangci-lint
 
     # KCL
