@@ -4,9 +4,6 @@
   lib,
   ...
 }:
-#let
-#brother-hll3270cdw = pkgs.callPackage ./cups-brother-hll3270cdw.nix {};
-#in
 with lib; {
   # Fonts
   fonts.packages = with pkgs; [

@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  pkgs,
+  #pkgs,
   ...
 }:
 with lib; {
@@ -25,9 +25,9 @@ with lib; {
       desktopManager.plasma6.enable = true;
     };
 
-    environment.plasma6.excludePackages = with pkgs.kdePackages; [
-      dolphin # Memory leaks
-    ];
+    #environment.plasma6.excludePackages = with pkgs.kdePackages; [
+    #  dolphin # Memory leaks
+    #];
 
     home-manager.sharedModules = [
       {

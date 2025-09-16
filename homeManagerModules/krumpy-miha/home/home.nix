@@ -77,7 +77,10 @@
     # error: Package ‘ventoy-1.1.05’ in "" is marked as insecure, refusing to evaluate.
     # NIXPKGS_ALLOW_INSECURE=1 nix-shell -p ventoy-full-qt --run ventoy-gui
     android-tools # adb
-    scrcpy # adb
+    scrcpy # adb # Check Window Options in Developer Settings
+    # scrcpy --video-codec=h265 --stay-awake --max-fps=60
+    # scrcpy --video-codec=h265 --stay-awake --max-fps=60 --new-display=1200x2600/120
+    qtscrcpy # adb
     universal-android-debloater # CLI: uad-ng
     mission-center # System monitoring GUI
     filezilla

@@ -8,7 +8,7 @@
     brave
     chromium
     # ladybird # Build unstable-2025-06-27 fails
-    floorp
+    #floorp-bin
 
     zen # Custom
   ];
@@ -298,6 +298,8 @@
           "wappalyzer" = "wappalyzer@crunchlabz.com";
           "spoof-timezone" = "{55f61747-c3d3-4425-97f9-dfc19a0be23c}";
           "simplelogin" = "addon@simplelogin";
+          "qr-code-2" = "{9c0bf749-dacb-426c-8f70-882832dc6853}";
+          "private-internet-access-ext" = "{3e4d2037-d300-4e95-859d-3cba866f46d3}";
         };
         mappedExtensions =
           lib.mapAttrs' (
