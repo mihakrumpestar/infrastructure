@@ -69,56 +69,56 @@ with lib; let
   };
 in {
   config = mkIf config.my.client.laptop.enable {
-    services.power-profiles-daemon.enable = false; # Disable default power management used by KDE
+    #services.power-profiles-daemon.enable = false; # Disable default power management used by KDE
 
     environment.systemPackages = with pkgs; [
-      onboard # On-screen keyboard
+      #onboard # On-screen keyboard
       auto-cpufreq
 
       rotate-display
     ];
 
-    boot.kernelParams = [
-      # For optimal auto-cpufreq
-      "initcall_blacklist=amd_pstate_init"
-      "amd_pstate.enable=0"
-    ];
+    #boot.kernelParams = [
+    #  # For optimal auto-cpufreq
+    #  "initcall_blacklist=amd_pstate_init"
+    #  "amd_pstate.enable=0"
+    #];
 
     services.auto-cpufreq = {
-      enable = true;
+      #enable = true;
       # Docs: https://github.com/AdnanHodzic/auto-cpufreq
-      settings = {
-        battery = {
-          governor = "powersave";
-          turbo = "never";
-          scaling_min_freq = 1400000; # This is min
-          scaling_max_freq = 1700000;
-          # Charging
-          enable_thresholds = true;
-          start_threshold = 20;
-          stop_threshold = 80;
-        };
-        charger = {
-          governor = "performance";
-          turbo = "auto";
-        };
-      };
+      #settings = {
+      #  battery = {
+      #    governor = "powersave";
+      #    turbo = "never";
+      #    scaling_min_freq = 1400000; # This is min
+      #    scaling_max_freq = 1700000;
+      #    # Charging
+      #    enable_thresholds = true;
+      #    start_threshold = 20;
+      #    stop_threshold = 80;
+      #  };
+      #  charger = {
+      #    governor = "performance";
+      #    turbo = "auto";
+      #  };
+      #};
     };
 
     # Auto-rotate screen
-    hardware.sensor.iio.enable = true;
+    #hardware.sensor.iio.enable = true;
 
-    systemd.user.services.rotate-display = {
-      description = "Rotate Display Based on Sensor Orientation";
-      after = ["graphical.target"];
-      serviceConfig = {
-        ExecStart = "${rotate-display}/bin/rotate-display";
-        Restart = "always";
-        RestartSec = 5;
-        Environment = "DISPLAY=:0";
-      };
-      wantedBy = ["default.target"];
-    };
+    #systemd.user.services.rotate-display = {
+    #  description = "Rotate Display Based on Sensor Orientation";
+    #  after = ["graphical.target"];
+    #  serviceConfig = {
+    #    ExecStart = "${rotate-display}/bin/rotate-display";
+    #    Restart = "always";
+    #    RestartSec = 5;
+    #    Environment = "DISPLAY=:0";
+    #  };
+    #  wantedBy = ["default.target"];
+    #};
 
     # This below only if you need to change how the orientation is detected
     # > udevadm info -n  /dev/iio:device0

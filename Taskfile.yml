@@ -34,10 +34,11 @@ tasks:
         - HOST
         - REMOTE
         - PLATFORM # clients || servers
+        - INIT # true || false (if in nixos-anywhere)
     vars:
       SECRETS_DIR: infrastructure-secrets/secrets
     cmds:
-      - rsync {{.SECRETS_DIR}}/root/{{.PLATFORM}}/key.txt {{.REMOTE}}:/var/lib/sops-nix/
+      - rsync {{.SECRETS_DIR}}/root/{{.PLATFORM}}/key.txt {{.REMOTE}}:/mnt/var/lib/sops-nix/
       - |
         [[ {{.PLATFORM}} == clients ]] && rsync --chown=krumpy-miha:users {{.SECRETS_DIR}}/krumpy-miha/key.txt {{.REMOTE}}:/home/krumpy-miha/.config/sops-nix/
 

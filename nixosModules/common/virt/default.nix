@@ -124,8 +124,6 @@ with lib; {
     daemon.settings = {
       # Images
       "registry-mirrors" = ["https://mirror.gcr.io"];
-      # Insecure registry
-      "insecure-registries" = [config.my.store-secrets.secrets.docker_insecure_registry];
       # Logging
       "log-driver" = "json-file";
       "log-opts" = {
