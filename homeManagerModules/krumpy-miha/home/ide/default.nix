@@ -45,6 +45,7 @@ in {
     # Golang
     go
     # Next pkgs are for the extension
+    gccgo
     gopls
     delve # dlv
     #vscgo
