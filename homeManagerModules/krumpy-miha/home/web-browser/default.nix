@@ -2,16 +2,19 @@
   config,
   lib,
   pkgs,
+  zen-browser,
   ...
 }: {
-  home.packages = with pkgs; [
-    brave
-    chromium
-    # ladybird # Build unstable-2025-06-27 fails
-    #floorp-bin
-
-    zen # Custom
-  ];
+  home.packages = with pkgs;
+    [
+      brave
+      chromium
+      # ladybird # Build unstable-2025-06-27 fails
+      #floorp-bin
+    ]
+    ++ [
+      zen-browser.packages."${system}".default
+    ];
 
   # Docs:
   # https://github.com/NiXium-org/NiXium/blob/central/src/nixos/users/kira/home/modules/web-browsers/firefox/firefox.nix

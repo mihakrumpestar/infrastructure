@@ -9,18 +9,21 @@
   nix-vscode-extensions,
   nixpkgs,
   nixvirt,
+  zen-browser,
   vars,
   hostName,
   ...
-}: let
-  customPackagesOverlay = final: _prev: let
-    args = {
-      inherit (final) stdenv lib fetchurl makeWrapper patchelf appimageTools;
-      pkgs = final;
-    };
-  in
-    import ./packages args;
-in {
+}:
+#let
+#customPackagesOverlay = final: _prev: let
+#  args = {
+#    inherit (final) stdenv lib fetchurl makeWrapper patchelf appimageTools;
+#    pkgs = final;
+#  };
+#in
+#  import ./packages args;
+#in
+{
   imports = [
     disko.nixosModules.disko
     sops-nix.nixosModules.sops
@@ -37,11 +40,13 @@ in {
         sharedModules = [
           sops-nix.homeManagerModules.sops
           nixvirt.homeModules.default
+          zen-browser.homeModules.beta
           #agenix.homeManagerModules.default
           #agenix-rekey.homeManagerModules.default
         ];
         extraSpecialArgs = {
           inherit vars hostName;
+          inherit zen-browser;
         };
       };
     }
@@ -53,7 +58,7 @@ in {
   nixpkgs.overlays = [
     nix-vscode-extensions.overlays.default
     nur.overlays.default
-    customPackagesOverlay
+    #customPackagesOverlay
   ];
 
   # For nixd to work properly

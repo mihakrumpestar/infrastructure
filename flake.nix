@@ -1,5 +1,5 @@
 {
-  description = "PC deployment flake";
+  description = "deployment flake";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -33,6 +33,8 @@
       url = "github:AshleyYakeley/NixVirt";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
 

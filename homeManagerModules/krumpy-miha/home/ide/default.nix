@@ -129,13 +129,17 @@ in {
 
           # AI
           #saoudrizwan.claude-dev
-          kilocode.kilo-code
+          #kilocode.kilo-code
+          saoudrizwan.claude-dev # Cline
 
           # Rest
           humao.rest-client
 
           # HCL
           hashicorp.hcl
+
+          # Dot (Graphviz)
+          tintinweb.graphviz-interactive-preview
         ]
         ++ [
           pkgs.vscode-marketplace.casualjim.gotemplate
