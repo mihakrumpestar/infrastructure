@@ -15,6 +15,19 @@
       sha256 = "19mq89qlzzyyih83jsq50szxsg3ghc1h7vrmh3s26nmc3r4lwjfz";
     };
   };
+
+  kilocode = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
+    mktplcRef = {
+      name = "kilocode";
+      version = "4.100.0";
+      publisher = "kilo-code";
+    };
+    vsix = builtins.fetchurl {
+      name = "${mktplcRef.publisher}-${mktplcRef.name}.zip";
+      url = "https://github.com/Kilo-Org/kilocode/releases/download/v${mktplcRef.version}/kilo-code-${mktplcRef.version}.vsix";
+      sha256 = "07312735018badb6673335cc51b3684387d34c546ae52c2c994b27599437ef97";
+    };
+  };
 in {
   home.packages = with pkgs; [
     # Formatters
@@ -73,7 +86,7 @@ in {
           # find them on https://open-vsx.org/ # or "vscode-marketplace"
           # General
           activitywatch.aw-watcher-vscode
-          vscode-icons-team.vscode-icons
+          #vscode-icons-team.vscode-icons # TODO: Broken
           donjayamanne.githistory
           edwinhuish.better-comments-next
           eliostruyf.screendown
@@ -128,27 +141,21 @@ in {
           astro-build.astro-vscode
 
           # AI
-          #saoudrizwan.claude-dev
-          #kilocode.kilo-code
-          saoudrizwan.claude-dev # Cline
+          #saoudrizwan.claude-dev # Cline # Is missing my provider
+          #kilocode.kilo-code # Error in extension config
+          #rooveterinaryinc.roo-cline
 
           # Rest
           humao.rest-client
 
           # HCL
           hashicorp.hcl
-
-          # Dot (Graphviz)
-          tintinweb.graphviz-interactive-preview
         ]
         ++ [
-          pkgs.vscode-marketplace.casualjim.gotemplate
-          pkgs.vscode-marketplace.jinliming2.vscode-go-template
-          pkgs.vscode-marketplace.karyan40024.gotmpl-syntax-highlighter
-          pkgs.vscode-marketplace.romantomjak.go-template
-
           # KCL
           pkgs.vscode-marketplace.kcl.kcl-vscode-extension # The one in VSIX is not latest
+
+          kilocode
 
           vscode-ltex-plus-offline # https://ltex-plus.github.io/ltex-plus/advanced-usage.html
         ];

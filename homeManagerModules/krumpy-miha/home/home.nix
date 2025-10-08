@@ -18,8 +18,8 @@
     # Video/Audio and photo
     audacity # Sound
     vlc # Media Player
-    handbrake
-    ffmpeg
+    #handbrake
+    #ffmpeg # TODO: Broken
     obs-studio
     # No color picker currently works properly on KDE6 (use the self created script command `color-picker`)
     gimp # Alternative is: https://github.com/PintaProject/Pinta
@@ -30,11 +30,7 @@
     gradia # Make screenshots presentable for the web
 
     # Apps
-    xournalpp # Draving software
-    rnote
-    #butterfly # no-go: does not work with pen at all, only touch
-    #saber # no-go: does not have pencil buttons support, nice for typed notes with pen tho
-    #lorien # no-go: Have to click to open color palate
+    rnote # Draving software, prev: xournalpp
     kdePackages.kate # General GUI text editor
     evince # Document viewer (PDF)
     #zoom-us # UNFREE license
@@ -42,8 +38,12 @@
     #drawio # Drawing tool # UNFREE license
     kdePackages.kcalc # Calculator
     freecad-wayland # 3D design tool
+
+    # AI
     #jan # Has hardcoded providers and endpoints
     cherry-studio # AI chat app, app list https://github.com/billmei/every-chatgpt-gui
+    #gpt4all
+    chatbox
 
     # Office Suite
     libreoffice-fresh
@@ -151,27 +151,9 @@
   services.activitywatch = {
     enable = true;
     watchers = {
-      # Default watcher
       aw-watcher-afk = {
         package = pkgs.activitywatch;
-        #settings = {
-        #  timeout = 300;
-        #  poll_time = 2;
-        #};
       };
-
-      # Default watcher: this one works only on X11
-      #aw-watcher-windows = {
-      #  package = pkgs.activitywatch;
-      #  settings = {
-      #    poll_time = 1;
-      #    exclude_title = true;
-      #  };
-      #};
-
-      #awatcher = { # Do not use like this, as this watcher needs deleyed start
-      #  package = pkgs.awatcher;
-      #};
     };
   };
 
