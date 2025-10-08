@@ -10,8 +10,7 @@
       "top": 2
     },
     "preserveAspectRatio": true,
-    "source": "nixos",
-    "width": 50
+    "source": "nixos"
   },
   "modules": [
     "break",
