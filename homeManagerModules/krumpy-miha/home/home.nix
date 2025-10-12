@@ -18,8 +18,7 @@
     # Video/Audio and photo
     audacity # Sound
     vlc # Media Player
-    #handbrake
-    #ffmpeg # TODO: Broken
+    handbrake
     obs-studio
     # No color picker currently works properly on KDE6 (use the self created script command `color-picker`)
     gimp # Alternative is: https://github.com/PintaProject/Pinta
@@ -42,7 +41,7 @@
     # AI
     #jan # Has hardcoded providers and endpoints
     cherry-studio # AI chat app, app list https://github.com/billmei/every-chatgpt-gui
-    #gpt4all
+    #gpt4all # TODO: does not compile
     chatbox
 
     # Office Suite

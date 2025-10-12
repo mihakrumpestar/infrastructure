@@ -115,8 +115,5 @@ with lib; {
         device = "/.swapvol/swapfile";
       }
     ];
-
-    # Optional: Enable hibernation TODO: seems like it does not work as it can't wake form it
-    # boot.resumeDevice = "/dev/mapper/crypted";
   };
 }

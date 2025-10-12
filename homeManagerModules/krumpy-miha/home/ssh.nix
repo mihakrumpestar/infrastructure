@@ -52,6 +52,14 @@ in {
         identitiesOnly = true;
       };
 
+      "personal-laptop" = {
+        hostname = "personal-laptop";
+        user = "root";
+        port = 22222;
+        identityFile = "~/.ssh/identities/home_pc.pub";
+        identitiesOnly = true;
+      };
+
       "company_01_server_01" = {
         hostname = "company_01_server_01";
         user = "automations";
@@ -85,13 +93,6 @@ in {
         hostname = "docker-swarm";
         user = "admin";
         port = 22222;
-        identityFile = "~/.ssh/identities/homelab_vms.pub";
-        identitiesOnly = true;
-      };
-
-      "orange-pi-pc" = {
-        hostname = "orange-pi-pc";
-        user = "admin";
         identityFile = "~/.ssh/identities/homelab_vms.pub";
         identitiesOnly = true;
       };
