@@ -74,7 +74,7 @@
     gsmartcontrol
     gnome-disk-utility
     # error: Package ‘ventoy-1.1.05’ in "" is marked as insecure, refusing to evaluate.
-    # NIXPKGS_ALLOW_INSECURE=1 nix-shell -p ventoy-full-qt --run ventoy-gui
+    # NIXPKGS_ALLOW_INSECURE=1 NIXPKGS_ALLOW_UNFREE=1 nix-shell -p ventoy-full-qt --run ventoy-gui
     android-tools # adb
     scrcpy # adb # Check Window Options in Developer Settings
     # scrcpy --video-codec=h265 --stay-awake --max-fps=60

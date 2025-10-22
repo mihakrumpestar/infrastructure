@@ -1,43 +1,12 @@
 {
   config,
-  pkgs,
   lib,
   ...
 }:
 with lib; {
-  # Fonts
-  fonts.packages = with pkgs; [
-    meslo-lgs-nf # font for starship
-    SDL2_ttf
-    carlito
-    dejavu_fonts
-    noto-fonts
-    noto-fonts-cjk-sans
-    noto-fonts-emoji
-    font-awesome
-    hack-font
-    liberation_ttf
-    roboto
-    roboto-mono
-    ubuntu_font_family
-    fira-code
-    fira-code-symbols
-    mplus-outline-fonts.githubRelease
-    dina-font
-    proggyfonts
-    xorg.fontadobe75dpi
-    xorg.fontadobe100dpi
-  ];
-
-  services = mkIf (!config.my.server.enable) {
+  services = mkIf (config.my.hostType == "client") {
     # Printing https://nixos.wiki/wiki/Printing
-    printing = {
-      enable = true; # CUPS
-      #logLevel = "debug"; # journalctl --follow --unit=cups
-      drivers = [
-        #brother-hll3270cdw
-      ];
-    };
+    printing.enable = true; # CUPS
 
     # Scanning and printing
     avahi = {
@@ -52,16 +21,11 @@ with lib; {
   };
 
   # Bluetooth
-  hardware.bluetooth.enable = !config.my.server.enable;
+  hardware.bluetooth.enable = config.my.hostType == "client";
 
-  programs = mkIf (!config.my.server.enable) {
+  programs = mkIf (config.my.hostType == "client") {
     kdeconnect.enable = true;
     adb.enable = true; # Adb, fastboot
     fuse.userAllowOther = true; # Allow (non-root) users mounting their own storage
   };
-
-  environment.systemPackages = with pkgs;
-    mkIf (!config.my.server.enable) [
-      kdePackages.krfb # Enables virtual-display for kdeconnect
-    ];
 }

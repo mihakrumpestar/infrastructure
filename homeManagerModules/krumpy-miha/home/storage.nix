@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  vars,
   ...
 }: let
   rcloneBase = {
@@ -30,7 +31,7 @@
       ];
       ExecStart = ''
         ${pkgs.rclone}/bin/rclone mount \
-          --config=${config.sops.secrets.rclone_config.path} \
+          --config=${config.age.secrets."rclone_config".path} \
           --dir-cache-time 1m0s \
           --poll-interval 30s \
           --vfs-cache-mode full \
@@ -60,7 +61,7 @@ in {
     };
   };
 
-  sops.secrets.rclone_config.path = ".config/rclone/rclone.conf";
+  age.secrets."rclone_config".file = /${vars.secretsDir}/secrets/users/krumpy-miha/rclone.conf.age;
 
   # rclone listremotes
 

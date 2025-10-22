@@ -3,11 +3,10 @@
     disks = {
       bootDisk = "/dev/nvme0n1";
       swapSize = "12G";
-      encryptRoot = true;
+      encryptRoot = "fido2";
     };
 
-    client.enable = true;
-    client.laptop.enable = true;
+    hostType = "client";
 
     networking.homeWifi = {
       enable = true;

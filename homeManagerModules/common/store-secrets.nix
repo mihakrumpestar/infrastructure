@@ -9,7 +9,7 @@ with lib; {
   options.my = {
     store-secrets = {
       secretsFile = mkOption {
-        type = types.path;
+        type = types.nullOr types.path;
         default = null;
         description = "File containing the secrets in NIX format";
       };

@@ -8,7 +8,9 @@
     "git@latest",
     "nil@latest",
     "statix@latest",
-    "nixos-anywhere@latest"
+    "nixos-anywhere@latest",
+    "age-plugin-tpm@latest",
+    "github:oddlama/agenix-rekey"
   ],
   "env": {},
   "shell": {

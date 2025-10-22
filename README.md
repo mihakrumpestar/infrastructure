@@ -1,5 +1,13 @@
 # Infrastructure
 
+Generate per machine TPM2 age key:
+
+```sh
+nix-shell -p age-plugin-tpm --command "sudo age-plugin-tpm  -g"
+```
+
+## TODO
+
 Reference configs:
 
 - <https://github.com/raexera/yuki>

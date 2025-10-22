@@ -18,10 +18,10 @@ in {
     disks = {
       bootDisk = "/dev/sda";
       swapSize = "32G";
-      encryptRoot = false;
+      encryptRoot = "tpm2";
     };
 
-    server.enable = true;
+    hostType = "server";
   };
 
   systemd.network = {

@@ -1,7 +1,6 @@
 {osConfig, ...}: {
   imports = [
     ./mutable-file.nix
-    ./sops-secrets.nix
     ./store-secrets.nix
   ];
 

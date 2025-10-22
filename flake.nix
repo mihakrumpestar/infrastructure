@@ -3,19 +3,15 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
-    systems.url = "github:nix-systems/default";
+    nur.url = "github:nix-community/NUR";
 
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    #agenix.url = "github:ryantm/agenix";
-    #agenix-rekey.url = "github:oddlama/agenix-rekey";
-
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
+    agenix = {
+      url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -37,8 +33,6 @@
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
-
-    nur.url = "github:nix-community/NUR";
   };
 
   outputs = {nixpkgs, ...} @ attrs: let
@@ -74,8 +68,8 @@
       server-03 = mkNixosConfiguration {
         hostName = "server-03";
       };
-      test = mkNixosConfiguration {
-        hostName = "test";
+      kiosk = mkNixosConfiguration {
+        hostName = "kiosk";
       };
     };
   };

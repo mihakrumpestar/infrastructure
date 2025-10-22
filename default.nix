@@ -1,8 +1,6 @@
 {
   disko,
-  sops-nix,
-  #agenix,
-  #agenix-rekey,
+  agenix,
   stylix,
   home-manager,
   nur,
@@ -26,10 +24,8 @@
 {
   imports = [
     disko.nixosModules.disko
-    sops-nix.nixosModules.sops
     nixvirt.nixosModules.default
-    #agenix.nixosModules.sops
-    #agenix-rekey.nixosModules.default
+    agenix.nixosModules.default
     stylix.nixosModules.stylix
     home-manager.nixosModules.home-manager
     {
@@ -38,11 +34,9 @@
         useUserPackages = true;
         backupFileExtension = "backup";
         sharedModules = [
-          sops-nix.homeManagerModules.sops
           nixvirt.homeModules.default
           zen-browser.homeModules.beta
-          #agenix.homeManagerModules.default
-          #agenix-rekey.homeManagerModules.default
+          agenix.homeManagerModules.default
         ];
         extraSpecialArgs = {
           inherit vars hostName;
@@ -56,8 +50,8 @@
   ];
 
   nixpkgs.overlays = [
-    nix-vscode-extensions.overlays.default
     nur.overlays.default
+    nix-vscode-extensions.overlays.default
     #customPackagesOverlay
   ];
 

@@ -1,4 +1,8 @@
-{...}: {
+{
+  vars,
+  config,
+  ...
+}: {
   imports = [
     ./backup
     ./clipboard
@@ -15,4 +19,7 @@
     ./ssh.nix
     ./storage.nix
   ];
+
+  # Store-secrets
+  my.store-secrets.secretsFile = /${vars.secretsDir}/secrets/users/${config.home.username}/store-secrets.nix;
 }

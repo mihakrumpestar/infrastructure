@@ -1,6 +1,6 @@
 {
   config,
-  pkgs,
+  vars,
   lib,
   hostName,
   ...
@@ -14,11 +14,6 @@ with lib; {
   };
 
   config = {
-    # /etc/hosts
-    networking.hostFiles = [
-      (pkgs.writeText "hosts" config.my.store-secrets.secrets."hosts")
-    ];
-
     # Check: ss -tulnp
     #services.resolved.extraConfig = mkIf config.my.server.enable ''
     #  DNSStubListener=no
@@ -26,17 +21,14 @@ with lib; {
 
     networking = {
       inherit hostName;
-      useDHCP = !config.my.server.enable && !config.my.client.enable;
-      #dhcpcd.enable = !config.my.server.enable;
 
-      networkmanager.enable = config.my.client.enable;
+      networkmanager.enable = config.my.hostType == "client";
       firewall = {
-        enable = !config.my.server.enable;
-        allowedTCPPorts = [
-          8080 # Development
-          5901 # KDE Connect - Virtual Display - VNC
-        ];
-        trustedInterfaces = mkIf config.my.server.enable ["virbr0" "br0" "br1"];
+        enable = config.my.hostType != "server";
+        trustedInterfaces =
+          if config.my.hostType == "server"
+          then ["virbr0" "br0" "br1"]
+          else [];
         # TODO: not working
         extraInputRules = ''
           # Allow incoming traffic on our bridge interfaces.
@@ -65,12 +57,12 @@ with lib; {
           oifname { "vnet0", "vnet1", "vnet2", "vnet3", "vnet4" } accept
         '';
       };
-      nftables.enable = true; # Warning: incompatible regular Docker
+      nftables.enable = true; # Warning: incompatible with regular Docker
     };
 
     # https://nixos.wiki/wiki/Systemd-networkd
     # https://astro.github.io/microvm.nix/simple-network.html
-    systemd.network = mkIf config.my.server.enable {
+    systemd.network = mkIf (config.my.hostType == "server") {
       enable = true;
 
       # Bridge
@@ -130,48 +122,9 @@ with lib; {
       "net.ipv4.conf.all.rp_filter" = true;
     };
 
-    sops = let
-      ssid = config.my.store-secrets.secrets.homeWifi_ssid;
-    in
-      mkIf config.my.networking.homeWifi.enable
-      {
-        templates = {
-          "${ssid}.nmconnection" = {
-            path = "/etc/NetworkManager/system-connections/${ssid}.nmconnection";
-            content = ''
-              [connection]
-              id=${ssid}
-              uuid=7a4e0da3-8cf7-49cc-947f-b938fffc681a
-              type=wifi
-              autoconnect=${
-                if config.my.networking.homeWifi.autoconnect.enable
-                then "true"
-                else "false"
-              }
-
-              [wifi]
-              mode=infrastructure
-              ssid=${ssid}
-
-              [wifi-security]
-              key-mgmt=wpa-psk
-              psk=${config.sops.placeholder."wireless/${ssid}/psk"}
-
-              [ipv4]
-              method=auto
-
-              [ipv6]
-              addr-gen-mode=stable-privacy
-              method=auto
-
-              [proxy]
-            '';
-          };
-        };
-
-        secrets = {
-          "wireless/${ssid}/psk" = {};
-        };
-      };
+    age.secrets.homeWifi = mkIf config.my.networking.homeWifi.enable {
+      file = /${vars.secretsDir}/secrets/users/homeWifi.nmconnection.age;
+      path = "/etc/NetworkManager/system-connections/homeWifi.nmconnection";
+    };
   };
 }

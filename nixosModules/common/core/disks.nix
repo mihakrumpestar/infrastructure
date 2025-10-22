@@ -15,7 +15,7 @@ with lib; {
         description = "The swap size (e.g., 8G)";
       };
       encryptRoot = mkOption {
-        type = types.bool;
+        type = types.enum [false "tpm2" "fido2"];
         default = false;
         description = "Whether to encrypt the root partition";
       };
@@ -60,7 +60,9 @@ with lib; {
                     };
                     "/swap" = {
                       mountpoint = "/.swapvol";
-                      swap.swapfile.size = config.my.disks.swapSize; # Same size as memory
+                      swap = {
+                        swapfile.size = config.my.disks.swapSize;
+                      };
                     };
                   };
                 };
@@ -73,7 +75,23 @@ with lib; {
                     name = "crypted";
                     settings = {
                       allowDiscards = true;
-                      crypttabExtraOpts = ["fido2-device=auto" "token-timeout=10"]; # cryptenroll
+                      crypttabExtraOpts =
+                        if config.my.disks.encryptRoot == "fido2"
+                        then ["fido2-device=auto" "token-timeout=10"]
+                        # Docs: https://nixos.org/manual/nixos/stable/#sec-luks-file-systems-fido2-systemd
+                        #
+                        # systemd-cryptenroll --fido2-device=list
+                        # Check current keys: sudo systemd-cryptenroll /dev/nvme0n1p2
+                        # Set FIDO2 key: systemd-cryptenroll --fido2-device=auto --fido2-with-client-pin=no --fido2-with-user-presence=yes /dev/vda2 # --wipe-slot=0 or --wipe-slot=all
+                        # List slots: sudo cryptsetup luksDump /dev/nvme0n1p2
+                        # Remove key: sudo cryptsetup luksRemoveKey /dev/vda2 # Here you enter the password that will be deleted
+                        #
+                        # sudo systemd-cryptenroll --unlock-fido2-device=/dev/hidraw1 --fido2-device=/dev/hidraw1 --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
+                        else if config.my.disks.encryptRoot == "tpm2"
+                        then ["tpm2-device=auto"]
+                        # systemd-cryptenroll --tpm2-device=list
+                        # systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=no --wipe-slot=all /dev/vda2
+                        else [];
                     };
                     content = disk_content;
                   };
@@ -88,32 +106,10 @@ with lib; {
       };
     };
 
-    boot.initrd = mkIf config.my.disks.encryptRoot {
-      systemd = {
-        enable = true;
-        fido2.enable = true;
-      };
-      luks.fido2Support = false; # this is for the old implementation without systemd, don't use it
+    boot.initrd.systemd = mkIf config.my.disks.encryptRoot {
+      enable = true;
+      fido2.enable = config.my.disks.encryptRoot == "fido2";
+      tpm2.enable = config.my.disks.encryptRoot == "tpm2";
     };
-
-    # Docs: https://nixos.org/manual/nixos/stable/#sec-luks-file-systems-fido2-systemd
-
-    # systemd-cryptenroll --fido2-device=list
-    # Check current keys: sudo systemd-cryptenroll /dev/nvme0n1p2
-    # Set FIDO2 key: systemd-cryptenroll --fido2-device=auto --fido2-with-client-pin=no --fido2-with-user-presence=yes /dev/vda2 # --wipe-slot=0
-    # List slots: sudo cryptsetup luksDump /dev/nvme0n1p2
-    # Remove key: sudo cryptsetup luksRemoveKey /dev/vda2 # Here you enter the password that will be deleted
-
-    # sudo systemd-cryptenroll --unlock-fido2-device=/dev/hidraw1 --fido2-device=/dev/hidraw1 --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
-
-    # okt 19 11:56:50 systemd-cryptsetup[201]: Timed out waiting for security device, aborting security device based authentication attempt.
-    # okt 19 11:56:39 systemd-cryptsetup[201]: Security token not present for unlocking volume disk-system-luks (crypted), please plug it in.
-
-    # Enable swap
-    swapDevices = [
-      {
-        device = "/.swapvol/swapfile";
-      }
-    ];
   };
 }

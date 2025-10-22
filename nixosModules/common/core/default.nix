@@ -13,15 +13,19 @@ with lib; {
     ./nix.nix
     ./secrets.nix
     ./shell.nix
+    ./style.nix
   ];
 
   options.my = {
-    client = {
-      enable = mkEnableOption "If the system is a client";
-      laptop.enable = mkEnableOption "If client is a laptop";
+    hostType = mkOption {
+      type = types.enum [false "client" "server"];
+      default = false;
+      description = "What type is the host";
     };
-    server = {
-      enable = mkEnableOption "If the system is a server";
+    hostSubType = mkOption {
+      type = types.enum [false "kiosk"];
+      default = false;
+      description = "What subtype is the host";
     };
   };
 
@@ -80,13 +84,13 @@ with lib; {
       users = mkMerge [
         {
           root = {
-            openssh.authorizedKeys.keyFiles = [
-              (pkgs.writeText "ssh_authorized_keys" config.my.store-secrets.secrets."ssh_authorized_keys")
+            openssh.authorizedKeys.keys = [
+              config.my.store-secrets.secrets."ssh_authorized_keys".${config.my.hostType}
             ];
           };
         }
         # Allow physical access to server
-        (mkIf config.my.server.enable {
+        (mkIf (config.my.hostType == "server") {
           admin = {
             isNormalUser = true;
             isSystemUser = false;
@@ -98,22 +102,18 @@ with lib; {
               "kvm"
               "tss"
             ];
-            hashedPasswordFile = config.sops.secrets.admin_hashedPassword.path; # Generate using: mkpasswd
+            hashedPasswordFile = config.my.store-secrets.secrets."admin_hashedPassword"; # Generate using: mkpasswd
             openssh.authorizedKeys.keys = [];
           };
         })
       ];
     };
 
-    sops.secrets = mkIf config.my.server.enable {
-      admin_hashedPassword.neededForUsers = true;
-    };
-
     security.sudo = {
       extraConfig = ''
         Defaults  lecture="never"
       '';
-      wheelNeedsPassword = !config.my.server.enable;
+      wheelNeedsPassword = config.my.hostType != "server";
     };
 
     nix.settings.trusted-users = [

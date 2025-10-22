@@ -1,4 +1,9 @@
-{pkgs, ...}: {
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   config = {
     boot = {
       loader = {
@@ -6,9 +11,12 @@
         efi.canTouchEfiVariables = true;
       };
 
-      kernelPackages = pkgs.linuxPackages_latest;
+      kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 
-      kernelModules = ["msr"]; # Required for zenstates
+      kernelModules =
+        if config.hardware.cpu.amd.updateMicrocode
+        then ["msr"] # Required for zenstates
+        else [];
 
       # Optimizations
       kernel.sysctl = {

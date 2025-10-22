@@ -1,7 +1,11 @@
 {
-  disks = {
-    bootDisk = "/dev/vda";
-    encryptRoot = true;
+  my = {
+    disks = {
+      bootDisk = "/dev/vda";
+      encryptRoot = false;
+    };
+
+    hostType = "client";
   };
 
   services.qemuGuest.enable = true;

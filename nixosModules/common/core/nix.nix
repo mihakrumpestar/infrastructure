@@ -1,10 +1,14 @@
 {config, ...}: {
   config = {
     nix = {
-      settings.experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
+      settings = {
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
+
+        extra-sandbox-paths = ["/tmp"];
+      };
 
       # Optimize store
       optimise = {

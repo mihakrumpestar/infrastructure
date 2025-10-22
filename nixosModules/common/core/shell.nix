@@ -3,6 +3,30 @@
   pkgs,
   ...
 }: {
+  # Fonts
+  fonts.packages = with pkgs; [
+    meslo-lgs-nf # font for starship
+    SDL2_ttf
+    carlito
+    dejavu_fonts
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-emoji
+    font-awesome
+    hack-font
+    liberation_ttf
+    roboto
+    roboto-mono
+    ubuntu_font_family
+    fira-code
+    fira-code-symbols
+    mplus-outline-fonts.githubRelease
+    dina-font
+    proggyfonts
+    xorg.fontadobe75dpi
+    xorg.fontadobe100dpi
+  ];
+
   programs.starship = {
     enable = true;
     settings = {

@@ -5,11 +5,11 @@
   ...
 }:
 with lib; let
-  cfg = config.services.virtualhere;
+  cfg = config.my.services.virtualhere;
   virtualhere-client-gui = pkgs.callPackage ./gui.nix {};
   virtualhere-client-cli = pkgs.callPackage ./cli.nix {};
 in {
-  options.services.virtualhere = {
+  options.my.services.virtualhere = {
     enable = mkEnableOption "VirtualHere USB Client";
 
     enableGui = mkOption {

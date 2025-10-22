@@ -11,7 +11,7 @@ in {
   };
 
   imports = [
-    (import ./config {inherit config lib username;})
+    ./config
   ];
 
   config = mkIf config.my.users.${username}.enable {

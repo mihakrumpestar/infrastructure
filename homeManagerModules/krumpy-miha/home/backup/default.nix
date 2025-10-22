@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  vars,
   ...
 }:
 with lib; {
@@ -39,11 +40,9 @@ with lib; {
       ./config.json
       {
         inherit (config.home) homeDirectory;
-        digital_identity_password_path = config.sops.secrets."backups_password/digital_identity".path;
+        digital_identity_password_path = config.age.secrets."backups_password".path;
       };
 
-    sops.secrets = {
-      "backups_password/digital_identity" = {};
-    };
+    age.secrets."backups_password".file = /${vars.secretsDir}/secrets/users/krumpy-miha/backups_password.age;
   };
 }
