@@ -26,6 +26,10 @@ in {
       username = "krumpy-miha";
       inherit config lib pkgs;
     })
+    (import ./kiosk/system {
+      username = "kiosk";
+      inherit config lib pkgs;
+    })
   ];
 
   config = mkIf (enabledUsers != []) {

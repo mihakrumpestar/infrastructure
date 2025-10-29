@@ -8,7 +8,7 @@
 with lib; let
   store-secrets = config.home-manager.users.${username}.my.store-secrets.secrets;
 in {
-  config = mkIf (builtins.elem "krumpy-miha" config.my.users) {
+  config = mkIf (builtins.elem username config.my.users) {
     users.users.${username}.extraGroups = [
       "docker"
       "libvirtd"

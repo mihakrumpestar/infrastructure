@@ -165,7 +165,7 @@ in {
 
           engines = {
             "SearXNG" = let
-              inherit (store-secrets.secrets) searxng;
+              inherit (store-secrets) searxng;
             in {
               id = "searxng";
               urls = [{template = "${searxng}/search?q={searchTerms}";}];
