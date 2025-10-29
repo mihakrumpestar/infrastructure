@@ -28,7 +28,7 @@ in {
     })
     (import ./kiosk/system {
       username = "kiosk";
-      inherit config lib pkgs;
+      inherit config lib;
     })
   ];
 
