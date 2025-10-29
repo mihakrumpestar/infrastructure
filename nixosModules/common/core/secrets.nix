@@ -21,6 +21,7 @@ in {
 
   home-manager.sharedModules = [
     {
+      # systemctl status --user agenix.service
       age = {
         inherit (config.age) identityPaths;
       };

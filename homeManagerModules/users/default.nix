@@ -2,6 +2,7 @@
   config,
   lib,
   vars,
+  pkgs,
   ...
 }:
 with lib; let
@@ -13,6 +14,19 @@ in {
     default = [];
     description = "List of users to enable and import";
   };
+
+  # Import system modules - but only import those that exist to avoid errors during early evaluation
+  #imports =
+  #  map (username: ./. + "/${username}/system")
+  #  (lib.filter (username: builtins.pathExists (./. + "/${username}/system")) enabledUsers);
+
+  # TODO: above code gives infinite recursion, so we have to specify user systems manualy
+  imports = [
+    (import ./krumpy-miha/system {
+      username = "krumpy-miha";
+      inherit config lib pkgs;
+    })
+  ];
 
   config = mkIf (enabledUsers != []) {
     users.users = builtins.listToAttrs (
@@ -41,6 +55,9 @@ in {
           };
 
           imports = [(./. + "/${username}/home")];
+
+          # Pass username to system modules via special argument
+          _module.args.username = username;
         };
       })
       enabledUsers
