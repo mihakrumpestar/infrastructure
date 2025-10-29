@@ -1,15 +1,8 @@
 {...}: {
-  # systemd.user.services.dbus = { }; # TODO: somehow make this start on boot
+  # Note: users are imported seperately
 
   imports = [
-    ./krumpy-miha
-  ];
-
-  home-manager.sharedModules = [
-    {
-      imports = [
-        ./common
-      ];
-    }
+    ./common
+    ./mutable-file
   ];
 }

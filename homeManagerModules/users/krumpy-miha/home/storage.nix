@@ -5,6 +5,8 @@
   vars,
   ...
 }: let
+  store-secrets = config.my.store-secrets.secrets;
+
   rcloneBase = {
     # User service for Rclone mounting
     #
@@ -66,7 +68,7 @@ in {
   # rclone listremotes
 
   my.home.mutableFile.".config/Nextcloud/nextcloud.cfg".text = let
-    inherit (config.my.store-secrets.secrets.nextcloud) username;
+    inherit (store-secrets.nextcloud) username;
   in ''
     [General]
     clientVersion=3.14.1
@@ -115,7 +117,7 @@ in {
     0\serverHasValidSubscription=false
     0\serverTextColor=@Variant(\0\0\0\x43\x1\xff\xff\xff\xff\xff\xff\xff\xff\0\0)
     0\serverVersion=29.0.0.19
-    0\url=${config.my.store-secrets.secrets.nextcloud.url}
+    0\url=${store-secrets.nextcloud.url}
     0\version=1
     0\webflow_user=${username}
     version=2

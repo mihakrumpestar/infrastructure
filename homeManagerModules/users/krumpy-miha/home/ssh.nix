@@ -3,8 +3,10 @@
   lib,
   ...
 }: let
-  sshI = config.my.store-secrets.secrets.ssh.identities;
-  sshU = config.my.store-secrets.secrets.ssh.users;
+  store-secrets = config.my.store-secrets.secrets;
+
+  sshI = store-secrets.ssh.identities;
+  sshU = store-secrets.ssh.users;
 in {
   home = {
     file = {
@@ -54,6 +56,14 @@ in {
 
       "personal-laptop" = {
         hostname = "personal-laptop";
+        user = "root";
+        port = 22222;
+        identityFile = "~/.ssh/identities/home_pc.pub";
+        identitiesOnly = true;
+      };
+
+      "kiosk" = {
+        hostname = "kiosk";
         user = "root";
         port = 22222;
         identityFile = "~/.ssh/identities/home_pc.pub";
@@ -125,10 +135,4 @@ in {
       };
     };
   };
-
-  home.file.".docker/config.json".text = ''
-    {
-      "credsStore": "secretservice"
-    }
-  '';
 }

@@ -8,11 +8,10 @@
 
     hostType = "client";
 
-    networking.homeWifi = {
-      enable = true;
-      autoconnect.enable = true;
-    };
+    networking.homeWifi.enable = true;
 
     de.plasma.enable = true;
+
+    users = ["krumpy-miha"];
   };
 }

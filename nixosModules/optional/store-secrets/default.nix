@@ -1,33 +1,35 @@
-# Same as: users/modules/optional/store-secrets/default.nix
 {
   config,
   lib,
   ...
 }:
-with lib; {
-  options.my = {
-    store-secrets = {
-      secretsFile = mkOption {
-        type = types.path;
-        default = null;
-        description = "File containing the secrets in NIX format";
-      };
+with lib; let
+  cfg = config.my.store-secrets;
+in {
+  options.my.store-secrets = {
+    enable = mkEnableOption "store-secrets module";
 
-      secrets = mkOption {
-        type = types.attrs;
-        description = "Store secrets structure from NIX";
-      };
+    secretsFile = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      description = "File containing the secrets in NIX format";
+    };
+
+    secrets = mkOption {
+      type = types.attrs;
+      description = "Store secrets structure from NIX";
+      readOnly = true;
     };
   };
 
-  config = mkIf (config.my.store-secrets.secretsFile != null) {
+  config = mkIf cfg.enable {
     assertions = [
       {
-        assertion = config.my.store-secrets.secretsFile != null && config.my.store-secrets.secrets != {};
-        message = "store-secrets.secretsFile and store-secrets.secrets can't be set at the same time";
+        assertion = cfg.secretsFile != null;
+        message = "store-secrets.secretsFile must be configured";
       }
     ];
 
-    my.store-secrets.secrets = import config.my.store-secrets.secretsFile; # TODO: change to YAML when this merges: https://github.com/NixOS/nix/pull/7340
+    my.store-secrets.secrets = import cfg.secretsFile;
   };
 }

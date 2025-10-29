@@ -11,17 +11,7 @@
   vars,
   hostName,
   ...
-}:
-#let
-#customPackagesOverlay = final: _prev: let
-#  args = {
-#    inherit (final) stdenv lib fetchurl makeWrapper patchelf appimageTools;
-#    pkgs = final;
-#  };
-#in
-#  import ./packages args;
-#in
-{
+}: {
   imports = [
     disko.nixosModules.disko
     nixvirt.nixosModules.default
@@ -37,6 +27,12 @@
           nixvirt.homeModules.default
           zen-browser.homeModules.beta
           agenix.homeManagerModules.default
+          {
+            imports = [
+              ./homeManagerModules
+              ./nixosModules/optional/store-secrets
+            ];
+          }
         ];
         extraSpecialArgs = {
           inherit vars hostName;
@@ -44,7 +40,7 @@
         };
       };
     }
-    ./homeManagerModules
+    ./homeManagerModules/users # Users
     ./hosts # Per "host"
     ./nixosModules # Per "options"
   ];

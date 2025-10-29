@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   vars,
   hostName,
@@ -21,7 +22,7 @@ in {
   home-manager.sharedModules = [
     {
       age = {
-        identityPaths = [age_host_identity];
+        inherit (config.age) identityPaths;
       };
     }
   ];
@@ -31,5 +32,8 @@ in {
   ];
 
   # Store-secrets
-  my.store-secrets.secretsFile = "${vars.secretsDir}/secrets/users/root/store-secrets.nix";
+  my.store-secrets = {
+    enable = true;
+    secretsFile = "${vars.secretsDir}/secrets/users/root/store-secrets.nix";
+  };
 }

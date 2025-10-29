@@ -3,6 +3,8 @@
   pkgs,
   ...
 }: let
+  store-secrets = config.my.store-secrets.secrets;
+
   vscode-ltex-plus-offline = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
     mktplcRef = {
       name = "vscode-ltex-plus";
@@ -159,7 +161,7 @@ in {
   my.home.mutableFile.".config/VSCodium/User/settings.json".source =
     pkgs.replaceVars
     ./settings.json {
-      inherit (config.my.store-secrets.secrets) languagetool_server;
+      inherit (store-secrets) languagetool_server;
     };
 
   # npx does not work properly for some reason

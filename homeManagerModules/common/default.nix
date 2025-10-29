@@ -1,9 +1,4 @@
 {osConfig, ...}: {
-  imports = [
-    ./mutable-file.nix
-    ./store-secrets.nix
-  ];
-
   home.stateVersion = osConfig.system.nixos.release;
 
   systemd.user.startServices = "sd-switch";

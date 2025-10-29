@@ -4,7 +4,9 @@
   pkgs,
   zen-browser,
   ...
-}: {
+}: let
+  store-secrets = config.my.store-secrets.secrets;
+in {
   home.packages = with pkgs;
     [
       brave
@@ -92,79 +94,19 @@
         search = {
           force = true;
           engines = {
-            "Nix Packages" = {
-              id = "nix_packages";
-              urls = [
+            "SearXNG" = let
+              inherit (store-secrets) searxng;
+            in {
+              id = "searxng";
+              urls = [{template = "${searxng}/search?q={searchTerms}";}];
+              params = [
                 {
-                  template = "https://search.nixos.org/packages";
-                  params = [
-                    {
-                      name = "channel";
-                      value = "unstable";
-                    }
-                    {
-                      name = "type";
-                      value = "packages";
-                    }
-                    {
-                      name = "query";
-                      value = "{searchTerms}";
-                    }
-                  ];
+                  name = "q";
+                  value = "{searchTerms}";
                 }
               ];
-              definedAliases = ["@np"];
-              icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-            };
-
-            "Nix Options" = {
-              id = "nix_options";
-              urls = [
-                {
-                  template = "https://search.nixos.org/options";
-                  params = [
-                    {
-                      name = "channel";
-                      value = "unstable";
-                    }
-                    {
-                      name = "type";
-                      value = "packages";
-                    }
-                    {
-                      name = "query";
-                      value = "{searchTerms}";
-                    }
-                  ];
-                }
-              ];
-              definedAliases = ["@no"];
-              icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-            };
-
-            "Home Manager Options" = {
-              id = "hm_options";
-              urls = [
-                {
-                  template = "https://home-manager-options.extranix.com/";
-                  params = [
-                    {
-                      name = "query";
-                      value = "{searchTerms}";
-                    }
-                  ];
-                }
-              ];
-              definedAliases = ["@hm"];
-              icon = "https://icons.duckduckgo.com/ip3/home-manager-options.extranix.com.ico";
-            };
-
-            "NixOS Wiki" = {
-              id = "nixos_wiki";
-              urls = [{template = "https://wiki.nixos.org/index.php?search={searchTerms}";}];
-              updateInterval = 24 * 60 * 60 * 1000; # every day
-              definedAliases = ["@nw"];
-              icon = "https://wiki.nixos.org/favicon.png";
+              definedAliases = ["@searxng"];
+              icon = "${searxng}/favicon.ico";
             };
 
             "ddg" = {
@@ -192,41 +134,12 @@
               definedAliases = ["@b"];
               icon = "https://icons.duckduckgo.com/ip3/search.brave.com.ico";
             };
-
-            "SearXNG" = let
-              inherit (config.my.store-secrets.secrets) searxng;
-            in {
-              id = "searxng";
-              urls = [{template = "${searxng}/search?q={searchTerms}";}];
-              params = [
-                {
-                  name = "q";
-                  value = "{searchTerms}";
-                }
-              ];
-              definedAliases = ["@searxng"];
-              icon = "${searxng}/favicon.ico";
-            };
-
-            "bing" = {
-              id = "bing";
-              metaData.hidden = true;
-            };
-
-            "google" = {
-              id = "google";
-              metaData.hidden = true;
-            };
           };
 
           order = [
             "SearXNG"
             "ddg"
             "Brave"
-            "Nix Packages"
-            "Nix Options"
-            "Home Manager Options"
-            "NixOS Wiki"
           ];
 
           default = "SearXNG";
@@ -235,9 +148,10 @@
       };
     };
 
-    #nativeMessagingHosts = with pkgs; [ # Use this after it is fixed (currently always maps to Firefox and not Librewolf)
-    #  keepassxc # keepassxc does this by itself for Firefox
-    #];
+    nativeMessagingHosts = with pkgs; [
+      # Use this after it is fixed (currently always maps to Firefox and not Librewolf)
+      keepassxc # keepassxc does this by itself for Firefox
+    ];
 
     # Docs: https://mozilla.github.io/policy-templates/#extensionsettings
     # Inspiration: https://github.com/NiXium-org/NiXium/blob/central/src/nixos/users/kira/home/modules/web-browsers/firefox/firefox.nix
@@ -272,7 +186,7 @@
         Enabled = true;
         Locked = true;
       };
-      ExtensionUpdate = false;
+      ExtensionUpdate = true;
 
       ExtensionSettings = let
         extensions = {
@@ -347,16 +261,6 @@
         */
       };
 
-      FirefoxHome = {
-        Search = true;
-        TopSites = true;
-        SponsoredTopSites = false;
-        Highlights = true;
-        Pocket = false;
-        SponsoredPocket = false;
-        Snippets = false;
-        Locked = true;
-      };
       FirefoxSuggest = {
         WebSuggestions = false;
         SponsoredSuggestions = false;
@@ -365,14 +269,6 @@
       };
       NoDefaultBookmarks = true;
       PasswordManagerEnabled = false; # Managed by KeePassXC
-      #PDFjs = {
-      #  Enabled = false; # Do not disable uild in in PDFs
-      #  EnablePermissions = false;
-      #};
-      PictureInPicture = {
-        Enabled = true;
-        Locked = true;
-      };
       PromptForDownloadLocation = true;
       /*
       Proxy = {
@@ -421,15 +317,15 @@
   };
 
   # Use this until Librewolf path is not fixed
-  home.file.".librewolf/native-messaging-hosts/org.keepassxc.keepassxc_browser.json".text = ''
-    {
-        "name": "org.keepassxc.keepassxc_browser",
-        "description": "KeePassXC integration with native messaging support",
-        "path": "${pkgs.keepassxc}/bin/keepassxc-proxy",
-        "type": "stdio",
-        "allowed_extensions": [
-            "keepassxc-browser@keepassxc.org"
-        ]
-    }
-  '';
+  #home.file.".librewolf/native-messaging-hosts/org.keepassxc.keepassxc_browser.json".text = ''
+  #  {
+  #      "name": "org.keepassxc.keepassxc_browser",
+  #      "description": "KeePassXC integration with native messaging support",
+  #      "path": "${pkgs.keepassxc}/bin/keepassxc-proxy",
+  #      "type": "stdio",
+  #      "allowed_extensions": [
+  #          "keepassxc-browser@keepassxc.org"
+  #      ]
+  #  }
+  #'';
 }

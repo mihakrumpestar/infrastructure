@@ -32,7 +32,7 @@ with lib; {
             type = "gpt";
             partitions = {
               ESP = {
-                size = "512M";
+                size = "2G";
                 type = "EF00"; # EFI System Partition
                 content = {
                   type = "filesystem";
@@ -67,7 +67,7 @@ with lib; {
                   };
                 };
               in
-                if config.my.disks.encryptRoot
+                if (config.my.disks.encryptRoot != false)
                 then {
                   size = "100%";
                   content = {
@@ -81,16 +81,17 @@ with lib; {
                         # Docs: https://nixos.org/manual/nixos/stable/#sec-luks-file-systems-fido2-systemd
                         #
                         # systemd-cryptenroll --fido2-device=list
-                        # Check current keys: sudo systemd-cryptenroll /dev/nvme0n1p2
+                        # Check current keys: systemd-cryptenroll /dev/nvme0n1p2
                         # Set FIDO2 key: systemd-cryptenroll --fido2-device=auto --fido2-with-client-pin=no --fido2-with-user-presence=yes /dev/vda2 # --wipe-slot=0 or --wipe-slot=all
-                        # List slots: sudo cryptsetup luksDump /dev/nvme0n1p2
-                        # Remove key: sudo cryptsetup luksRemoveKey /dev/vda2 # Here you enter the password that will be deleted
+                        # List slots: cryptsetup luksDump /dev/nvme0n1p2
+                        # Remove key: cryptsetup luksRemoveKey /dev/vda2 # Here you enter the password that will be deleted
                         #
-                        # sudo systemd-cryptenroll --unlock-fido2-device=/dev/hidraw1 --fido2-device=/dev/hidraw1 --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
+                        # systemd-cryptenroll --unlock-fido2-device=/dev/hidraw1 --fido2-device=/dev/hidraw1 --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
                         else if config.my.disks.encryptRoot == "tpm2"
                         then ["tpm2-device=auto"]
                         # systemd-cryptenroll --tpm2-device=list
                         # systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=no --wipe-slot=all /dev/vda2
+                        # Test: systemd-cryptsetup attach mapping_name /dev/nvme0n1p2 none tpm2-device=auto
                         else [];
                     };
                     content = disk_content;
@@ -106,7 +107,7 @@ with lib; {
       };
     };
 
-    boot.initrd.systemd = mkIf config.my.disks.encryptRoot {
+    boot.initrd.systemd = mkIf (config.my.disks.encryptRoot != false) {
       enable = true;
       fido2.enable = config.my.disks.encryptRoot == "fido2";
       tpm2.enable = config.my.disks.encryptRoot == "tpm2";

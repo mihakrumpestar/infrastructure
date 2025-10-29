@@ -179,4 +179,10 @@
       WantedBy = ["graphical-session.target"];
     };
   };
+
+  home.file.".docker/config.json".text = ''
+    {
+      "credsStore": "secretservice"
+    }
+  '';
 }

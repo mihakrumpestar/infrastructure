@@ -4,7 +4,9 @@
   lib,
   ...
 }:
-with lib; {
+with lib; let
+  store-secrets = config.my.store-secrets.secrets;
+in {
   imports = [
     ./boot.nix
     ./console.nix
@@ -85,7 +87,7 @@ with lib; {
         {
           root = {
             openssh.authorizedKeys.keys = [
-              config.my.store-secrets.secrets."ssh_authorized_keys".${config.my.hostType}
+              store-secrets."ssh_authorized_keys".${config.my.hostType}
             ];
           };
         }
@@ -102,7 +104,7 @@ with lib; {
               "kvm"
               "tss"
             ];
-            hashedPasswordFile = config.my.store-secrets.secrets."admin_hashedPassword"; # Generate using: mkpasswd
+            hashedPasswordFile = store-secrets."admin_hashedPassword"; # Generate using: mkpasswd
             openssh.authorizedKeys.keys = [];
           };
         })
