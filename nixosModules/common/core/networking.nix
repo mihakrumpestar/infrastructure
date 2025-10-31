@@ -123,10 +123,7 @@ with lib; {
     };
 
     age.secrets.homeWifi = mkIf config.my.networking.homeWifi.enable {
-      file =
-        if config.my.hostSubType == "kiosk"
-        then /${vars.secretsDir}/secrets/users/homeWifiKiosk.nmconnection.age
-        else /${vars.secretsDir}/secrets/users/homeWifi.nmconnection.age;
+      file = /${vars.secretsDir}/secrets/users/homeWifi.nmconnection.age;
       path = "/etc/NetworkManager/system-connections/homeWifi.nmconnection";
     };
   };

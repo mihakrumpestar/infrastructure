@@ -2,7 +2,7 @@
   my = {
     disks = {
       bootDisk = "/dev/nvme0n1";
-      swapSize = "12G";
+      swapSize = "16G";
       encryptRoot = "fido2";
     };
 

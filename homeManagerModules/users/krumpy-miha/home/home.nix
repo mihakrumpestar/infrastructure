@@ -7,7 +7,7 @@
     usbutils # USB utility info
     udisks2 # CMD: udisksctl
     udiskie # A user-level daemon for auto-mounting
-    glxinfo # Check GPU drivers
+    mesa-demos # Check GPU drivers
     drill
     dig
     cloc

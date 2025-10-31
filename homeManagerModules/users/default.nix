@@ -41,6 +41,9 @@ in {
           linger = true; # Make sure user services are started on boot
           # initialHashedPassword = "something"; # Generate using: mkpasswd
           # Remove password: passwd -d username
+          openssh.authorizedKeys.keys = [
+            config.my.store-secrets.secrets."ssh_authorized_keys".${config.my.hostType} # Allow admin to login as any user
+          ];
           extraGroups = [
             "networkmanager"
           ];

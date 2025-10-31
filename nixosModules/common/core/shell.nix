@@ -11,13 +11,13 @@
     dejavu_fonts
     noto-fonts
     noto-fonts-cjk-sans
-    noto-fonts-emoji
+    noto-fonts-color-emoji
     font-awesome
     hack-font
     liberation_ttf
     roboto
     roboto-mono
-    ubuntu_font_family
+    ubuntu-classic
     fira-code
     fira-code-symbols
     mplus-outline-fonts.githubRelease
@@ -25,6 +25,10 @@
     proggyfonts
     xorg.fontadobe75dpi
     xorg.fontadobe100dpi
+  ];
+
+  nixpkgs.config.permittedInsecurePackages = [
+    "python3.13-ecdsa-0.19.1"
   ];
 
   programs.starship = {
