@@ -7,9 +7,18 @@ import subprocess
 import http.server
 import socketserver
 import json
+import sys
 
 
 class BrightnessHandler(http.server.BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        # Suppress logging for successful requests (2xx) and 404s, but show errors
+        # Only log if the format string contains error indicators or status codes >= 400
+        if any(keyword in str(format) for keyword in ["error", "Error", "ERROR"]) or (
+            len(args) > 0 and str(args[0]).isdigit() and int(args[0]) >= 400
+        ):
+            super().log_message(format, *args)
+
     def do_POST(self):
         if self.path == "/brightness":
             try:
@@ -103,12 +112,24 @@ class BrightnessHandler(http.server.BaseHTTPRequestHandler):
 
 def main():
     PORT = 8080
-    with socketserver.TCPServer(("", PORT), BrightnessHandler) as httpd:
-        print(f"Brightness server running on port {PORT}")
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\nShutting down...")
+    try:
+        # Create server with socket reuse option to avoid "Address already in use" errors
+        with socketserver.TCPServer(("", PORT), BrightnessHandler) as httpd:
+            httpd.allow_reuse_address = True
+            print(f"Brightness server running on port {PORT}")
+            try:
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                print("\nShutting down...")
+                httpd.server_close()
+    except OSError as e:
+        if e.errno == 98:  # Address already in use
+            print(
+                f"Error: Port {PORT} is already in use. Is the server already running?"
+            )
+            sys.exit(1)
+        else:
+            raise
 
 
 if __name__ == "__main__":
