@@ -8,7 +8,6 @@ with lib; let
   store-secrets = config.my.store-secrets.secrets;
 in {
   imports = [
-    ./boot.nix
     ./console.nix
     ./disks.nix
     ./networking.nix
@@ -32,6 +31,50 @@ in {
   };
 
   config = {
+    boot = {
+      kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+
+      kernelModules =
+        if config.hardware.cpu.amd.updateMicrocode
+        then ["msr"] # Required for zenstates
+        else [];
+
+      # Optimizations
+      kernel.sysctl = {
+        # https://www.cockroachlabs.com/docs/stable/recommended-production-settings
+        #"vm.swappiness" = 0; # Memory swapping required to be minimal by Cockroachdb
+      };
+    };
+
+    security = {
+      sudo = {
+        extraConfig = ''
+          Defaults  lecture="never"
+        '';
+        wheelNeedsPassword = config.my.hostType != "server";
+      };
+      polkit = {
+        enable = true;
+        # debug = true;
+        extraConfig = ''
+          /* Log authorization checks. */
+          polkit.addRule(function(action, subject) {
+            polkit.log("user " +  subject.user + " is attempting action " + action.id + " from PID " + subject.pid);
+          });
+        '';
+      };
+      # Optimizations
+      # https://www.cockroachlabs.com/docs/stable/recommended-production-settings
+      pam.loginLimits = [
+        {
+          domain = "*";
+          type = "-";
+          item = "nofile";
+          value = "unlimited";
+        } # High or unlimited no. of open files required by Cockroachdb, verify: ulimit -n
+      ];
+    };
+
     # System packages
     environment.systemPackages = with pkgs; [
       usbutils # For lsusb
@@ -111,28 +154,10 @@ in {
       ];
     };
 
-    security.sudo = {
-      extraConfig = ''
-        Defaults  lecture="never"
-      '';
-      wheelNeedsPassword = config.my.hostType != "server";
-    };
-
     nix.settings.trusted-users = [
       "root"
       "@wheel"
     ];
-
-    security.polkit = {
-      enable = true;
-      # debug = true;
-      extraConfig = ''
-        /* Log authorization checks. */
-        polkit.addRule(function(action, subject) {
-          polkit.log("user " +  subject.user + " is attempting action " + action.id + " from PID " + subject.pid);
-        });
-      '';
-    };
 
     # Timezone
     time.timeZone = "Europe/Ljubljana";

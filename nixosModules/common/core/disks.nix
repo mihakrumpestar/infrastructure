@@ -6,6 +6,11 @@
 with lib; {
   options.my = {
     disks = {
+      bootLoader = mkOption {
+        type = types.enum ["systemd-boot" "grub"];
+        default = "systemd-boot";
+        description = "Which boot loader to use";
+      };
       bootDisk = mkOption {
         type = types.str;
         description = "The device path of the boot disk";
@@ -31,8 +36,13 @@ with lib; {
           content = {
             type = "gpt";
             partitions = {
+              boot = mkIf (config.my.disks.bootLoader == "grub") {
+                size = "1M";
+                type = "EF02";
+                priority = 1;
+              };
               ESP = {
-                size = "2G";
+                size = "2G"; # Larger than normal EFI partition; default is 512M
                 type = "EF00"; # EFI System Partition
                 content = {
                   type = "filesystem";
@@ -107,10 +117,19 @@ with lib; {
       };
     };
 
-    boot.initrd.systemd = mkIf (config.my.disks.encryptRoot != false) {
-      enable = true;
-      fido2.enable = config.my.disks.encryptRoot == "fido2";
-      tpm2.enable = config.my.disks.encryptRoot == "tpm2";
+    boot = {
+      # Boot configuration
+      loader = {
+        systemd-boot.enable = config.my.disks.bootLoader == "systemd-boot";
+        grub.enable = config.my.disks.bootLoader == "grub";
+        efi.canTouchEfiVariables = true;
+      };
+
+      initrd.systemd = mkIf (config.my.disks.encryptRoot != false) {
+        enable = true;
+        fido2.enable = config.my.disks.encryptRoot == "fido2";
+        tpm2.enable = config.my.disks.encryptRoot == "tpm2";
+      };
     };
   };
 }

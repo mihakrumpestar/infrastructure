@@ -49,6 +49,12 @@
 
       # NixOS patch
       Environment = ["PATH=/run/wrappers/bin/:$PATH"];
+
+      # Restart settings
+      Restart = "on-failure";
+      RestartSec = "10s";
+      StartLimitBurst = 3;
+      StartLimitIntervalSec = "120s";
     };
   };
 in {

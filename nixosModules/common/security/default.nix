@@ -12,7 +12,5 @@ with lib; {
       enableAskPassword = true;
       askPassword = "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
     };
-
-    services.paretosecurity.enable = true;
   };
 }
