@@ -36,17 +36,13 @@
   };
 
   outputs = {nixpkgs, ...} @ attrs: let
-    system = "x86_64-linux";
-    inherit (nixpkgs) lib;
-    #pkgs = nixpkgs.legacyPackages.${system};
-
     vars = {
       secretsDir = ./infrastructure-secrets;
     };
 
     mkNixosConfiguration = {hostName}:
-      lib.nixosSystem {
-        inherit system;
+      nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs =
           {
             inherit vars;

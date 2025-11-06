@@ -232,7 +232,7 @@ in {
 
     Service = {
       Type = "oneshot";
-      ExecStart = "${zen-browser.packages."${pkgs.system}".default}/bin/zen-beta -kiosk ${store-secrets.dashboard}";
+      ExecStart = "${zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default}/bin/zen-beta -kiosk ${store-secrets.dashboard}";
     };
 
     Install = {

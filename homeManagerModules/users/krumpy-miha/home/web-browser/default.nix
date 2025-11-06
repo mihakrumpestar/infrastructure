@@ -15,7 +15,7 @@ in {
       #floorp-bin
     ]
     ++ [
-      zen-browser.packages."${system}".default
+      zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default
     ];
 
   # Docs:
