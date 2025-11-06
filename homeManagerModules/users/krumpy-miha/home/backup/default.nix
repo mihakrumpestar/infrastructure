@@ -23,6 +23,7 @@ with lib; {
 
       Service = {
         Type = "simple";
+        ExecStartPre = "${pkgs.coreutils}/bin/sleep 120";
         ExecStart = "${pkgs.backrest}/bin/backrest";
         Restart = "on-failure";
         RestartSec = "10s";
