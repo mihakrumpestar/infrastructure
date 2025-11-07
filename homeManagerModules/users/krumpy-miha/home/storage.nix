@@ -54,7 +54,7 @@
       Restart = "on-failure";
       RestartSec = "10s";
       StartLimitBurst = 3;
-      StartLimitIntervalSec = "120s";
+      StartLimitInterval = "120s";
     };
   };
 in {
@@ -69,7 +69,10 @@ in {
     };
   };
 
-  age.secrets."rclone_config".file = /${vars.secretsDir}/secrets/users/krumpy-miha/rclone.conf.age;
+  age.secrets."rclone_config" = {
+    file = /${vars.secretsDir}/secrets/users/krumpy-miha/rclone.conf.age;
+    path = "${config.xdg.configHome}/rclone/rclone.conf";
+  };
 
   # rclone listremotes
 
