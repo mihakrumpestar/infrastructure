@@ -327,8 +327,6 @@
           "colored-man-pages"
           "colorize"
           "command-not-found"
-          "docker"
-          "docker-compose"
           "emoji"
           "extract"
           "eza"

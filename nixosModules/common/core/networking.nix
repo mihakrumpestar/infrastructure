@@ -14,6 +14,12 @@ with lib; {
   };
 
   config = {
+    # Works only if NetworkManager is enabled
+    age.secrets.homeWifi = mkIf config.my.networking.homeWifi.enable {
+      file = /${vars.secretsDir}/secrets/users/homeWifi.nmconnection.age;
+      path = "/etc/NetworkManager/system-connections/homeWifi.nmconnection";
+    };
+
     # Check: ss -tulnp
     #services.resolved.extraConfig = mkIf config.my.server.enable ''
     #  DNSStubListener=no
@@ -22,9 +28,11 @@ with lib; {
     networking = {
       inherit hostName;
 
+      useDHCP = config.my.hostType == "client";
       networkmanager.enable = config.my.hostType == "client";
       firewall = {
-        enable = config.my.hostType != "server";
+        enable = true;
+        /**
         trustedInterfaces =
           if config.my.hostType == "server"
           then ["virbr0" "br0" "br1"]
@@ -56,12 +64,15 @@ with lib; {
           iifname { "vnet0", "vnet1", "vnet2", "vnet3", "vnet4" } accept
           oifname { "vnet0", "vnet1", "vnet2", "vnet3", "vnet4" } accept
         '';
+        */
       };
-      nftables.enable = true; # Warning: incompatible with regular Docker
+      nftables.enable = true;
     };
 
-    # https://nixos.wiki/wiki/Systemd-networkd
+    # https://wiki.nixos.org/wiki/Systemd/networkd
     # https://astro.github.io/microvm.nix/simple-network.html
+    # Test:
+    # networkctl
     systemd.network = mkIf (config.my.hostType == "server") {
       enable = true;
 
@@ -75,39 +86,32 @@ with lib; {
         };
       };
 
-      networks = {
+      networks = let
+        networkConfig = {
+          # Address = [ "10.0.0.66/16" ]; # Set in host/configuration.nix
+          Gateway = ["10.0.0.1"];
+          DNS = ["9.9.9.9" "1.1.1.1"];
+        };
+      in {
         # Bridge
         "40-br0" = {
           matchConfig.Name = "br0";
-          networkConfig = {
-            # Address = [ "10.0.0.66/16" ]; # Set in host/configuration.nix
-            Gateway = ["10.0.0.1"];
-            DNS = ["9.9.9.9" "1.1.1.1"];
-            #IPv4Forwarding = true;
-          };
+          inherit networkConfig;
           linkConfig.RequiredForOnline = "carrier";
         };
+
+        # Nics connected to bridge (main)
         "30-pcie0" = {
           matchConfig.Name = "pcie0";
           networkConfig.Bridge = "br0";
           linkConfig.RequiredForOnline = "enslaved";
         };
 
-        # Standalone NIC
+        # Build-in NIC
         "40-nic0" = {
           matchConfig.Name = "nic0";
-          networkConfig = {
-            # Address = [ "10.0.0.66/16" ]; # Set in host/configuration.nix
-            Gateway = ["10.0.0.1"];
-            DNS = ["9.9.9.9" "1.1.1.1"];
-          };
+          inherit networkConfig;
           linkConfig.RequiredForOnline = "routable";
-        };
-
-        # Make Docker work
-        "19-docker" = {
-          matchConfig.Name = "veth*";
-          linkConfig.Unmanaged = true;
         };
       };
     };
@@ -120,11 +124,6 @@ with lib; {
       # For macvlan
       "net.ipv4.conf.all.arp_filter" = true;
       "net.ipv4.conf.all.rp_filter" = true;
-    };
-
-    age.secrets.homeWifi = mkIf config.my.networking.homeWifi.enable {
-      file = /${vars.secretsDir}/secrets/users/homeWifi.nmconnection.age;
-      path = "/etc/NetworkManager/system-connections/homeWifi.nmconnection";
     };
   };
 }

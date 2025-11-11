@@ -173,12 +173,12 @@
               "default": true
             },
             {
-              "name": "debug",
-              "path": "/nix/store/h5r9901ms52cxfqvm4pb0d2y24ddc9vv-git-2.51.0-debug"
-            },
-            {
               "name": "doc",
               "path": "/nix/store/0dp21kpx7d2xh0y29y79wwggrhgnjks5-git-2.51.0-doc"
+            },
+            {
+              "name": "debug",
+              "path": "/nix/store/h5r9901ms52cxfqvm4pb0d2y24ddc9vv-git-2.51.0-debug"
             }
           ],
           "store_path": "/nix/store/1xrbd5mmc64lx3hwm07kq27f445rs4xh-git-2.51.0"
@@ -218,8 +218,8 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-11-05T16:44:39Z",
-      "resolved": "github:NixOS/nixpkgs/ffcdcf99d65c61956d882df249a9be53e5902ea5?lastModified=1762361079&narHash=sha256-lz718rr1BDpZBYk7%2BG8cE6wee3PiBUpn8aomG%2FvLLiY%3D"
+      "last_modified": "2025-11-08T12:28:21Z",
+      "resolved": "github:NixOS/nixpkgs/f6b44b2401525650256b977063dbcf830f762369?lastModified=1762604901&narHash=sha256-Pr2jpryIaQr9Yx8p6QssS03wqB6UifnnLr3HJw9veDw%3D"
     },
     "github:oddlama/agenix-rekey": {
       "last_modified": "2025-10-05T21:31:48Z",
@@ -274,8 +274,8 @@
       }
     },
     "nil@latest": {
-      "last_modified": "2025-10-22T20:59:19Z",
-      "resolved": "github:NixOS/nixpkgs/01b6809f7f9d1183a2b3e081f0a1e6f8f415cb09#nil",
+      "last_modified": "2025-11-04T19:54:02Z",
+      "resolved": "github:NixOS/nixpkgs/12c1f0253aa9a54fdf8ec8aecaafada64a111e24#nil",
       "source": "devbox-search",
       "version": "2025-06-13",
       "systems": {
@@ -293,11 +293,11 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/cvkqsmmagv0svhjkw63w9c3jklqm8dxy-nil-2025-06-13",
+              "path": "/nix/store/fkbrqfwlaw8r4rw3gjim5pr4xp6km85l-nil-2025-06-13",
               "default": true
             }
           ],
-          "store_path": "/nix/store/cvkqsmmagv0svhjkw63w9c3jklqm8dxy-nil-2025-06-13"
+          "store_path": "/nix/store/fkbrqfwlaw8r4rw3gjim5pr4xp6km85l-nil-2025-06-13"
         },
         "x86_64-darwin": {
           "outputs": [
@@ -313,17 +313,17 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/45xa6pkj4d8xwg18y3l711jcxrwh8qgh-nil-2025-06-13",
+              "path": "/nix/store/p60fylc1g8f6wxa8qjx9b3ixyjk4mrmp-nil-2025-06-13",
               "default": true
             }
           ],
-          "store_path": "/nix/store/45xa6pkj4d8xwg18y3l711jcxrwh8qgh-nil-2025-06-13"
+          "store_path": "/nix/store/p60fylc1g8f6wxa8qjx9b3ixyjk4mrmp-nil-2025-06-13"
         }
       }
     },
     "nixos-anywhere@latest": {
-      "last_modified": "2025-10-22T20:59:19Z",
-      "resolved": "github:NixOS/nixpkgs/01b6809f7f9d1183a2b3e081f0a1e6f8f415cb09#nixos-anywhere",
+      "last_modified": "2025-11-04T19:54:02Z",
+      "resolved": "github:NixOS/nixpkgs/12c1f0253aa9a54fdf8ec8aecaafada64a111e24#nixos-anywhere",
       "source": "devbox-search",
       "version": "1.12.0",
       "systems": {
@@ -341,11 +341,11 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/djprvish9sm5avb7zzjj4jrfkvl6dyzn-nixos-anywhere-1.12.0",
+              "path": "/nix/store/m3xbbirxsxjxjwd3rg1hpd2vpyhmcn08-nixos-anywhere-1.12.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/djprvish9sm5avb7zzjj4jrfkvl6dyzn-nixos-anywhere-1.12.0"
+          "store_path": "/nix/store/m3xbbirxsxjxjwd3rg1hpd2vpyhmcn08-nixos-anywhere-1.12.0"
         },
         "x86_64-darwin": {
           "outputs": [
@@ -361,11 +361,11 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/5dzxmnmjv56g1wihzba1yqqq0v85b2n6-nixos-anywhere-1.12.0",
+              "path": "/nix/store/flq7rxhkpkwi1zix6sz1xvb5zb6ljws2-nixos-anywhere-1.12.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/5dzxmnmjv56g1wihzba1yqqq0v85b2n6-nixos-anywhere-1.12.0"
+          "store_path": "/nix/store/flq7rxhkpkwi1zix6sz1xvb5zb6ljws2-nixos-anywhere-1.12.0"
         }
       }
     },

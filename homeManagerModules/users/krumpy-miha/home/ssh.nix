@@ -91,6 +91,14 @@ in {
         identitiesOnly = true;
       };
 
+      "server-01" = {
+        hostname = "server-01";
+        user = "root";
+        port = 22222;
+        identityFile = "~/.ssh/identities/homelab_servers.pub";
+        identitiesOnly = true;
+      };
+
       "server-03" = {
         hostname = "server-03";
         user = "root";

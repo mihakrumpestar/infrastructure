@@ -19,6 +19,7 @@
 
   my.home.mutableFile.".config/keepassxc/keepassxc.ini".source = ./keepassxc.ini;
 
+  # TODO: podman
   home.file.".docker/config.json".text = ''
     {
       "credsStore": "secretservice"

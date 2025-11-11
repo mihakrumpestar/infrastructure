@@ -142,7 +142,7 @@ in {
             linger = true;
             extraGroups = [
               "wheel" # Add to sudoers
-              "docker"
+              "podman"
               "libvirtd"
               "kvm"
               "tss"

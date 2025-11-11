@@ -118,18 +118,15 @@ with lib; {
     #  openFirewall = true;
     #};
 
-    # Enable Docker
-    virtualisation.docker = {
-      enable = true;
-      # /etc/docker/daemon.json
-      daemon.settings = {
-        # Images
-        "registry-mirrors" = ["https://mirror.gcr.io"];
-        # Logging
-        "log-driver" = "json-file";
-        "log-opts" = {
-          "labels-regex" = "^.+";
-        };
+    # Enable containers
+    virtualisation = {
+      containers = {
+        enable = true;
+        registries.search = ["mirror.gcr.io"];
+      };
+      podman = {
+        enable = true;
+        defaultNetwork.settings.dns_enabled = true; # Required for containers under podman-compose to be able to talk to each other.
       };
     };
 
@@ -137,15 +134,7 @@ with lib; {
     #environment.systemPackages = with pkgs; [
     #];
 
-    # IMPORTANT: Add required users to groups ["libvirtd" "docker"]
-
-    # Docker networks are unmanaged (managed by Docker not us)
-    systemd.network.networks = {
-      "19-docker" = {
-        matchConfig.Name = "veth*";
-        linkConfig.Unmanaged = true;
-      };
-    };
+    # IMPORTANT: Add required users to groups ["libvirtd" "podman"]
 
     # Libvirt networks are unmanaged
     systemd.network.networks = {

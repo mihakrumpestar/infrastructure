@@ -61,6 +61,9 @@
       personal-laptop = mkNixosConfiguration {
         hostName = "personal-laptop";
       };
+      server-01 = mkNixosConfiguration {
+        hostName = "server-01";
+      };
       server-03 = mkNixosConfiguration {
         hostName = "server-03";
       };
