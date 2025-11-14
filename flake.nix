@@ -33,20 +33,28 @@
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
+
+    consul-cni-flake.url = "./packages/consul-cni";
   };
 
-  outputs = {nixpkgs, ...} @ attrs: let
+  outputs = {
+    nixpkgs,
+    consul-cni-flake,
+    ...
+  } @ attrs: let
     vars = {
       secretsDir = ./infrastructure-secrets;
     };
 
     mkNixosConfiguration = {hostName}:
-      nixpkgs.lib.nixosSystem {
+      nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
         specialArgs =
           {
             inherit vars;
             inherit hostName;
+
+            inherit (consul-cni-flake.packages."${system}") consul-cni;
           }
           // attrs;
         modules = [

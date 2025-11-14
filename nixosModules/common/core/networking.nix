@@ -21,9 +21,9 @@ with lib; {
     };
 
     # Check: ss -tulnp
-    #services.resolved.extraConfig = mkIf config.my.server.enable ''
-    #  DNSStubListener=no
-    #''; # Prevent listening on port 53 which is needed for self hosted DNS server
+    services.resolved.extraConfig = mkIf (config.my.hostType == "server") ''
+      DNSStubListener=no
+    ''; # Prevent listening on port 53 which is needed for Consul
 
     networking = {
       inherit hostName;
@@ -32,7 +32,13 @@ with lib; {
       networkmanager.enable = config.my.hostType == "client";
       firewall = {
         enable = true;
-        /**
+        #interfaces = {
+        #  "nomad" = {
+        #    allowedTCPPorts = [53];
+        #    allowedUDPPorts = [53]; # Critical: Consul DNS uses UDP
+        #  };
+        #};
+        /*
         trustedInterfaces =
           if config.my.hostType == "server"
           then ["virbr0" "br0" "br1"]

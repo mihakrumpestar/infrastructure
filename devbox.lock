@@ -173,12 +173,12 @@
               "default": true
             },
             {
-              "name": "doc",
-              "path": "/nix/store/0dp21kpx7d2xh0y29y79wwggrhgnjks5-git-2.51.0-doc"
-            },
-            {
               "name": "debug",
               "path": "/nix/store/h5r9901ms52cxfqvm4pb0d2y24ddc9vv-git-2.51.0-debug"
+            },
+            {
+              "name": "doc",
+              "path": "/nix/store/0dp21kpx7d2xh0y29y79wwggrhgnjks5-git-2.51.0-doc"
             }
           ],
           "store_path": "/nix/store/1xrbd5mmc64lx3hwm07kq27f445rs4xh-git-2.51.0"
@@ -218,8 +218,8 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-11-08T12:28:21Z",
-      "resolved": "github:NixOS/nixpkgs/f6b44b2401525650256b977063dbcf830f762369?lastModified=1762604901&narHash=sha256-Pr2jpryIaQr9Yx8p6QssS03wqB6UifnnLr3HJw9veDw%3D"
+      "last_modified": "2025-11-12T10:38:40Z",
+      "resolved": "github:NixOS/nixpkgs/91c9a64ce2a84e648d0cf9671274bb9c2fb9ba60?lastModified=1762943920&narHash=sha256-ITeH8GBpQTw9457ICZBddQEBjlXMmilML067q0e6vqY%3D"
     },
     "github:oddlama/agenix-rekey": {
       "last_modified": "2025-10-05T21:31:48Z",
