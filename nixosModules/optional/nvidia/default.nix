@@ -4,8 +4,9 @@
   ...
 }:
 with lib; let
-  cfg = config.my.services.virtualhere;
+  cfg = config.my.hardware.nvidia;
 
+  # Nvidia Tesla P40 support
   package_ver = config.boot.kernelPackages.nvidiaPackages.mkDriver rec {
     version = "580.105.08";
     url = "https://us.download.nvidia.com/tesla/${version}/NVIDIA-Linux-x86_64-${version}.run";
@@ -22,11 +23,10 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Nvidia Tesla P40 support
     hardware = {
-      #graphics.enable = true;
+      graphics.enable = true;
       nvidia.datacenter.enable = true;
-      nvidia.package = package_ver; # config.boot.kernelPackages.nvidiaPackages.dc_535;
+      nvidia.package = package_ver; # Or config.boot.kernelPackages.nvidiaPackages.dc_570;
 
       nvidia-container-toolkit.enable = true; # Verify: podman run --rm --device nvidia.com/gpu=all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
     };
