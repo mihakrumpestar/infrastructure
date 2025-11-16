@@ -1,5 +1,6 @@
 {
   config,
+  pkgs,
   nixvirt,
   lib,
   ...
@@ -123,6 +124,7 @@ with lib; {
       containers = {
         enable = true;
         registries.search = ["mirror.gcr.io"];
+        registries.insecure = ["10.0.30.10:30010"];
       };
       podman = {
         enable = true;
@@ -130,9 +132,9 @@ with lib; {
       };
     };
 
-    # Add the packages to the system environment
-    #environment.systemPackages = with pkgs; [
-    #];
+    environment.systemPackages = with pkgs; [
+      buildah # Tool to build container images
+    ];
 
     # IMPORTANT: Add required users to groups ["libvirtd" "podman"]
 

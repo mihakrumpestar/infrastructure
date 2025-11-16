@@ -28,7 +28,8 @@ with lib; {
     networking = {
       inherit hostName;
 
-      useDHCP = config.my.hostType == "client";
+      useDHCP = false;
+
       networkmanager.enable = config.my.hostType == "client";
       firewall = {
         enable = true;

@@ -218,8 +218,8 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-11-12T10:38:40Z",
-      "resolved": "github:NixOS/nixpkgs/91c9a64ce2a84e648d0cf9671274bb9c2fb9ba60?lastModified=1762943920&narHash=sha256-ITeH8GBpQTw9457ICZBddQEBjlXMmilML067q0e6vqY%3D"
+      "last_modified": "2025-11-15T07:28:48Z",
+      "resolved": "github:NixOS/nixpkgs/1d4c88323ac36805d09657d13a5273aea1b34f0c?lastModified=1763191728&narHash=sha256-esRhOS0APE6k40Hs%2FjjReXg%2Brx%2BJ5LkWw7cuWFKlwYA%3D"
     },
     "github:oddlama/agenix-rekey": {
       "last_modified": "2025-10-05T21:31:48Z",
