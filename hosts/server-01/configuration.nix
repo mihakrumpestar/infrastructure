@@ -1,6 +1,7 @@
 {
   pkgs,
   consul-cni,
+  vars,
   ...
 }: let
   nodeIPAddress = "10.0.30.10";
@@ -96,6 +97,9 @@ in {
       extraConfig = {
         server = true;
         datacenter = "dc1";
+
+        log_level = "warn"; # "trace", "debug", "info", "warn", and "error".
+
         bootstrap_expect = 1; # Will change to 3 for 3-node cluster
         bind_addr = "0.0.0.0"; # Internal
         client_addr = "${nodeIPAddress} 127.0.0.1"; # Connectable IP
@@ -126,6 +130,8 @@ in {
         datacenter = "dc1";
         bind_addr = "0.0.0.0";
 
+        log_level = "WARN"; # WARN, INFO, DEBUG, or TRACE
+
         # Explicitly advertise reachable addresses to other nodes
         advertise = {
           http = "${nodeIPAddress}:4646";
@@ -143,6 +149,9 @@ in {
           cni_path = "${pkgs.cni-plugins}/bin:${consul-cni}/bin"; # This is by default hardcoded, so in NixOS it does not work, this is a workaround
           # For single node, only itself. For 3-node, list ALL server IPs
           servers = ["${nodeIPAddress}:4647"];
+          meta = {
+            NOMAD_CLIENT_IP = nodeIPAddress;
+          };
         };
 
         # Consul Integration
@@ -161,6 +170,9 @@ in {
             nomad-driver-podman = {
               # Needs to be present to be enabled ("nomad-driver-podman")
               config = {
+                auth = {
+                  config = "/etc/containers/auth.json";
+                };
                 socket_path = "unix:///run/podman/podman.sock";
               };
             };
@@ -168,5 +180,10 @@ in {
         ];
       };
     };
+  };
+
+  age.secrets.containers_auth_json = {
+    file = /${vars.secretsDir}/secrets/users/containers_auth.json.age;
+    path = "/etc/containers/auth.json";
   };
 }
