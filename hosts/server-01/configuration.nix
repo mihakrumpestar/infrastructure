@@ -107,7 +107,7 @@ in {
         ports = {
           dns = 53; # Default is 8600
           http = 8500;
-          grpc = 8502;
+          grpc = 8502; # Has to be enabled for Consul Connect service mesh
         };
 
         connect = {
