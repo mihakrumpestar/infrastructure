@@ -125,10 +125,17 @@ with lib; {
         enable = true;
         registries.search = ["mirror.gcr.io"];
         registries.insecure = ["10.0.30.10:30010"];
+        containersConf.settings = mkIf (config.my.hostType == "server") {
+          containers = {
+            dns_servers = ["172.26.64.1"];
+          };
+        };
       };
       podman = {
         enable = true;
-        defaultNetwork.settings.dns_enabled = true; # Required for containers under podman-compose to be able to talk to each other.
+        defaultNetwork.settings = {
+          dns_enabled = true; # Required for containers under podman-compose to be able to talk to each other.
+        };
       };
     };
 

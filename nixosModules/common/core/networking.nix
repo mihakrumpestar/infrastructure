@@ -22,8 +22,12 @@ with lib; {
 
     # Check: ss -tulnp
     services.resolved.extraConfig = mkIf (config.my.hostType == "server") ''
-      DNSStubListener=no
-    ''; # Prevent listening on port 53 which is needed for Consul
+      DNSStubListener=yes
+      DNSStubListenerExtra=172.26.64.1
+      DNS=127.0.0.1:8600
+      Domains=~consul
+      DNSSEC=false
+    '';
 
     networking = {
       inherit hostName;
@@ -33,45 +37,6 @@ with lib; {
       networkmanager.enable = config.my.hostType == "client";
       firewall = {
         enable = true;
-        #interfaces = {
-        #  "nomad" = {
-        #    allowedTCPPorts = [53];
-        #    allowedUDPPorts = [53]; # Critical: Consul DNS uses UDP
-        #  };
-        #};
-        /*
-        trustedInterfaces =
-          if config.my.hostType == "server"
-          then ["virbr0" "br0" "br1"]
-          else [];
-        # TODO: not working
-        extraInputRules = ''
-          # Allow incoming traffic on our bridge interfaces.
-          iifname "br0" accept
-          iifname "br1" accept
-          iifname "virbr0" accept
-
-          # Allow traffic on any interface starting with "vnet"
-          #iifname ~ "^vnet" accept
-          iifname { "vnet0", "vnet1", "vnet2", "vnet3", "vnet4" } accept
-        '';
-
-        extraForwardRules = ''
-          # Allow forwarding for traffic coming from or going to the bridge interfaces.
-          iifname "br0" accept
-          oifname "br0" accept
-          iifname "br1" accept
-          oifname "br1" accept
-          iifname "virbr0" accept
-          oifname "virbr0" accept
-
-          # Allow forwarded traffic on any interface starting with "vnet"
-          #iifname ~ "^vnet" accept
-          #oifname ~ "^vnet" accept
-          iifname { "vnet0", "vnet1", "vnet2", "vnet3", "vnet4" } accept
-          oifname { "vnet0", "vnet1", "vnet2", "vnet3", "vnet4" } accept
-        '';
-        */
       };
       nftables.enable = true;
     };

@@ -74,14 +74,10 @@ in {
 
   networking = {
     firewall = {
-      # Allow containers in Nomad reach system Consul DNS
-      extraForwardRules = ''
-        iifname "nomad" oifname "br0" tcp dport 53 accept
-        iifname "nomad" oifname "br0" udp dport 53 accept
-      '';
+      # Allow containers in "nomad" network reach gateway DNS
       extraInputRules = ''
-        iifname "nomad" tcp dport 53 accept
-        iifname "nomad" udp dport 53 accept
+        iifname "nomad" ip daddr 172.26.64.1 tcp dport 53 accept
+        iifname "nomad" ip daddr 172.26.64.1 udp dport 53 accept
       '';
     };
   };
@@ -105,7 +101,7 @@ in {
         client_addr = "${nodeIPAddress} 127.0.0.1"; # Connectable IP
         advertise_addr = nodeIPAddress;
         ports = {
-          dns = 53; # Default is 8600
+          dns = 8600;
           http = 8500;
           grpc = 8502; # Has to be enabled for Consul Connect service mesh
         };
