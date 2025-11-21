@@ -22,7 +22,7 @@ with lib; {
 
     # Check: ss -tulnp
     services.resolved.extraConfig = mkIf (config.my.hostType == "server") ''
-      DNSStubListener=yes
+      DNSStubListener=no
       DNSStubListenerExtra=172.26.64.1
       DNS=127.0.0.1:8600
       Domains=~consul

@@ -50,8 +50,8 @@ in {
   };
 
   networking.firewall = {
-    allowedTCPPorts = [443 4646 8500]; # UIs
-    allowedUDPPorts = [443 4646 8500]; # UIs
+    allowedTCPPorts = [53 443 4646 8500]; # DNS and UIs
+    allowedUDPPorts = [53 443 4646 8500]; # DNS and UIs
     # Nomad dynamic ports
     allowedTCPPortRanges = [
       {
