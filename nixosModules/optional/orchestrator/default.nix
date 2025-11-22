@@ -163,7 +163,7 @@ in {
       enable = true;
       config = ''
         .:53 {
-          bind 10.0.30.10
+          bind ${cfg.nodeIPAddress} 127.0.0.1
 
           forward . ${cfg.nodeIPAddress}:5353 9.9.9.9 1.1.1.1 {
             policy sequential

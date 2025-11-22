@@ -95,6 +95,9 @@ with lib; {
 
       # Enable local routing
       "net.ipv4.conf.all.route_localnet" = true;
+
+      # Optimistic memory allocation (eg. for Redis, Valkey)
+      "vm.overcommit_memory" = 1;
     };
   };
 }
