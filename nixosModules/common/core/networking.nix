@@ -98,6 +98,10 @@ with lib; {
 
       # Optimistic memory allocation (eg. for Redis, Valkey)
       "vm.overcommit_memory" = 1;
+
+      # Caddy quic: https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+      "net.core.rmem_max" = 7500000;
+      "net.core.wmem_max" = 7500000;
     };
   };
 }

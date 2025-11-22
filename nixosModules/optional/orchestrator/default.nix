@@ -119,6 +119,7 @@ in {
           client = {
             enabled = true;
             cni_path = "${pkgs.cni-plugins}/bin:${consul-cni}/bin"; # This is by default hardcoded, so in NixOS it does not work, this is a workaround
+            cni_config_dir = "/etc/cni/config"; # Default is /opt/cni/config
             # For single node, only itself. For 3-node, list ALL server IPs
             servers = ["${cfg.nodeIPAddress}:4647"];
             meta = {
@@ -158,6 +159,40 @@ in {
       file = /${vars.secretsDir}/secrets/users/containers_auth.json.age;
       path = "/etc/containers/auth.json";
     };
+
+    # TODO: In testing
+    environment.etc."cni/config/lan.conflist".text = ''
+      {
+        "cniVersion": "0.4.0",
+        "name": "lan",
+        "plugins": [
+          {
+            "type": "loopback"
+          },
+          {
+            "type": "bridge",
+            "bridge": "br0",
+            "isGateway": false,
+            "ipMasq": false,
+            "hairpinMode": false,
+            "ipam": {
+              "type": "host-local",
+              "routes": [{ "dst": "0.0.0.0/0" }],
+              "ranges": [
+                [
+                  {
+                    "subnet": "10.0.0.0/16",
+                    "rangeStart": "10.0.30.200",
+                    "rangeEnd": "10.0.30.254",
+                    "gateway": "10.0.0.1"
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    '';
 
     services.coredns = {
       enable = true;
