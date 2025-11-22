@@ -86,7 +86,7 @@ with lib; {
 
     boot.kernel.sysctl = {
       # Enable IP forwarding for tailscale, kubernetes, and VMs
-      "net.ipv4.ip_forward" = true; #  Verify: cat /proc/sys/net/ipv4/ip_forward
+      "net.ipv4.ip_forward" = true; #  Verify: "cat /proc/sys/net/ipv4/ip_forward" or "sysctl net.ipv4.ip_forward"
       "net.ipv6.conf.all.forwarding" = true;
 
       # For macvlan
