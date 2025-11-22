@@ -21,12 +21,8 @@ with lib; {
     };
 
     # Check: ss -tulnp
-    services.resolved.extraConfig = mkIf (config.my.hostType == "server") ''
+    services.resolved.extraConfig = ''
       DNSStubListener=no
-      DNSStubListenerExtra=172.26.64.1
-      DNS=127.0.0.1:8600
-      Domains=~consul
-      DNSSEC=false
     '';
 
     networking = {
@@ -96,6 +92,9 @@ with lib; {
       # For macvlan
       "net.ipv4.conf.all.arp_filter" = true;
       "net.ipv4.conf.all.rp_filter" = true;
+
+      # Enable local routing
+      "net.ipv4.conf.all.route_localnet" = true;
     };
   };
 }
