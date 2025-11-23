@@ -118,12 +118,34 @@ in {
 
           client = {
             enabled = true;
+            network_interface = "br0";
+
+            #network_interface = "lo";
+            #host_network = [
+            #  {
+            #    "default" = {
+            #      interface = "lo";
+            #    };
+            #  }
+            #  {
+            #    "lo" = {
+            #      interface = "lo";
+            #    };
+            #  }
+            #  {
+            #    "public" = {
+            #      interface = "br0";
+            #    };
+            #  }
+            #];
+
+            reserved.reserved_ports = "22222"; # SSH
+
             cni_path = "${pkgs.cni-plugins}/bin:${consul-cni}/bin"; # This is by default hardcoded, so in NixOS it does not work, this is a workaround
             cni_config_dir = "/etc/cni/config"; # Default is /opt/cni/config
-            # For single node, only itself. For 3-node, list ALL server IPs
-            servers = ["${cfg.nodeIPAddress}:4647"];
+            servers = ["${cfg.nodeIPAddress}:4647"]; # For single node, only itself. For 3-node, list ALL server IPs
             meta = {
-              NOMAD_CLIENT_IP = cfg.nodeIPAddress;
+              #NOMAD_CLIENT_IP = cfg.nodeIPAddress;
             };
           };
 
@@ -136,6 +158,14 @@ in {
             auto_advertise = true;
             server_auto_join = true;
             client_auto_join = true;
+          };
+
+          telemetry = {
+            collection_interval = "1s";
+            disable_hostname = true;
+            prometheus_metrics = true;
+            publish_allocation_metrics = true;
+            publish_node_metrics = true;
           };
 
           plugin = [
