@@ -21,8 +21,8 @@ in {
 
   config = mkIf cfg.enable {
     networking.firewall = {
-      allowedTCPPorts = [443 4646 8500]; # UIs
-      allowedUDPPorts = [443 4646 8500]; # UIs
+      allowedTCPPorts = [53 443 4646 8500]; # UIs
+      allowedUDPPorts = [53 443 4646 8500]; # UIs
       # Nomad dynamic ports
       #allowedTCPPortRanges = [
       #  {
@@ -231,7 +231,9 @@ in {
           bind ${cfg.nodeIPAddress} 127.0.0.1
 
           forward . ${cfg.nodeIPAddress}:5353 9.9.9.9 1.1.1.1 {
+            force_tcp
             policy sequential
+            failfast_all_unhealthy_upstreams
             failover SERVFAIL REFUSED
           }
 
@@ -251,6 +253,9 @@ in {
     };
 
     systemd.services.coredns = {
+      startLimitIntervalSec = 120;
+      startLimitBurst = 30;
+
       # default "network.target" is not good enough
       after = lib.mkForce [
         "network-online.target"
@@ -262,8 +267,6 @@ in {
       ];
       serviceConfig = {
         RestartSec = "5s"; # Give Nomad time to create IP (takes about 13 seconds)
-        StartLimitIntervalSec = 120;
-        StartLimitBurst = 30; # Allow many retries initially
       };
     };
   };
