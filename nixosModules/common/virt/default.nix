@@ -139,8 +139,20 @@ with lib; {
       };
     };
 
+    systemd.services.podman.environment = {
+      LOGGING = lib.mkForce "--log-level=warn"; # debug, info, warn, error, fatal or panic (default: warn, but Nixos option set it to info)
+    };
+
     environment.systemPackages = with pkgs; [
       buildah # Tool to build container images
+
+      (writeShellApplication {
+        name = "lazypodman";
+        runtimeInputs = [
+          lazydocker
+        ];
+        text = ''DOCKER_HOST=unix:///run/podman/podman.sock lazydocker "$@"'';
+      })
     ];
 
     # IMPORTANT: Add required users to groups ["libvirtd" "podman"]

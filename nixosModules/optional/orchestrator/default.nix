@@ -21,8 +21,8 @@ in {
 
   config = mkIf cfg.enable {
     networking.firewall = {
-      allowedTCPPorts = [53 443 4646 8500]; # UIs
-      allowedUDPPorts = [53 443 4646 8500]; # UIs
+      allowedTCPPorts = [53 443 4646 8500]; # DNS, UIs
+      allowedUDPPorts = [53 443 4646 8500]; # DNS, UIs
       # Nomad dynamic ports
       #allowedTCPPortRanges = [
       #  {
@@ -38,8 +38,8 @@ in {
       #];
 
       interfaces.br0 = {
-        allowedTCPPorts = [53 5353]; # DNS
-        allowedUDPPorts = [53 5353]; # DNS
+        allowedTCPPorts = [5353 30010]; # DNS
+        allowedUDPPorts = [5353 30010]; # DNS
       };
     };
 
@@ -86,7 +86,11 @@ in {
             enabled = true; # Enable Consul Connect service mesh
           };
 
-          recursors = ["9.9.9.9" "1.1.1.1"];
+          recursors = ["127.0.0.1"];
+
+          limits = {
+            http_max_conns_per_client = 10000; # Default is 200 and we start getting: "Missing: health.service..."
+          };
         };
       };
 
@@ -176,6 +180,7 @@ in {
                   auth = {
                     config = "/etc/containers/auth.json";
                   };
+                  extra_labels = ["job_name" "job_id" "task_group_name" "task_name" "namespace" "node_name" "node_id"];
                   socket_path = "unix:///run/podman/podman.sock";
                 };
               };

@@ -1,4 +1,4 @@
-{
+{lib, ...}: {
   my = {
     disks = {
       bootDisk = "/dev/nvme0n1";
@@ -13,6 +13,12 @@
     de.plasma.enable = true;
 
     users = ["krumpy-miha"];
+  };
+
+  nix = {
+    gc = {
+      automatic = lib.mkForce false; # Disable, since this is our builder
+    };
   };
 
   home-manager.users."krumpy-miha" = {
