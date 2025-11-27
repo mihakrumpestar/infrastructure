@@ -121,38 +121,25 @@ with lib; {
 
     # Enable containers
     virtualisation = {
-      containers = {
+      docker = {
         enable = true;
-        registries.search = ["mirror.gcr.io"];
-        registries.insecure = ["10.0.30.10:30010"];
-        containersConf.settings = mkIf (config.my.hostType == "server") {
-          containers = {
-            dns_servers = ["172.26.64.1"];
+        daemon = {
+          settings = mkIf (config.my.hostType == "server") {
+            log-level = "warn"; # "debug"|"info"|"warn"|"error"|"fatal" (default "info")
+            registry-mirrors = ["https://mirror.gcr.io"];
+            insecure-registries = ["10.0.30.10:30010"];
+            #dns = ["172.26.64.1"]; # Docker driver dns options are not compatible with task dns options
           };
         };
       };
-      podman = {
-        enable = true;
-        defaultNetwork.settings = {
-          dns_enabled = true; # Required for containers under podman-compose to be able to talk to each other.
-        };
-      };
     };
 
-    systemd.services.podman.environment = {
-      LOGGING = lib.mkForce "--log-level=warn"; # debug, info, warn, error, fatal or panic (default: warn, but Nixos option set it to info)
-    };
+    #systemd.services.podman.environment = {
+    #  LOGGING = lib.mkForce "--log-level=warn"; # debug, info, warn, error, fatal or panic (default: warn, but Nixos option set it to info)
+    #};
 
     environment.systemPackages = with pkgs; [
       buildah # Tool to build container images
-
-      (writeShellApplication {
-        name = "lazypodman";
-        runtimeInputs = [
-          lazydocker
-        ];
-        text = ''DOCKER_HOST=unix:///run/podman/podman.sock lazydocker "$@"'';
-      })
     ];
 
     # IMPORTANT: Add required users to groups ["libvirtd" "podman"]

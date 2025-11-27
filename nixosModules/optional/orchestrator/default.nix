@@ -38,22 +38,17 @@ in {
       #];
 
       interfaces.br0 = {
-        allowedTCPPorts = [5353 30010]; # DNS
-        allowedUDPPorts = [5353 30010]; # DNS
+        allowedTCPPorts = [30010]; # Registry
+        allowedUDPPorts = [30010]; # Registry
       };
-    };
-
-    systemd.services.consul.serviceConfig = {
-      AmbientCapabilities = "CAP_NET_BIND_SERVICE";
-      CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
     };
 
     networking = {
       firewall = {
-        # Allow containers in "nomad" network reach gateway DNS for Consul
+        # Don't know why connections to Consul DNS appear as they are from Nomad interface, even tho we use CoreDNS
         extraInputRules = ''
-          iifname "nomad" ip daddr 172.26.64.1 tcp dport 53 accept
-          iifname "nomad" ip daddr 172.26.64.1 udp dport 53 accept
+          iifname "nomad" ip daddr ${cfg.nodeIPAddress} tcp dport 8600 accept
+          iifname "nomad" ip daddr ${cfg.nodeIPAddress} udp dport 8600 accept
         '';
       };
     };
@@ -86,7 +81,7 @@ in {
             enabled = true; # Enable Consul Connect service mesh
           };
 
-          recursors = ["127.0.0.1"];
+          recursors = ["127.0.0.1"]; # Redirects to Blocky in Nomad, othervise to regular DNS
 
           limits = {
             http_max_conns_per_client = 10000; # Default is 200 and we start getting: "Missing: health.service..."
@@ -98,8 +93,6 @@ in {
       nomad = {
         enable = true;
         extraPackages = with pkgs; [consul dmidecode];
-        extraSettingsPlugins = with pkgs; [nomad-driver-podman];
-        enableDocker = false;
         dropPrivileges = false; # Required for Podman driver
 
         settings = {
@@ -124,24 +117,23 @@ in {
             enabled = true;
             network_interface = "br0";
 
-            #network_interface = "lo";
-            #host_network = [
-            #  {
-            #    "default" = {
-            #      interface = "lo";
-            #    };
-            #  }
-            #  {
-            #    "lo" = {
-            #      interface = "lo";
-            #    };
-            #  }
-            #  {
-            #    "public" = {
-            #      interface = "br0";
-            #    };
-            #  }
-            #];
+            host_network = [
+              {
+                "default" = {
+                  interface = "br0";
+                };
+              }
+              {
+                "lo" = {
+                  interface = "lo";
+                };
+              }
+              {
+                "public" = {
+                  interface = "br0";
+                };
+              }
+            ];
 
             reserved.reserved_ports = "22222"; # SSH
 
@@ -174,14 +166,47 @@ in {
 
           plugin = [
             {
-              nomad-driver-podman = {
-                # Needs to be present to be enabled ("nomad-driver-podman")
+              docker = {
                 config = {
+                  allow_privileged = true;
+                  allow_caps = [
+                    "audit_write"
+                    "chown"
+                    "dac_override"
+                    "fowner"
+                    "fsetid"
+                    "kill"
+                    "mknod"
+                    "net_bind_service"
+                    "setfcap"
+                    "setgid"
+                    "setpcap"
+                    "setuid"
+                    "sys_chroot"
+                    # Added to default
+                    "net_raw"
+                    "sys_time"
+                    "net_admin"
+                    "sys_module"
+                  ];
+
                   auth = {
                     config = "/etc/containers/auth.json";
                   };
-                  extra_labels = ["job_name" "job_id" "task_group_name" "task_name" "namespace" "node_name" "node_id"];
-                  socket_path = "unix:///run/podman/podman.sock";
+
+                  # https://github.com/grafana/loki/issues/6165
+                  extra_labels = ["*"];
+                  logging = {
+                    type = "journald";
+                    config = {
+                      tag = "nomad";
+                      labels-regex = "com\\.hashicorp\\.nomad.*";
+                    };
+                  };
+
+                  volumes = {
+                    enabled = true;
+                  };
                 };
               };
             }
@@ -231,27 +256,35 @@ in {
 
     services.coredns = {
       enable = true;
+
+      # The following config makes only DNS request from localhost reach Consul DNS, others go to Blocky
       config = ''
+        .:53 {
+          bind ${cfg.nodeIPAddress}
+
+          view nomad {
+              # Match queries originating from the nomad interface subnet (they connect from localhost)
+              expr incidr(client_ip(), '127.0.0.1/8')
+          }
+
+          # Forward these queries to Consul DNS
+          forward . 127.0.0.1:8600
+
+          log
+          errors
+        }
+
         .:53 {
           bind ${cfg.nodeIPAddress} 127.0.0.1
 
-          forward . ${cfg.nodeIPAddress}:5353 9.9.9.9 1.1.1.1 {
-            force_tcp
+          forward . 127.0.0.1:5353 9.9.9.9 1.1.1.1 {
+            force_tcp # HAProxy can't do UDP
             policy sequential
             failfast_all_unhealthy_upstreams
             failover SERVFAIL REFUSED
           }
 
-          #log
-          errors
-        }
-
-        .:53 {
-          bind 172.26.64.1
-
-          forward . 127.0.0.1:8600
-
-          #log
+          log
           errors
         }
       '';
