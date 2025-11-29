@@ -270,7 +270,7 @@ in {
           # Forward these queries to Consul DNS
           forward . 127.0.0.1:8600
 
-          log
+          #log
           errors
         }
 
@@ -284,25 +284,20 @@ in {
             failover SERVFAIL REFUSED
           }
 
-          log
+          #log
           errors
         }
       '';
     };
 
+    # Wait for br0 IP to be online
     systemd.services.coredns = {
       startLimitIntervalSec = 120;
       startLimitBurst = 30;
 
       # default "network.target" is not good enough
-      after = lib.mkForce [
-        "network-online.target"
-        "nomad.service" # Wait for Nomad service to be active
-      ];
-      wants = [
-        "network-online.target"
-        "nomad.service"
-      ];
+      after = lib.mkForce ["network-online.target"];
+      wants = ["network-online.target"];
       serviceConfig = {
         RestartSec = "5s"; # Give Nomad time to create IP (takes about 13 seconds)
       };

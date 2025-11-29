@@ -103,6 +103,7 @@ in {
           ms-python.python # Required by Ruff
 
           # Docker
+          docker.docker
           ms-azuretools.vscode-docker
           exiasr.hadolint
 

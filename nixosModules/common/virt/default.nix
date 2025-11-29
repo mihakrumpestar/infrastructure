@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   nixvirt,
   lib,
   ...
@@ -124,25 +123,18 @@ with lib; {
       docker = {
         enable = true;
         daemon = {
-          settings = mkIf (config.my.hostType == "server") {
+          settings = {
             log-level = "warn"; # "debug"|"info"|"warn"|"error"|"fatal" (default "info")
+            live-restore = true;
             registry-mirrors = ["https://mirror.gcr.io"];
-            insecure-registries = ["10.0.30.10:30010"];
+            insecure-registries = ["10.0.30.10:30010" "10.0.30.20:30010" "10.0.30.30:30010"];
             #dns = ["172.26.64.1"]; # Docker driver dns options are not compatible with task dns options
           };
         };
       };
     };
 
-    #systemd.services.podman.environment = {
-    #  LOGGING = lib.mkForce "--log-level=warn"; # debug, info, warn, error, fatal or panic (default: warn, but Nixos option set it to info)
-    #};
-
-    environment.systemPackages = with pkgs; [
-      buildah # Tool to build container images
-    ];
-
-    # IMPORTANT: Add required users to groups ["libvirtd" "podman"]
+    # IMPORTANT: Add required users to groups ["libvirtd" "docker"]
 
     # Libvirt networks are unmanaged
     systemd.network.networks = {

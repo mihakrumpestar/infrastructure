@@ -6,6 +6,13 @@ Generate per machine TPM2 age key:
 nix-shell -p age-plugin-tpm --command "sudo age-plugin-tpm  -g"
 ```
 
+Stress test:
+
+```sh
+nix-shell -p btop --command "btop"
+nix-shell -p stress s-tui --command "s-tui"
+```
+
 ## TODO
 
 Reference configs:

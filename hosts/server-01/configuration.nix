@@ -14,7 +14,7 @@ in {
       enable = true;
       inherit nodeIPAddress;
     };
-    hardware.nvidia.enable = true;
+    hardware.nvidia.enable = false;
   };
 
   systemd.network = {

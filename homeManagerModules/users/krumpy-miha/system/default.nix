@@ -10,7 +10,7 @@ with lib; let
 in {
   config = mkIf (builtins.elem username config.my.users) {
     users.users.${username}.extraGroups = [
-      "podman"
+      "docker"
       "libvirtd"
       "kvm"
       "virtualhere"

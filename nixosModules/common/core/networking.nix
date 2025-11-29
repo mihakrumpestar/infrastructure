@@ -65,7 +65,7 @@ with lib; {
         "40-br0" = {
           matchConfig.Name = "br0";
           inherit networkConfig;
-          linkConfig.RequiredForOnline = "carrier";
+          linkConfig.RequiredForOnline = "routable"; # carrier is not enough, as services require this ip
         };
 
         # Nics connected to bridge (main)
