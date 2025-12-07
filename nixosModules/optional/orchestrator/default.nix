@@ -21,8 +21,8 @@ in {
 
   config = mkIf cfg.enable {
     networking.firewall = {
-      allowedTCPPorts = [53 443 4646 8500]; # DNS, UIs
-      allowedUDPPorts = [53 443 4646 8500]; # DNS, UIs
+      allowedTCPPorts = [53 443 4646 8501]; # DNS, UIs
+      allowedUDPPorts = [53 443 4646 8501]; # DNS, UIs
       # Nomad dynamic ports
       #allowedTCPPortRanges = [
       #  {
@@ -73,8 +73,23 @@ in {
           advertise_addr = cfg.nodeIPAddress;
           ports = {
             dns = 8600;
-            http = 8500;
-            grpc = 8502; # Has to be enabled for Consul Connect service mesh
+            http = -1; # Otherwise it stays enabled
+            https = 8501;
+            #grpc = 8502; # Has to be enabled for Consul Connect service mesh (if TLS is not configured)
+            grpc_tls = 8503;
+          };
+
+          tls = {
+            defaults = {
+              ca_file = config.age.secrets."consul-agent-ca_pem".path;
+              cert_file = config.age.secrets."dc1-server-consul-0_pem".path;
+              key_file = config.age.secrets."dc1-server-consul-0-key_pem".path;
+
+              tls_min_version = "TLSv1_3";
+              verify_incoming = true;
+              verify_outgoing = true;
+              verify_server_hostname = true;
+            };
           };
 
           connect = {
@@ -113,9 +128,25 @@ in {
             bootstrap_expect = 1; # Will change to 3 for 3-node cluster
           };
 
+          # This tls part is for server and client
+          tls = {
+            http = true;
+            rpc = true;
+
+            tls_min_version = "tls13";
+
+            ca_file = config.age.secrets."nomad-agent-ca_pem".path;
+            cert_file = config.age.secrets."global-server-nomad_pem".path;
+            key_file = config.age.secrets."global-server-nomad-key_pem".path;
+
+            verify_server_hostname = true;
+            verify_https_client = true;
+          };
+
           client = {
             enabled = true;
             network_interface = "br0";
+            preferred_address_family = "ipv4";
 
             host_network = [
               {
@@ -142,6 +173,9 @@ in {
             servers = ["${cfg.nodeIPAddress}:4647"]; # For single node, only itself. For 3-node, list ALL server IPs
             meta = {
               #NOMAD_CLIENT_IP = cfg.nodeIPAddress;
+
+              # https://developer.hashicorp.com/nomad/docs/job-specification/sidecar_task#log_level
+              "connect.log_level" = "error"; # trace, debug, info, warning/warn, error, critical, off
             };
           };
 
@@ -215,9 +249,31 @@ in {
       };
     };
 
-    age.secrets.containers_auth_json = {
-      file = /${vars.secretsDir}/secrets/users/containers_auth.json.age;
-      path = "/etc/containers/auth.json";
+    age.secrets = {
+      "consul-agent-ca_pem" = {
+        file = /${vars.secretsDir}/secrets/consul/consul-agent-ca.pem.age;
+        owner = "consul";
+        group = "consul";
+      };
+      "dc1-server-consul-0_pem" = {
+        file = /${vars.secretsDir}/secrets/consul/dc1-server-consul-0.pem.age;
+        owner = "consul";
+        group = "consul";
+      };
+      "dc1-server-consul-0-key_pem" = {
+        file = /${vars.secretsDir}/secrets/consul/dc1-server-consul-0-key.pem.age;
+        owner = "consul";
+        group = "consul";
+      };
+
+      "nomad-agent-ca_pem".file = /${vars.secretsDir}/secrets/nomad/nomad-agent-ca.pem.age;
+      "global-server-nomad_pem".file = /${vars.secretsDir}/secrets/nomad/global-server-nomad.pem.age;
+      "global-server-nomad-key_pem".file = /${vars.secretsDir}/secrets/nomad/global-server-nomad-key.pem.age;
+
+      "containers_auth_json" = {
+        file = /${vars.secretsDir}/secrets/users/containers_auth.json.age;
+        path = "/etc/containers/auth.json";
+      };
     };
 
     # TODO: In testing

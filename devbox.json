@@ -10,7 +10,11 @@
     "statix@latest",
     "nixos-anywhere@latest",
     "age-plugin-tpm@latest",
-    "github:oddlama/agenix-rekey"
+    "github:oddlama/agenix-rekey",
+    "nomad@latest",
+    "consul@latest",
+    "step-cli@latest",
+    "github://github.com/oddlama/agenix-rekey"
   ],
   "env": {},
   "shell": {
