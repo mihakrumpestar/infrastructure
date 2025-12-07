@@ -249,6 +249,14 @@ in {
       };
     };
 
+    systemd.services = {
+      consul = {
+        serviceConfig = {
+          RestartSec = 2; # Give time to decrypt, Nomad already has this
+        };
+      };
+    };
+
     age.secrets = {
       "consul-agent-ca_pem" = {
         file = /${vars.secretsDir}/secrets/consul/consul-agent-ca.pem.age;
