@@ -85,15 +85,30 @@ in {
               cert_file = config.age.secrets."dc1-server-consul-0_pem".path;
               key_file = config.age.secrets."dc1-server-consul-0-key_pem".path;
 
-              tls_min_version = "TLSv1_3";
+              #tls_min_version = "TLSv1_3"; # DO NOT ENABLE THIS! Envoy does not support TLSv1_3
               verify_incoming = true;
               verify_outgoing = true;
               verify_server_hostname = true;
+            };
+
+            grpc = {
+              # https://developer.hashicorp.com/nomad/docs/configuration/consul#grpc_ca_file
+              verify_incoming = false; # This is ok, as long as we enable ACLs (envoy authenticates using them)
             };
           };
 
           connect = {
             enabled = true; # Enable Consul Connect service mesh
+
+            ca_provider = "consul";
+            ca_config = {
+              leaf_cert_ttl = "8760h"; # 1 year
+              intermediate_cert_ttl = "26280h"; # 3 years
+              root_cert_ttl = "87600h"; # 10 years
+
+              private_key_type = "rsa";
+              private_key_bits = "2048";
+            };
           };
 
           recursors = ["127.0.0.1"]; # Redirects to Blocky in Nomad, othervise to regular DNS
@@ -175,19 +190,22 @@ in {
               #NOMAD_CLIENT_IP = cfg.nodeIPAddress;
 
               # https://developer.hashicorp.com/nomad/docs/job-specification/sidecar_task#log_level
-              "connect.log_level" = "error"; # trace, debug, info, warning/warn, error, critical, off
+              "connect.log_level" = "warning"; # trace, debug, info, warning/warn, error, critical, off
             };
           };
 
           # Consul Integration
           consul = {
-            address = "127.0.0.1:8500";
-            grpc_address = "127.0.0.1:8502";
-            server_service_name = "nomad";
-            client_service_name = "nomad-client";
-            auto_advertise = true;
-            server_auto_join = true;
-            client_auto_join = true;
+            address = "127.0.0.1:8501";
+            grpc_address = "127.0.0.1:8503";
+
+            ca_file = config.age.secrets."consul-agent-ca_pem".path;
+            cert_file = config.age.secrets."dc1-client-consul-0_pem".path;
+            key_file = config.age.secrets."dc1-client-consul-0-key_pem".path;
+
+            grpc_ca_file = config.age.secrets."consul-agent-ca_pem".path;
+
+            ssl = true;
           };
 
           telemetry = {
@@ -273,10 +291,22 @@ in {
         owner = "consul";
         group = "consul";
       };
+      "dc1-client-consul-0_pem" = {
+        file = /${vars.secretsDir}/secrets/consul/dc1-client-consul-0.pem.age;
+        owner = "consul";
+        group = "consul";
+      };
+      "dc1-client-consul-0-key_pem" = {
+        file = /${vars.secretsDir}/secrets/consul/dc1-client-consul-0-key.pem.age;
+        owner = "consul";
+        group = "consul";
+      };
 
       "nomad-agent-ca_pem".file = /${vars.secretsDir}/secrets/nomad/nomad-agent-ca.pem.age;
       "global-server-nomad_pem".file = /${vars.secretsDir}/secrets/nomad/global-server-nomad.pem.age;
       "global-server-nomad-key_pem".file = /${vars.secretsDir}/secrets/nomad/global-server-nomad-key.pem.age;
+      "global-client-nomad_pem".file = /${vars.secretsDir}/secrets/nomad/global-client-nomad.pem.age;
+      "global-client-nomad-key_pem".file = /${vars.secretsDir}/secrets/nomad/global-client-nomad-key.pem.age;
 
       "containers_auth_json" = {
         file = /${vars.secretsDir}/secrets/users/containers_auth.json.age;
@@ -354,16 +384,9 @@ in {
       '';
     };
 
-    # Wait for br0 IP to be online
     systemd.services.coredns = {
-      startLimitIntervalSec = 120;
-      startLimitBurst = 30;
-
-      # default "network.target" is not good enough
-      after = lib.mkForce ["network-online.target"];
-      wants = ["network-online.target"];
       serviceConfig = {
-        RestartSec = "5s"; # Give Nomad time to create IP (takes about 13 seconds)
+        RestartSec = 2;
       };
     };
   };
