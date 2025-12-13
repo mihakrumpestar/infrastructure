@@ -187,6 +187,7 @@
     fastfetch # New Neofetch
     onefetch # Neofetch/fastfetch for Git
     ipfetch # Neofetch for IPs
+    iperf
 
     # Disks
     parted

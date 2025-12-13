@@ -389,5 +389,11 @@ in {
         RestartSec = 2;
       };
     };
+
+    #services.iperf3 = {
+    #  enable = true;
+    #  openFirewall = true;
+    #  bind = cfg.nodeIPAddress;
+    #};
   };
 }

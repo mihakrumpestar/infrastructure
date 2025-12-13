@@ -79,7 +79,7 @@ with lib; {
         "40-nic0" = {
           matchConfig.Name = "nic0";
           inherit networkConfig;
-          linkConfig.RequiredForOnline = "routable";
+          linkConfig.RequiredForOnline = false; # Only br0 is required
         };
       };
     };
