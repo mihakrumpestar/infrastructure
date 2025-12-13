@@ -161,5 +161,9 @@ in {
 
     # Timezone
     time.timeZone = "Europe/Ljubljana";
+
+    systemd.services.logrotate.serviceConfig = {
+      LogLevelMax = "warning"; # logrotate does not have any log level on it's own, so we do it at service level
+    };
   };
 }

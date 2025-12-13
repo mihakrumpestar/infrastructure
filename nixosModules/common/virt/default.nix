@@ -128,20 +128,11 @@ with lib; {
             live-restore = true;
             registry-mirrors = ["https://mirror.gcr.io"];
             insecure-registries = ["10.0.30.10:30010" "10.0.30.20:30010" "10.0.30.30:30010"];
-            #dns = ["172.26.64.1"]; # Docker driver dns options are not compatible with task dns options
           };
         };
       };
     };
 
     # IMPORTANT: Add required users to groups ["libvirtd" "docker"]
-
-    # Libvirt networks are unmanaged
-    systemd.network.networks = {
-      "19-libvirt" = {
-        matchConfig.Name = "vnet*";
-        linkConfig.Unmanaged = true;
-      };
-    };
   };
 }

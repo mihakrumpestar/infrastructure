@@ -267,12 +267,8 @@ in {
       };
     };
 
-    systemd.services = {
-      consul = {
-        serviceConfig = {
-          RestartSec = 2; # Give time to decrypt, Nomad already has this
-        };
-      };
+    systemd.services.consul.serviceConfig = {
+      RestartSec = 2; # Give time to decrypt, Nomad already has this
     };
 
     age.secrets = {
@@ -348,6 +344,12 @@ in {
       }
     '';
 
+    virtualisation.docker.daemon.settings.dns = ["${cfg.nodeIPAddress}"];
+
+    systemd.services.docker.serviceConfig = {
+      LogLevelMax = 2; # Critical # TODO: until fied: unable to parse "max 0" as a uint from Cgroup file "/sys/fs/cgroup/system.slice/docker-fd75cce11ac940b11ff1e334358a5ee53bfddeed412fa373151087abc2434adf.scope/hugetlb.2MB.events"
+    };
+
     services.coredns = {
       enable = true;
 
@@ -357,8 +359,8 @@ in {
           bind ${cfg.nodeIPAddress}
 
           view nomad {
-              # Match queries originating from the nomad interface subnet (they connect from localhost)
-              expr incidr(client_ip(), '127.0.0.1/8')
+              # Match queries originating from the nomad interface subnet (they connect from nomad IP range)
+              expr incidr(client_ip(), '172.26.64.1/20')
           }
 
           # Forward these queries to Consul DNS
@@ -384,10 +386,8 @@ in {
       '';
     };
 
-    systemd.services.coredns = {
-      serviceConfig = {
-        RestartSec = 2;
-      };
+    systemd.services.coredns.serviceConfig = {
+      RestartSec = 2;
     };
 
     #services.iperf3 = {
