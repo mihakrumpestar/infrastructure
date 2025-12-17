@@ -100,6 +100,22 @@ in {
           connect = {
             enabled = true; # Enable Consul Connect service mesh
 
+            # https://developer.hashicorp.com/consul/commands/connect/ca
+            # Only applys on init, after that you have to use command:
+            # consul connect ca set-config -config-file=tmp.json
+            /*
+            {
+              "Provider": "consul",
+              "Config": {
+                "IntermediateCertTTL": "26280h",
+                "LeafCertTTL": "8760h",
+                "RootCertTTL": "87600h",
+                "PrivateKeyType": "rsa",
+                "PrivateKeyBits": 2048
+              }
+            }
+            */
+
             ca_provider = "consul";
             ca_config = {
               leaf_cert_ttl = "8760h"; # 1 year
@@ -107,7 +123,7 @@ in {
               root_cert_ttl = "87600h"; # 10 years
 
               private_key_type = "rsa";
-              private_key_bits = "2048";
+              private_key_bits = 2048;
             };
           };
 
@@ -347,7 +363,7 @@ in {
     virtualisation.docker.daemon.settings.dns = ["${cfg.nodeIPAddress}"];
 
     systemd.services.docker.serviceConfig = {
-      LogLevelMax = 2; # Critical # TODO: until fied: unable to parse "max 0" as a uint from Cgroup file "/sys/fs/cgroup/system.slice/docker-fd75cce11ac940b11ff1e334358a5ee53bfddeed412fa373151087abc2434adf.scope/hugetlb.2MB.events"
+      LogLevelMax = 2; # Critical # TODO: until fixed: unable to parse "max 0" as a uint from Cgroup file "/sys/fs/cgroup/system.slice/docker-fd75cce11ac940b11ff1e334358a5ee53bfddeed412fa373151087abc2434adf.scope/hugetlb.2MB.events"
     };
 
     services.coredns = {
