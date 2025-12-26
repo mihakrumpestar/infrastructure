@@ -4,19 +4,18 @@
   ...
 }: let
   store-secrets = config.my.store-secrets.secrets;
-
-  vscode-ltex-plus-offline = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
-    mktplcRef = {
-      name = "vscode-ltex-plus";
-      version = "15.5.1";
-      publisher = "ltex-plus";
-    };
-    vsix = builtins.fetchurl {
-      name = "${mktplcRef.publisher}-${mktplcRef.name}.zip";
-      url = "https://github.com/ltex-plus/vscode-ltex-plus/releases/download/${mktplcRef.version}/vscode-ltex-plus-${mktplcRef.version}-offline-linux-x64.vsix";
-      sha256 = "19mq89qlzzyyih83jsq50szxsg3ghc1h7vrmh3s26nmc3r4lwjfz";
-    };
-  };
+  #vscode-ltex-plus-offline = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
+  #  mktplcRef = {
+  #    name = "vscode-ltex-plus";
+  #    version = "15.6.1";
+  #    publisher = "ltex-plus";
+  #  };
+  #  vsix = builtins.fetchurl {
+  #    name = "${mktplcRef.publisher}-${mktplcRef.name}.zip";
+  #    url = "https://github.com/ltex-plus/vscode-ltex-plus/releases/download/${mktplcRef.version}/vscode-ltex-plus-${mktplcRef.version}-offline-linux-x64.vsix";
+  #    sha256 = "09jp99vcafj83d4s5p8d9f2k2znv96ig9awhr4mdn4qnx8081qdy";
+  #  };
+  #};
 in {
   home.packages = with pkgs; [
     # Formatters
@@ -145,7 +144,7 @@ in {
           # KCL
           pkgs.vscode-marketplace.kcl.kcl-vscode-extension # The one in VSIX is not latest
 
-          vscode-ltex-plus-offline # https://ltex-plus.github.io/ltex-plus/advanced-usage.html
+          #vscode-ltex-plus-offline # https://ltex-plus.github.io/ltex-plus/advanced-usage.html
         ];
 
       # Enable these 2 to prevent userSettings from being written
