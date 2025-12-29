@@ -90,6 +90,7 @@
     qbittorrent-enhanced
     remmina
     moonlight-qt
+    ffmpeg
     #rustdesk # Always has to be compiled
 
     # Printer and scanner

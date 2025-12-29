@@ -265,17 +265,13 @@
         }
       }
     },
-    "github://github.com/oddlama/agenix-rekey": {
-      "last_modified": "2025-10-05T21:31:48Z",
-      "resolved": "github:oddlama/agenix-rekey/42362b12f59978aabf3ec3334834ce2f3662013d?lastModified=1759699908&narHash=sha256-kYVGY8sAfqwpNch706Fy2%2B%2Fb%2BxbtfidhXSnzvthAhIQ%3D"
-    },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-12-26T11:10:58Z",
-      "resolved": "github:NixOS/nixpkgs/c633f572eded8c4f3c75b8010129854ed404a6ce?lastModified=1766747458&narHash=sha256-m63jjuo%2Fygo8ztkCziYh5OOIbTSXUDkKbqw3Vuqu4a4%3D"
+      "last_modified": "2025-12-27T21:13:36Z",
+      "resolved": "github:NixOS/nixpkgs/5c2bc52fb9f8c264ed6c93bd20afa2ff5e763dce?lastModified=1766870016&narHash=sha256-fHmxAesa6XNqnIkcS6%2BnIHuEmgd%2FiZSP%2FVXxweiEuQw%3D"
     },
-    "github:oddlama/agenix-rekey": {
-      "last_modified": "2025-10-05T21:31:48Z",
-      "resolved": "github:oddlama/agenix-rekey/42362b12f59978aabf3ec3334834ce2f3662013d?lastModified=1759699908&narHash=sha256-kYVGY8sAfqwpNch706Fy2%2B%2Fb%2BxbtfidhXSnzvthAhIQ%3D"
+    "github:ryantm/agenix": {
+      "last_modified": "2025-11-08T16:12:14Z",
+      "resolved": "github:ryantm/agenix/fcdea223397448d35d9b31f798479227e80183f6?lastModified=1762618334&narHash=sha256-wyT7Pl6tMFbFrs8Lk%2FTlEs81N6L%2BVSybPfiIgzU8lbQ%3D"
     },
     "go-task@latest": {
       "last_modified": "2025-11-23T21:50:36Z",
