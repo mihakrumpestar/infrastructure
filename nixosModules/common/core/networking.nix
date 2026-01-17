@@ -21,9 +21,7 @@ with lib; {
     };
 
     # Check: ss -tulnp
-    services.resolved.extraConfig = ''
-      DNSStubListener=no
-    '';
+    services.resolved.settings.Resolve.DNSStubListener = false;
 
     networking = {
       inherit hostName;

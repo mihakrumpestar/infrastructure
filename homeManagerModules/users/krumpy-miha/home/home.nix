@@ -36,7 +36,7 @@
     freetube # Youtube client
     #drawio # Drawing tool # UNFREE license
     kdePackages.kcalc # Calculator
-    freecad-wayland # 3D design tool
+    #freecad-wayland # 3D design tool # TODO: broken
 
     # AI
     #jan # Has hardcoded providers and endpoints

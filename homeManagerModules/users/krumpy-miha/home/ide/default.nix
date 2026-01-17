@@ -29,6 +29,9 @@ in {
     texlive.combined.scheme-full # Containes pdflatex and Tex packages required by xournalpp (full is the minimum req to run)
     python313Packages.pygments
 
+    # Typst
+    typst
+
     # Python
     python3
     basedpyright
@@ -121,6 +124,9 @@ in {
 
           # MDX
           unifiedjs.vscode-mdx
+
+          # Typst
+          myriad-dreamin.tinymist
 
           # HTML/VSS/JS/TS
           bradlc.vscode-tailwindcss

@@ -11,9 +11,6 @@
     kdePackages.ksshaskpass
     libsecret # secret-tool
 
-    bitwarden-desktop
-    bitwarden-cli
-
     docker-credential-helpers # Adds secretservice to docker login
   ];
 

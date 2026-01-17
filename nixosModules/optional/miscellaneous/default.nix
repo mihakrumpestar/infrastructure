@@ -25,7 +25,6 @@ with lib; {
 
   programs = mkIf (config.my.hostType == "client") {
     kdeconnect.enable = true;
-    adb.enable = true; # Adb, fastboot
     fuse.userAllowOther = true; # Allow (non-root) users mounting their own storage
   };
 }
