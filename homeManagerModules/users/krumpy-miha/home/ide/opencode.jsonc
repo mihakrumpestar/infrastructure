@@ -1,0 +1,36 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Theme configuration
+  "theme": "opencode",
+  "model": "",
+  "autoupdate": true,
+
+  // Use with: `use the <tool_name> tool`
+  // Debug: opencode mcp list
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": ["bunx", "-y", "@upstash/context7-mcp"],
+      "enabled": true,
+      "environment": {
+        "DEFAULT_MINIMUM_TOKENS": "6000",
+      },
+    },
+    "godoc": {
+      "type": "local",
+      "command": ["go", "run", "github.com/mrjoshuak/godoc-mcp@latest"],
+      "enabled": true,
+    },
+    "nixos": {
+      "type": "local",
+      "command": ["nix", "run", "github:utensils/mcp-nixos", "--"],
+      "enabled": true,
+    },
+    // https://github.com/VectifyAI/pageindex-mcp // Why does it require login?
+    //"pageindex": {
+    //  "type": "local",
+    //  "command": ["bunx", "-y", "pageindex-mcp"],
+    //  "enabled": true,
+    //},
+  },
+}

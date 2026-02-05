@@ -4,20 +4,22 @@
   ...
 }: let
   store-secrets = config.my.store-secrets.secrets;
-  #vscode-ltex-plus-offline = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
-  #  mktplcRef = {
-  #    name = "vscode-ltex-plus";
-  #    version = "15.6.1";
-  #    publisher = "ltex-plus";
-  #  };
-  #  vsix = builtins.fetchurl {
-  #    name = "${mktplcRef.publisher}-${mktplcRef.name}.zip";
-  #    url = "https://github.com/ltex-plus/vscode-ltex-plus/releases/download/${mktplcRef.version}/vscode-ltex-plus-${mktplcRef.version}-offline-linux-x64.vsix";
-  #    sha256 = "09jp99vcafj83d4s5p8d9f2k2znv96ig9awhr4mdn4qnx8081qdy";
-  #  };
-  #};
+  vscode-ltex-plus-offline = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
+    mktplcRef = {
+      name = "vscode-ltex-plus";
+      version = "15.6.1";
+      publisher = "ltex-plus";
+    };
+    vsix = builtins.fetchurl {
+      url = "https://github.com/ltex-plus/vscode-ltex-plus/releases/download/${mktplcRef.version}/vscode-ltex-plus-${mktplcRef.version}-offline-linux-x64.vsix";
+      sha256 = "09jp99vcafj83d4s5p8d9f2k2znv96ig9awhr4mdn4qnx8081qdy";
+    };
+  };
 in {
   home.packages = with pkgs; [
+    # LLM
+    opencode
+
     # Formatters
     nodePackages.prettier
     #nixfmt-rfc-style # Not using anymore since it hangs too much
@@ -27,7 +29,7 @@ in {
     # Latex
     tex-fmt
     texlive.combined.scheme-full # Containes pdflatex and Tex packages required by xournalpp (full is the minimum req to run)
-    python313Packages.pygments
+    python313Packages.pygments # For Latex code snippets
 
     # Typst
     typst
@@ -37,7 +39,7 @@ in {
     basedpyright
 
     # LSP (language server)
-    # nixd # Before
+    # Nix
     nil
 
     # Quarto
@@ -57,12 +59,11 @@ in {
     impl
     gotests
     go-tools # staticcheck
-
     golangci-lint
 
-    # KCL
-    kcl
-    #kcl-language-server # TODO: does not compile
+    # Javascript
+    bun
+    nodejs
   ];
 
   programs.vscode = {
@@ -136,9 +137,7 @@ in {
           astro-build.astro-vscode
 
           # AI
-          #saoudrizwan.claude-dev # Cline # Is missing my provider
-          #rooveterinaryinc.roo-cline
-          kilocode.kilo-code
+          sst-dev.opencode # Used kilocode.kilo-code, but they shifted focus to their CLI fork of Opencode
 
           # Rest
           humao.rest-client
@@ -147,13 +146,10 @@ in {
           hashicorp.hcl
         ]
         ++ [
-          # KCL
-          pkgs.vscode-marketplace.kcl.kcl-vscode-extension # The one in VSIX is not latest
-
-          #vscode-ltex-plus-offline # https://ltex-plus.github.io/ltex-plus/advanced-usage.html
+          vscode-ltex-plus-offline # https://ltex-plus.github.io/ltex-plus/advanced-usage.html
         ];
 
-      # Enable these 2 to prevent userSettings from being written
+      # Enable these 2 to prevent homeMnagaer's userSettings from being written
       enableUpdateCheck = true;
       enableExtensionUpdateCheck = true;
     };
@@ -161,27 +157,42 @@ in {
     # userSettings = lib.importJSON ./settings.json; # Using my.home.mutableFile instead
   };
 
-  stylix.targets.vscode.enable = false;
+  stylix.targets.vscode.enable = false; # We are using the one from extension
 
-  # code --diff users/krumpy-miha/home/ide/settings.json ~/.config/VSCodium/User/settings.json
-  my.home.mutableFile.".config/VSCodium/User/settings.json".source =
-    pkgs.replaceVars
-    ./settings.json {
-      inherit (store-secrets) languagetool_server;
+  my.home.mutableFile = {
+    # code --diff users/krumpy-miha/home/ide/settings.json ~/.config/VSCodium/User/settings.json
+    ".config/VSCodium/User/settings.json".source =
+      pkgs.replaceVars
+      ./settings.json {
+        inherit (store-secrets) languagetool_server;
+      };
+
+    ".config/opencode/opencode.json".source = ./opencode.jsonc;
+
+    # opencode agent list
+    ".config/opencode/AGENTS.md".source = ./AGENTS.md;
+  };
+
+  systemd.user.services.opencode = {
+    Unit = {
+      Description = "Opencode AI Assistant";
+      After = [
+        "graphical-session.target"
+      ];
     };
 
-  # npx does not work properly for some reason
-  my.home.mutableFile.".config/VSCodium/User/globalStorage/kilocode.kilo-code/settings/mcp_settings.json".text = ''
-    {
-      "mcpServers": {
-        "context7": {
-          "command": "${pkgs.bun}/bin/bunx",
-          "args": ["-y", "@upstash/context7-mcp"],
-          "env": {
-            "DEFAULT_MINIMUM_TOKENS": "6000"
-          }
-        }
-      }
-    }
-  '';
+    Service = {
+      Type = "simple";
+      TimeoutStartSec = 60;
+      ExecStart = "${pkgs.opencode}/bin/opencode web --hostname 127.0.0.1 --port 4096";
+      Environment = "OPENCODE_CONFIG=${./opencode.jsonc}";
+
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+
+    Install = {
+      WantedBy = ["default.target"];
+    };
+  };
 }

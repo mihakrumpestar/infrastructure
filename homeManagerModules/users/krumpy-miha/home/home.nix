@@ -18,7 +18,7 @@
     # Video/Audio and photo
     audacity # Sound
     vlc # Media Player
-    handbrake
+    #handbrake # Build fails dor to ffmpeg build failing
     obs-studio
     # No color picker currently works properly on KDE6 (use the self created script command `color-picker`)
     gimp # Alternative is: https://github.com/PintaProject/Pinta
@@ -90,7 +90,7 @@
     qbittorrent-enhanced
     remmina
     moonlight-qt
-    ffmpeg
+    #ffmpeg # Always broken build
     #rustdesk # Always has to be compiled
 
     # Printer and scanner

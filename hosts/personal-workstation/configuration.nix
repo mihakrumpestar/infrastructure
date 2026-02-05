@@ -43,7 +43,8 @@
     enable = true;
     package = with pkgs;
       steam.override {
-        extraPkgs = [
+        # deadnix: skip
+        extraPkgs = pkgs: [
           jq
           cabextract
           wget

@@ -30,6 +30,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    opencode = {
+      url = "github:anomalyco/opencode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
@@ -40,6 +45,7 @@
   outputs = {
     nixpkgs,
     consul-cni-flake,
+    opencode,
     ...
   } @ attrs: let
     vars = {
@@ -55,6 +61,7 @@
             inherit hostName;
 
             inherit (consul-cni-flake.packages."${system}") consul-cni;
+            inherit (opencode.packages."${system}") opencode;
           }
           // attrs;
         modules = [
