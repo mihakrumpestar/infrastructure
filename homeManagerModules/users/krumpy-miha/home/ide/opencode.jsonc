@@ -1,9 +1,47 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  // Theme configuration
+
   "theme": "opencode",
-  "model": "",
-  "autoupdate": true,
+  //"model": "moonshotai/kimi-k2.5",
+  "autoupdate": false,
+
+  /*
+  // Provider configuration
+  // Docs: https://opencode.ai/config.json
+  // Models reference: https://models.dev/api.json and use OpenRouter as provider (search for Kimi K2.5)
+  // To use: Create ~/.secrets/opencode file with content: ABACUS_OPENAI_API_KEY=your-key
+  "provider": {
+    "abacus-openai": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Abacus OpenAI",
+      "options": {
+        "baseURL": "https://routellm.abacus.ai/v1",
+        "apiKey": "{env:ABACUS_OPENAI_API_KEY}",
+      },
+      "models": {
+        "kimi-k2.5": {
+          "name": "Kimi K2.5",
+          "reasoning": true,
+          "tool_call": true,
+          "temperature": true,
+          "interleaved": true,
+          "limit": {
+            "context": 262144,
+            "output": 65000,
+          },
+          "modalities": {
+            "input": ["text", "image", "video"],
+            "output": ["text"],
+          },
+          "options": {
+            "temperature": 1.0,
+            "top_p": 0.95,
+          },
+        },
+      },
+    },
+  },
+  */
 
   // Use with: `use the <tool_name> tool`
   // Debug: opencode mcp list
@@ -30,7 +68,9 @@
     //"pageindex": {
     //  "type": "local",
     //  "command": ["bunx", "-y", "pageindex-mcp"],
-    //  "enabled": true,
-    //},
+    //  "enabled": true
+    //}
   },
+
+  "plugin": ["cc-safety-net"],
 }

@@ -173,19 +173,25 @@ in {
     ".config/opencode/AGENTS.md".source = ./AGENTS.md;
   };
 
+  # Attach: opencode attach http://localhost:4096
   systemd.user.services.opencode = {
     Unit = {
       Description = "Opencode AI Assistant";
       After = [
         "graphical-session.target"
+        "network-online.target"
       ];
+      Wants = ["network-online.target"];
     };
 
     Service = {
       Type = "simple";
       TimeoutStartSec = 60;
+      WorkingDirectory = "%h";
+      ExecStartPre = "${pkgs.iputils}/bin/ping -c 1 -W 5 1.1.1.1"; # Make sure we are actually online
       ExecStart = "${pkgs.opencode}/bin/opencode web --hostname 127.0.0.1 --port 4096";
       Environment = "OPENCODE_CONFIG=${./opencode.jsonc}";
+      EnvironmentFile = "%h/.secrets/opencode";
 
       Restart = "on-failure";
       RestartSec = 5;
