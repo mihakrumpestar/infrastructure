@@ -5,18 +5,17 @@
   //"model": "moonshotai/kimi-k2.5",
   "autoupdate": false,
 
-  /*
   // Provider configuration
   // Docs: https://opencode.ai/config.json
   // Models reference: https://models.dev/api.json and use OpenRouter as provider (search for Kimi K2.5)
-  // To use: Create ~/.secrets/opencode file with content: ABACUS_OPENAI_API_KEY=your-key
+  // To use: Create ~/.secrets/opencode file with content: BYTEPLUS_API_KEY=your-key
   "provider": {
-    "abacus-openai": {
+    "byteplus": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Abacus OpenAI",
+      "name": "byteplus",
       "options": {
-        "baseURL": "https://routellm.abacus.ai/v1",
-        "apiKey": "{env:ABACUS_OPENAI_API_KEY}",
+        "baseURL": "https://ark.ap-southeast.bytepluses.com/api/coding/v3",
+        "apiKey": "{env:BYTEPLUS_API_KEY}",
       },
       "models": {
         "kimi-k2.5": {
@@ -41,7 +40,6 @@
       },
     },
   },
-  */
 
   // Use with: `use the <tool_name> tool`
   // Debug: opencode mcp list
