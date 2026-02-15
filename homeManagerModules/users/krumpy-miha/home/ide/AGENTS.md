@@ -1,6 +1,6 @@
 ## Tools
 
-When you need to search docs, use `context7` tools.
+When you need to search all non-golang docs, use `context7` tools.
 
 When you need to search golang docs, use `godoc` tools.
 

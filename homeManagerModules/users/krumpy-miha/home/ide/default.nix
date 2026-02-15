@@ -189,7 +189,7 @@ in {
       TimeoutStartSec = 60;
       WorkingDirectory = "%h";
       ExecStartPre = "${pkgs.iputils}/bin/ping -c 1 -W 5 1.1.1.1"; # Make sure we are actually online
-      ExecStart = "${pkgs.opencode}/bin/opencode web --hostname 127.0.0.1 --port 4096";
+      ExecStart = "${pkgs.opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
       Environment = "OPENCODE_CONFIG=${./opencode.jsonc}";
       EnvironmentFile = "%h/.secrets/opencode";
 

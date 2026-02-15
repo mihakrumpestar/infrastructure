@@ -9,7 +9,7 @@ with lib; {
       bootLoader = mkOption {
         type = types.enum ["systemd-boot" "grub"];
         default = "systemd-boot";
-        description = "Which boot loader to use";
+        description = "Which boot loader to use, grub for VMs and systemd-boot for everything else";
       };
       bootDisk = mkOption {
         type = types.str;
@@ -83,6 +83,7 @@ with lib; {
                   content = {
                     type = "luks";
                     name = "crypted";
+                    passwordFile = "/tmp/disko-encryption-password.txt"; # This means it will give user an interactive password prompt
                     settings = {
                       allowDiscards = true;
                       crypttabExtraOpts =
