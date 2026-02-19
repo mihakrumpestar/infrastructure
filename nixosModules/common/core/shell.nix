@@ -254,6 +254,11 @@
 
         ### Subshell ###
 
+        if [[ -f "flake.nix" && -z "$IN_NIX_SHELL" ]]; then
+          nix develop
+        fi
+
+        # TODO: transition out
         if [[ -f "devbox.json" && -z "$DEVBOX_SHELL_ENABLED" ]]; then
           devbox shell
         fi
