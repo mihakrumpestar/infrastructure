@@ -40,8 +40,8 @@
       pango.out
       wayland-scanner.out
       wayland.out
-      xorg.libSM.out
-      xorg.libX11.out
+      libsm.out
+      libx11.out
     ];
 in
   pkgs.writeShellScriptBin "virtualhere-client-gui" ''

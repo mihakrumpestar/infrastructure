@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  vars,
   ...
 }: let
   store-secrets = config.my.store-secrets.secrets;
@@ -163,7 +164,7 @@ in {
     # code --diff users/krumpy-miha/home/ide/settings.json ~/.config/VSCodium/User/settings.json
     ".config/VSCodium/User/settings.json".source =
       pkgs.replaceVars
-      ./settings.json {
+      ./vscode-settings.jsonc {
         inherit (store-secrets) languagetool_server;
       };
 
@@ -188,10 +189,9 @@ in {
       Type = "simple";
       TimeoutStartSec = 60;
       WorkingDirectory = "%h";
-      ExecStartPre = "${pkgs.iputils}/bin/ping -c 1 -W 5 1.1.1.1"; # Make sure we are actually online
       ExecStart = "${pkgs.opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
       Environment = "OPENCODE_CONFIG=${./opencode.jsonc}";
-      EnvironmentFile = "%h/.secrets/opencode";
+      EnvironmentFile = config.age.secrets."llm_api_keys.env".path;
 
       Restart = "on-failure";
       RestartSec = 5;
@@ -200,5 +200,10 @@ in {
     Install = {
       WantedBy = ["graphical-session.target"];
     };
+  };
+
+  age.secrets."llm_api_keys.env" = {
+    file = /${vars.secretsDir}/secrets/users/krumpy-miha/llm_api_keys.env.age;
+    path = "${config.home.homeDirectory}/.agenix/secrets/llm_api_keys.env";
   };
 }

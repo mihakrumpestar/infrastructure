@@ -29,5 +29,8 @@ Reference configs:
 
 TODO:
 
+- https://github.com/nix-community/lanzaboote
 - https://github.com/yorukot/superfile
 - https://github.com/amadejkastelic/nixos-config/tree/main/hosts/server
+- https://nixos-and-flakes.thiscute.world/nixos-with-flakes/modularize-the-configuration
+- https://docs.nixbuild.net/remote-builds/

@@ -14,6 +14,7 @@ in {
   stylix.targets.zen-browser.profileNames = ["default"];
 
   programs.zen-browser = {
+    suppressXdgMigrationWarning = true;
     enable = true;
     nativeMessagingHosts = with pkgs; [
       keepassxc

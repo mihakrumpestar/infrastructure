@@ -8,13 +8,16 @@
   "remote.SSH.defaultExtensions": ["ms-azuretools.vscode-docker"],
   "files.associations": {
     "devbox.json": "jsonc",
-    "*.tpl": "hcl"
+    "*.tpl": "hcl",
   },
   "diffEditor.ignoreTrimWhitespace": false,
   "workbench.panel.defaultLocation": "right",
   "notebook.lineNumbers": "on",
   "workbench.editorAssociations": {
-    "*.svg": "default" // Prevent default image preview
+    "*.svg": "default", // Prevent default image preview
+  },
+  "json.schemaDownload.trustedDomains": {
+    "https://opencode.ai/config.json": true,
   },
 
   "window.zoomLevel": 0.4,
@@ -43,7 +46,7 @@
     "!**/.quarto",
     "!**/.temp",
     "!**/.tmp",
-    "!**/assets"
+    "!**/assets",
   ],
   "markdownlint.run": "onSave",
 
@@ -60,10 +63,10 @@
   // Drawio
   "hediet.vscode-drawio.theme": "Kennedy",
   "hediet.vscode-drawio.defaultVertexStyle": {
-    "fontSize": 16
+    "fontSize": 16,
   },
   "hediet.vscode-drawio.defaultEdgeStyle": {
-    "fontSize": 16
+    "fontSize": 16,
   },
 
   // LanguageTool
@@ -94,7 +97,7 @@
     "go",
     "javascript",
     "python",
-    "typescript"
+    "typescript",
   ],
 
   // Gitblame
@@ -111,14 +114,14 @@
   "[quarto]": {
     "editor.defaultFormatter": "quarto.quarto",
     "editor.tabSize": 3,
-    "editor.insertSpaces": true
+    "editor.insertSpaces": true,
   },
 
   // Latex
   "latex-workshop.latex.outDir": "%DIR%/tmp",
   "latex-workshop.formatting.latex": "tex-fmt",
   "[latex]": {
-    "editor.wordWrap": "on"
+    "editor.wordWrap": "on",
   },
 
   // Nix
@@ -127,20 +130,20 @@
   "nix.serverSettings": {
     "nixd": {
       "formatting": {
-        "command": ["alejandra"]
+        "command": ["alejandra"],
       },
       "options": {
         // By default, this entry will be read from `import <nixpkgs> { }`
         // You can write arbitrary nix expression here, to produce valid "options" declaration result.
         // Tip: for flake-based configuration, utilize `builtins.getFlake`
         "nixos": {
-          "expr": "(builtins.getFlake (\"file://\" + toString ./.)).nixosConfigurations.personal-workstation.options"
+          "expr": "(builtins.getFlake (\"file://\" + toString ./.)).nixosConfigurations.personal-workstation.options",
         },
         "home-manager": {
-          "expr": "(builtins.getFlake (\"file://\" + toString ./.)).homeConfigurations.personal-workstation.options"
-        }
-      }
-    }
+          "expr": "(builtins.getFlake (\"file://\" + toString ./.)).homeConfigurations.personal-workstation.options",
+        },
+      },
+    },
   },
   //"nix.hiddenLanguageServerErrors": [
   //  "textDocument/definition",
@@ -150,24 +153,24 @@
     "editor.defaultFormatter": "kamadorueda.alejandra",
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
-    "editor.formatOnType": false
+    "editor.formatOnType": false,
   },
   "alejandra.program": "alejandra",
 
   // HTML
   "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
 
   // MDX
   "[mdx]": {
     "editor.wordWrap": "on",
-    "editor.defaultFormatter": "unifiedjs.vscode-mdx"
+    "editor.defaultFormatter": "unifiedjs.vscode-mdx",
   },
 
   // Go
   "[go]": {
-    "editor.defaultFormatter": "golang.go"
+    "editor.defaultFormatter": "golang.go",
   },
   "go.diagnostic.vulncheck": "Imports",
   "go.inlayHints.compositeLiteralFields": true,
@@ -181,5 +184,5 @@
   "go.toolsManagement.autoUpdate": true,
 
   // Yaml
-  "redhat.telemetry.enabled": false
+  "redhat.telemetry.enabled": false,
 }

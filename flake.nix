@@ -5,6 +5,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nur.url = "github:nix-community/NUR";
 
+    flake-utils.url = "github:numtide/flake-utils";
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,7 +37,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    zen-browser.url = "github:0xc000022070/zen-browser-flake";
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
 
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
 
@@ -44,6 +52,7 @@
 
   outputs = {
     nixpkgs,
+    flake-utils,
     consul-cni-flake,
     opencode,
     ...
@@ -52,9 +61,12 @@
       secretsDir = ./infrastructure-secrets;
     };
 
-    mkNixosConfiguration = {hostName}:
+    mkNixosConfiguration = {
+      hostName,
+      system,
+    }:
       nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
+        inherit system;
         specialArgs =
           {
             inherit vars;
@@ -68,23 +80,49 @@
           ./.
         ];
       };
-  in {
-    nixosConfigurations = {
-      personal-workstation = mkNixosConfiguration {
-        hostName = "personal-workstation";
+  in
+    {
+      nixosConfigurations = {
+        personal-workstation = mkNixosConfiguration {
+          hostName = "personal-workstation";
+          system = "x86_64-linux";
+        };
+        personal-laptop = mkNixosConfiguration {
+          hostName = "personal-laptop";
+          system = "x86_64-linux";
+        };
+        server-01 = mkNixosConfiguration {
+          hostName = "server-01";
+          system = "x86_64-linux";
+        };
+        server-03 = mkNixosConfiguration {
+          hostName = "server-03";
+          system = "x86_64-linux";
+        };
+        kiosk = mkNixosConfiguration {
+          hostName = "kiosk";
+          system = "x86_64-linux";
+        };
       };
-      personal-laptop = mkNixosConfiguration {
-        hostName = "personal-laptop";
+    }
+    // flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      devShells.default = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          go-task
+          pre-commit
+          alejandra
+          deadnix
+          statix
+        ];
+
+        shellHook = ''
+          pre-commit autoupdate
+          pre-commit install
+
+          task decrypt
+        '';
       };
-      server-01 = mkNixosConfiguration {
-        hostName = "server-01";
-      };
-      server-03 = mkNixosConfiguration {
-        hostName = "server-03";
-      };
-      kiosk = mkNixosConfiguration {
-        hostName = "kiosk";
-      };
-    };
-  };
+    });
 }

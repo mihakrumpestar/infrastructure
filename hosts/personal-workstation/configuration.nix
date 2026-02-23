@@ -50,10 +50,10 @@
           wget
           pkgsi686Linux.libpulseaudio
           pkgsi686Linux.freetype
-          pkgsi686Linux.xorg.libXcursor
-          pkgsi686Linux.xorg.libXcomposite
-          pkgsi686Linux.xorg.libXi
-          pkgsi686Linux.xorg.libXrandr
+          pkgsi686Linux.libxcursor
+          pkgsi686Linux.libxcomposite
+          pkgsi686Linux.libxi
+          pkgsi686Linux.libxrandr
         ];
       };
   };

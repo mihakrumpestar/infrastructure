@@ -8,7 +8,6 @@
   // Provider configuration
   // Docs: https://opencode.ai/config.json
   // Models reference: https://models.dev/api.json and use OpenRouter as provider (search for Kimi K2.5)
-  // To use: Create ~/.secrets/opencode file with content: BYTEPLUS_API_KEY=your-key
   "provider": {
     "byteplus": {
       "npm": "@ai-sdk/openai-compatible",

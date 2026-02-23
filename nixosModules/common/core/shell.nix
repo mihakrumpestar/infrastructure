@@ -23,8 +23,8 @@
     mplus-outline-fonts.githubRelease
     dina-font
     proggyfonts
-    xorg.fontadobe75dpi
-    xorg.fontadobe100dpi
+    font-adobe-75dpi
+    font-adobe-100dpi
   ];
 
   nixpkgs.config.permittedInsecurePackages = [

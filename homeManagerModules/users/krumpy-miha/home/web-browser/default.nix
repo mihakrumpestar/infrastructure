@@ -2,21 +2,21 @@
   config,
   lib,
   pkgs,
-  zen-browser,
   ...
 }: let
   store-secrets = config.my.store-secrets.secrets;
 in {
-  home.packages = with pkgs;
-    [
-      brave
-      chromium
-      # ladybird # Build unstable-2025-06-27 fails
-      #floorp-bin
-    ]
-    ++ [
-      zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default
-    ];
+  home.packages = with pkgs; [
+    brave
+    chromium
+    # ladybird # Build unstable-2025-06-27 fails
+    #floorp-bin
+  ];
+
+  programs.zen-browser = {
+    enable = true;
+    suppressXdgMigrationWarning = true;
+  };
 
   # Docs:
   # https://github.com/NiXium-org/NiXium/blob/central/src/nixos/users/kira/home/modules/web-browsers/firefox/firefox.nix
