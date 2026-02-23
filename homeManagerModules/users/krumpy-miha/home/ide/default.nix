@@ -150,7 +150,7 @@ in {
           vscode-ltex-plus-offline # https://ltex-plus.github.io/ltex-plus/advanced-usage.html
         ];
 
-      # Enable these 2 to prevent homeMnagaer's userSettings from being written
+      # Enable these 2 to prevent homeManager's userSettings from being written
       enableUpdateCheck = true;
       enableExtensionUpdateCheck = true;
     };

@@ -18,6 +18,7 @@
   },
   "json.schemaDownload.trustedDomains": {
     "https://opencode.ai/config.json": true,
+    "https://models.dev/model-schema.json": true,
   },
 
   "window.zoomLevel": 0.4,
