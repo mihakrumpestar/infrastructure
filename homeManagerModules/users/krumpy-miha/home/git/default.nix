@@ -91,7 +91,14 @@ in {
           insteadOf = "git@github.com:${company_01}";
         };
       };
-      alias = {
+      alias = let
+        mkAcpAlias = prefix: let
+          script = pkgs.writeScriptBin "git-${prefix}" ''
+            #!/usr/bin/env bash
+            git acp "${prefix}: $*"
+          '';
+        in "!${script}/bin/git-${prefix}";
+      in {
         acp = let
           gitACP = pkgs.writeScriptBin "git-ACP" ''
             #!/usr/bin/env bash
@@ -110,6 +117,12 @@ in {
             git push;
           '';
         in "!${gitACP}/bin/git-ACP";
+        feat = mkAcpAlias "feat";
+        fix = mkAcpAlias "fix";
+        docs = mkAcpAlias "docs";
+        refactor = mkAcpAlias "refactor";
+        test = mkAcpAlias "test";
+        chore = mkAcpAlias "chore";
         setuser = let
           gitSetUser = pkgs.writeScriptBin "git-setuser" (builtins.readFile ./setuser.sh);
         in "!${gitSetUser}/bin/git-setuser";

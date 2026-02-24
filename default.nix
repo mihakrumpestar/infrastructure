@@ -8,6 +8,7 @@
   nixpkgs,
   nixvirt,
   zen-browser,
+  nix-index-database,
   vars,
   hostName,
   ...
@@ -17,6 +18,7 @@
     nixvirt.nixosModules.default
     agenix.nixosModules.default
     stylix.nixosModules.stylix
+    nix-index-database.nixosModules.default
     home-manager.nixosModules.home-manager
     {
       home-manager = {
@@ -26,6 +28,7 @@
         sharedModules = [
           nixvirt.homeModules.default
           zen-browser.homeModules.beta
+          nix-index-database.homeModules.default
           agenix.homeManagerModules.default
           {
             imports = [
@@ -36,7 +39,6 @@
         ];
         extraSpecialArgs = {
           inherit vars hostName;
-          inherit zen-browser;
         };
       };
     }
@@ -48,7 +50,6 @@
   nixpkgs.overlays = [
     nur.overlays.default
     nix-vscode-extensions.overlays.default
-    #customPackagesOverlay
   ];
 
   # For nixd to work properly

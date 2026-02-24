@@ -140,9 +140,10 @@
       };
 
       nix_shell = {
-        impure_msg = "📦 devbox";
+        impure_msg = "";
+        pure_msg = "";
         style = "bg:#06969A";
-        format = "[ $state ]($style)";
+        format = "[ $symbol$state(\($name\)) ]($style)";
       };
 
       # Miscelnous
@@ -206,7 +207,8 @@
     zip # Zip files
 
     # Development tools
-    devbox
+    devbox # Only one that supports zsh, "nix develop" does not
+    #devenv # Pollutes project root with too many files, currently it does not support zsh: https://github.com/cachix/devenv/issues/36
   ];
 
   # Default shell
@@ -216,30 +218,30 @@
     fzf.fuzzyCompletion = true; # Command-line fuzzy finder/search
     yazi.enable = true; # Terminal file manager
     pay-respects.enable = true;
-    command-not-found.enable = true;
+    nix-index.enable = true;
 
     zsh = {
       enable = true;
       histSize = 10000;
-      #extended = true;
-      #expireDuplicatesFirst = true;
-      #historySubstringSearch.enable = true;
-      #autosuggestion.enable = true;
+      autosuggestions.enable = true;
       syntaxHighlighting.enable = true;
+      # https://zsh.sourceforge.io/Doc/Release/Options.html
+      setOptions = [
+        "NO_BEEP"
+        "EXTENDED_HISTORY"
+        "HIST_IGNORE_DUPS"
+        "HIST_FIND_NO_DUPS"
+        "HIST_IGNORE_SPACE"
+        "HIST_SAVE_NO_DUPS"
+        "SHARE_HISTORY"
+      ];
       interactiveShellInit = ''
-        # Terminal
-        setopt NO_BEEP # Never beep
         export HIST_STAMPS="yyyy/mm/dd"
 
         # Set the default editor
         export EDITOR='codium --wait'
         export DIFFTOOL="codium --wait --diff $LOCAL $REMOTE"
         export VISUAL='codium'
-
-        # Other
-        export DEVBOX_NO_PROMPT=true
-
-        eval "$(pay-respects zsh --alias)"
 
         ### Bindkeys ###
 
@@ -252,23 +254,20 @@
         bindkey '^F' forward-char                # Ctrl + F (accept one character)
         bindkey '^[[Z' autosuggest-execute       # Shift + Tab (execute suggestion)
 
-        ### Subshell ###
-
-        if [[ -f "flake.nix" && -z "$IN_NIX_SHELL" ]]; then
-          nix develop
-        fi
-
-        # TODO: transition out
-        if [[ -f "devbox.json" && -z "$DEVBOX_SHELL_ENABLED" ]]; then
-          devbox shell
-        fi
-
         ### Stats ###
 
-        fastfetch
+        if [[ -z "$IN_NIX_SHELL" ]]; then
+          fastfetch
 
-        if [[ -d ".git" && "$PWD" != "$HOME" ]]; then
-          onefetch --no-color-palette
+          if [[ -d ".git" ]]; then
+            onefetch --no-color-palette
+          fi
+        fi
+
+        ### Subshell ###
+
+        if [[ -f "devbox.json" && -z "$IN_NIX_SHELL" ]]; then
+          devbox shell
         fi
       '';
       shellAliases = {
@@ -308,35 +307,14 @@
         # # Personal
         code = "codium";
       };
-      /*
-      envExtra = ''
-        restart-kde() {
-            killall plasmashell && kstart5 plasmashell &
-        }
-
-        # Searches for text in all files in the current folder
-        ftext() {
-            # -i case-insensitive
-            # -I ignore binary files
-            # -H causes filename to be printed
-            # -r recursive search
-            # -n causes line number to be printed
-            # optional: -F treat search term as a literal, not a regular expression
-            # optional: -l only print filenames and not the matching lines ex. grep -irl "\$1" *
-            grep -iIHrn --color=always "$1" . | less -r
-        }
-      '';
-      */
       ohMyZsh = {
         enable = true;
         plugins = [
           "colored-man-pages"
           "colorize"
-          "command-not-found"
           "emoji"
           "extract"
           "eza"
-          "fzf"
           "gh"
           "git-commit" # https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git-commit
           "gitfast"
