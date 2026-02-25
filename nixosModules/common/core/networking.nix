@@ -39,7 +39,7 @@ with lib; {
     # https://astro.github.io/microvm.nix/simple-network.html
     # Test:
     # networkctl
-    systemd.network = mkIf (config.my.hostType == "server") {
+    systemd.network = mkIf (config.my.hostType == "server" && config.my.hostSubType != "vm") {
       enable = true;
 
       # Bridge

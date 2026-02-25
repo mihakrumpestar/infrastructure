@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.16.0/.schema/devbox.schema.json",
+  "packages": [
+    "go-task@latest",
+    "pre-commit@latest",
+    "alejandra@latest",
+    "deadnix@latest",
+    "statix@latest"
+  ],
+  "env": {
+    "DEVBOX_NO_PROMPT": "true"
+  },
+  "shell": {
+    "init_hook": [
+      "pre-commit autoupdate",
+      "pre-commit install",
+      "task decrypt"
+    ],
+    "scripts": {
+      "test": ["echo \"Error: no test specified\" && exit 1"]
+    }
+  }
+}

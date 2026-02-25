@@ -13,6 +13,7 @@ in {
       ".ssh/identitiesS/home_pc.pub".text = sshI.home.pc;
       ".ssh/identitiesS/homelab_servers.pub".text = sshI.homelab.servers;
       ".ssh/identitiesS/homelab_vms.pub".text = sshI.homelab.vms;
+      ".ssh/identitiesS/personal_vps.pub".text = sshI.personal_vps;
       ".ssh/identitiesS/company_01_server_01.pub".text = sshI.company_01.server_01;
 
       # Git
@@ -81,6 +82,14 @@ in {
         hostname = "personal_vps_01";
         user = "root";
         identityFile = "~/.ssh/identities/homelab_vms.pub";
+        identitiesOnly = true;
+      };
+
+      "vps-02" = {
+        hostname = "vps-02";
+        user = "root";
+        port = 22222;
+        identityFile = "~/.ssh/identitiesS/personal_vps.pub";
         identitiesOnly = true;
       };
 

@@ -24,7 +24,7 @@ in {
       description = "What type is the host";
     };
     hostSubType = mkOption {
-      type = types.enum [false "kiosk"];
+      type = types.enum [false "kiosk" "vm"];
       default = false;
       description = "What subtype is the host";
     };

@@ -39,7 +39,7 @@ with lib; {
         allowedBridges = ["virbr0" "br0" "br1"];
       };
 
-      libvirt = mkIf (config.my.hostType == "server") {
+      libvirt = mkIf (config.my.hostType == "server" && config.my.hostSubType != "vm") {
         enable = true; # Enables libvirtd too
         connections."qemu:///system" = {
           pools = [
