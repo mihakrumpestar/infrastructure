@@ -52,7 +52,7 @@ in {
     # Golang
     go
     # Next pkgs are for the extension
-    gccgo
+    #gccgo
     gopls
     delve # dlv
     #vscgo
