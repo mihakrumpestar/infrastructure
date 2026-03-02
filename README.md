@@ -3,7 +3,7 @@
 Generate per machine TPM2 age key:
 
 ```sh
-nix-shell -p age-plugin-tpm --command "sudo age-plugin-tpm  -g"
+nix-shell -p age-plugin-tpm --command "sudo age-plugin-tpm -g"
 ```
 
 Stress test:

@@ -61,6 +61,11 @@
   } @ attrs: let
     vars = {
       secretsDir = ./infrastructure-secrets;
+
+      networkConfig = {
+        Gateway = ["10.0.0.1"];
+        DNS = ["9.9.9.9" "1.1.1.1"];
+      };
     };
 
     mkNixosConfiguration = {

@@ -83,7 +83,9 @@ with lib; {
                   content = {
                     type = "luks";
                     name = "crypted";
-                    passwordFile = "/tmp/disko-encryption-password.txt"; # This means it will give user an interactive password prompt
+                    # This means it will give user an interactive password prompt,
+                    # be carefull to not have trailing newline in file as unlocking will fail
+                    passwordFile = "/tmp/disko-encryption-password.txt";
                     settings = {
                       allowDiscards = true;
                       crypttabExtraOpts =
@@ -102,7 +104,7 @@ with lib; {
                         then ["tpm2-device=auto"]
                         # systemd-cryptenroll --tpm2-device=list
                         # systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=no --wipe-slot=all /dev/vda2
-                        # Test: systemd-cryptsetup attach mapping_name /dev/nvme0n1p2 none tpm2-device=auto
+                        # Test: systemd-cryptsetup attach <mapping_name> /dev/nvme0n1p2 none tpm2-device=auto
                         else [];
                     };
                     content = disk_content;

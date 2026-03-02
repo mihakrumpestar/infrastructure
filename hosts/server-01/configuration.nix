@@ -1,4 +1,4 @@
-let
+{vars, ...}: let
   nodeIPAddress = "10.0.30.10";
 in {
   my = {
@@ -14,13 +14,32 @@ in {
       enable = true;
       inherit nodeIPAddress;
     };
+
     hardware.nvidia.enable = false;
   };
 
   systemd.network = {
     networks = {
-      "40-br0".networkConfig.Address = ["${nodeIPAddress}/16"];
-      "40-nic0".networkConfig.Address = ["10.0.30.15/16"];
+      # Bridge
+      "40-br0" = {
+        matchConfig.Name = "br0";
+        networkConfig = vars.networkConfig // {Address = ["${nodeIPAddress}/16"];};
+        linkConfig.RequiredForOnline = "routable"; # carrier is not enough, as services require this ip
+      };
+
+      # Nics connected to bridge (main)
+      "30-pcie0" = {
+        matchConfig.Name = "pcie0";
+        networkConfig.Bridge = "br0";
+        linkConfig.RequiredForOnline = "enslaved";
+      };
+
+      # Build-in NIC
+      "40-nic0" = {
+        matchConfig.Name = "nic0";
+        networkConfig = vars.networkConfig // {Address = ["10.0.30.15/16"];};
+        linkConfig.RequiredForOnline = false; # Only br0 is required
+      };
     };
 
     links = {

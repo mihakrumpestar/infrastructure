@@ -51,35 +51,6 @@ with lib; {
           };
         };
       };
-
-      networks = let
-        networkConfig = {
-          # Address = [ "10.0.0.66/16" ]; # Set in host/configuration.nix
-          Gateway = ["10.0.0.1"];
-          DNS = ["9.9.9.9" "1.1.1.1"];
-        };
-      in {
-        # Bridge
-        "40-br0" = {
-          matchConfig.Name = "br0";
-          inherit networkConfig;
-          linkConfig.RequiredForOnline = "routable"; # carrier is not enough, as services require this ip
-        };
-
-        # Nics connected to bridge (main)
-        "30-pcie0" = {
-          matchConfig.Name = "pcie0";
-          networkConfig.Bridge = "br0";
-          linkConfig.RequiredForOnline = "enslaved";
-        };
-
-        # Build-in NIC
-        "40-nic0" = {
-          matchConfig.Name = "nic0";
-          inherit networkConfig;
-          linkConfig.RequiredForOnline = false; # Only br0 is required
-        };
-      };
     };
 
     boot.kernel.sysctl = {
