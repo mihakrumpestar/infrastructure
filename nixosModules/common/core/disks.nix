@@ -30,6 +30,7 @@ with lib; {
 
   config = let
     lanzabooteEnabled = config.my.disks.bootLoader == "lanzaboote";
+    tpm2Pcrs = "7+14";
   in {
     disko.devices = {
       disk = {
@@ -157,46 +158,71 @@ with lib; {
       inherit (pkgs) gawk coreutils gnugrep efibootmgr;
     in
       mkIf lanzabooteEnabled (stringAfter ["etc"] ''
-        # Get the device mounted at /boot from /proc/mounts
-        BOOT_DEV=$(${gawk}/bin/awk '$2 == "/boot" {print $1}' /proc/mounts | ${coreutils}/bin/head -1)
-        if [ -n "$BOOT_DEV" ]; then
-          # Get parent device (disk) and partition number
-          PART_DEV=$(${coreutils}/bin/basename "$BOOT_DEV")
-          DISK="/dev/$(${coreutils}/bin/basename "$(${coreutils}/bin/readlink -f "/sys/class/block/$PART_DEV/..")")"
-          PART_NUM=$(${coreutils}/bin/cat "/sys/class/block/$PART_DEV/partition")
+        # Only run during nixos-install
+        if [ -z "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+          true
+        else
+          BOOT_DEV=$(${gawk}/bin/awk '$2 == "/boot" {print $1}' /proc/mounts | ${coreutils}/bin/head -1)
+          if [ -n "$BOOT_DEV" ]; then
+            PART_DEV=$(${coreutils}/bin/basename "$BOOT_DEV")
+            DISK="/dev/$(${coreutils}/bin/basename $(${coreutils}/bin/readlink -f "/sys/class/block/$PART_DEV/.."))"
+            PART_NUM=$(${coreutils}/bin/cat "/sys/class/block/$PART_DEV/partition")
 
-          ENTRY_NAME="NixOS"
-          ESP_PATH="\EFI\BOOT\BOOTX64.EFI"
+            # Remove existing NixOS entries
+            ENTRIES=$(${efibootmgr}/bin/efibootmgr 2>/dev/null | ${gnugrep}/bin/grep -oP 'Boot\K[0-9A-F]+(?=\*.*NixOS)')
+            for entry in $ENTRIES; do
+              ${efibootmgr}/bin/efibootmgr -b "$entry" -B 2>/dev/null || true
+            done
 
-          CURRENT_ENTRIES=$(${efibootmgr}/bin/efibootmgr 2>/dev/null)
-          ENTRY_NUM=$(echo "$CURRENT_ENTRIES" | ${gnugrep}/bin/grep -oP "Boot\K[0-9A-F]+(?=\*.*$ENTRY_NAME)" | ${coreutils}/bin/head -1)
-
-          if [ -n "$ENTRY_NUM" ]; then
-            echo "EFI boot entry '$ENTRY_NAME' already exists as Boot$ENTRY_NUM"
-
-            # Check if it's first in boot order
-            BOOT_ORDER=$(echo "$CURRENT_ENTRIES" | ${gnugrep}/bin/grep -oP "BootOrder: \K.*")
-            FIRST_ENTRY=$(echo "$BOOT_ORDER" | ${coreutils}/bin/cut -d',' -f1)
-
-            if [ "$FIRST_ENTRY" != "$ENTRY_NUM" ]; then
-              # Move it to first position
-              NEW_ORDER="$ENTRY_NUM"
-              for ENTRY in $(echo "$BOOT_ORDER" | ${coreutils}/bin/tr ',' ' '); do
-                if [ "$ENTRY" != "$ENTRY_NUM" ]; then
-                  NEW_ORDER="$NEW_ORDER,$ENTRY"
-                fi
-              done
-
-              echo "Setting boot order: $NEW_ORDER"
-              ${efibootmgr}/bin/efibootmgr -o "$NEW_ORDER"
-            else
-              echo "Boot entry is already first in boot order"
-            fi
-          else
+            # Create new entry
             echo "Creating EFI boot entry on $DISK partition $PART_NUM"
-            ${efibootmgr}/bin/efibootmgr -c -d "$DISK" -p "$PART_NUM" -L "$ENTRY_NAME" -l "$ESP_PATH"
+            ${efibootmgr}/bin/efibootmgr -c -d "$DISK" -p "$PART_NUM" -L "NixOS" -l '\EFI\BOOT\BOOTX64.EFI'
           fi
         fi
       '');
+
+    systemd.services.tpm2-cryptenroll = mkIf (lanzabooteEnabled && config.my.disks.encryptRoot == "tpm2") {
+      description = "Enroll TPM2 for LUKS decryption after Secure Boot is fully active";
+      wantedBy = ["multi-user.target"];
+      after = ["boot.mount"];
+      requires = ["boot.mount"];
+
+      unitConfig.ConditionPathExists = "!/var/lib/tpm2-cryptenroll-done";
+
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+
+      path = [pkgs.cryptsetup pkgs.systemd pkgs.coreutils pkgs.mokutil];
+
+      script = ''
+        LUKS_DEVICE="${config.boot.initrd.luks.devices.crypted.device}"
+
+        # Check Secure Boot is enabled
+        SECURE_BOOT_STATE=$(${pkgs.mokutil}/bin/mokutil --sb-state 2>/dev/null | ${pkgs.coreutils}/bin/head -1)
+        if [ "$SECURE_BOOT_STATE" != "SecureBoot enabled" ]; then
+          echo "Secure Boot not enabled (state: $SECURE_BOOT_STATE), skipping TPM2 enrollment"
+          exit 0
+        fi
+
+        echo "Enrolling TPM2 with PCRs ${tpm2Pcrs} for $LUKS_DEVICE"
+
+        if systemd-cryptenroll \
+          --tpm2-pcrs=${tpm2Pcrs} \
+          --unlock-tpm2-device=auto \
+          --tpm2-device=auto \
+          --tpm2-with-pin=no \
+          --wipe-slot=all \
+          "$LUKS_DEVICE"; then
+          touch /var/lib/tpm2-cryptenroll-done
+          echo "TPM2 enrollment complete, rebooting..."
+          systemctl reboot
+        else
+          echo "TPM2 enrollment failed"
+          exit 1
+        fi
+      '';
+    };
   };
 }
