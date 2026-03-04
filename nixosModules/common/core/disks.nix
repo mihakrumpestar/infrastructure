@@ -135,6 +135,9 @@ with lib; {
         efi.canTouchEfiVariables = !lanzabooteEnabled;
       };
 
+      # sbctl status
+      # sbctl verify
+      # bootctl status
       lanzaboote = mkIf lanzabooteEnabled {
         enable = true;
         pkiBundle = "/var/lib/sbctl";
