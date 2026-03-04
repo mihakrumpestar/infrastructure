@@ -9,6 +9,7 @@
   nixvirt,
   zen-browser,
   nix-index-database,
+  lanzaboote,
   vars,
   hostName,
   ...
@@ -20,6 +21,7 @@
     stylix.nixosModules.stylix
     nix-index-database.nixosModules.default
     home-manager.nixosModules.home-manager
+    lanzaboote.nixosModules.lanzaboote
     {
       home-manager = {
         useGlobalPkgs = true;

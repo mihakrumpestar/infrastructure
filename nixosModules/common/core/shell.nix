@@ -185,6 +185,7 @@
     rclone
     rsync
     gh
+    jq
     fastfetch # New Neofetch
     onefetch # Neofetch/fastfetch for Git
     ipfetch # Neofetch for IPs

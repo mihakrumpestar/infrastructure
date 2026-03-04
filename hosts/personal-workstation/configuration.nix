@@ -37,8 +37,8 @@
   # cd faf-linux
   # steam-run bash
   # ./setup.sh
-  # .run
-  # .run-offline
+  # ./run
+  # ./run-offline
   programs.steam = {
     enable = true;
     package = with pkgs;

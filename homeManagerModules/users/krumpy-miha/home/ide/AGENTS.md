@@ -8,6 +8,7 @@
 - always use MCP tools to fetch up-to-date information
 - do not overengineer
 - if you do not understand something or something is strange, ask me or raise concern
+- do not remove comments, unless explicitly told to do so
 
 ## MCP tools
 

@@ -6,12 +6,13 @@ in {
       bootDisk = "/dev/sda";
       swapSize = "16G";
       encryptRoot = "tpm2";
+      bootLoader = "lanzaboote";
     };
 
     hostType = "server";
 
     orchestrator = {
-      enable = true;
+      enable = false;
       inherit nodeIPAddress;
     };
   };

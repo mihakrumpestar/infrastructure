@@ -1,15 +1,16 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 with lib; {
   options.my = {
     disks = {
       bootLoader = mkOption {
-        type = types.enum ["systemd-boot" "grub"];
+        type = types.enum ["systemd-boot" "grub" "lanzaboote"];
         default = "systemd-boot";
-        description = "Which boot loader to use, grub for VMs and systemd-boot for everything else";
+        description = "Which boot loader to use: grub for VMs, systemd-boot default, lanzaboote for Secure Boot";
       };
       bootDisk = mkOption {
         type = types.str;
@@ -27,7 +28,9 @@ with lib; {
     };
   };
 
-  config = {
+  config = let
+    lanzabooteEnabled = config.my.disks.bootLoader == "lanzaboote";
+  in {
     disko.devices = {
       disk = {
         system = {
@@ -42,8 +45,8 @@ with lib; {
                 priority = 1;
               };
               ESP = {
-                size = "2G"; # Larger than normal EFI partition; default is 512M
-                type = "EF00"; # EFI System Partition
+                size = "2G";
+                type = "EF00";
                 content = {
                   type = "filesystem";
                   format = "vfat";
@@ -51,7 +54,6 @@ with lib; {
                 };
               };
               root = let
-                # /dev/disk/by-partlabel/disk-system-root
                 disk_content = {
                   type = "btrfs";
                   extraArgs = ["-f"];
@@ -101,7 +103,8 @@ with lib; {
                         #
                         # systemd-cryptenroll --unlock-fido2-device=/dev/hidraw1 --fido2-device=/dev/hidraw1 --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
                         else if config.my.disks.encryptRoot == "tpm2"
-                        then ["tpm2-device=auto"]
+                        then ["tpm2-device=auto" "tpm2-measure-pcr=yes"]
+                        # PCR-15 does not unlock volume, TODO: check if other systems have same problem
                         # systemd-cryptenroll --tpm2-device=list
                         # systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=no --wipe-slot=all /dev/vda2
                         # Test: systemd-cryptsetup attach <mapping_name> /dev/nvme0n1p2 none tpm2-device=auto
@@ -120,12 +123,27 @@ with lib; {
       };
     };
 
+    environment.systemPackages = mkIf lanzabooteEnabled [
+      pkgs.sbctl
+    ];
+
     boot = {
-      # Boot configuration
       loader = {
         systemd-boot.enable = config.my.disks.bootLoader == "systemd-boot";
         grub.enable = config.my.disks.bootLoader == "grub";
-        efi.canTouchEfiVariables = true;
+        efi.canTouchEfiVariables = !lanzabooteEnabled;
+      };
+
+      lanzaboote = mkIf lanzabooteEnabled {
+        enable = true;
+        pkiBundle = "/var/lib/sbctl";
+        autoGenerateKeys.enable = true;
+        autoEnrollKeys = {
+          enable = true;
+          includeMicrosoftKeys = false;
+          allowBrickingMyMachine = true;
+          autoReboot = true;
+        };
       };
 
       initrd.systemd = mkIf (config.my.disks.encryptRoot != false) {
@@ -134,5 +152,51 @@ with lib; {
         tpm2.enable = config.my.disks.encryptRoot == "tpm2";
       };
     };
+
+    system.activationScripts.lanzaboote-efi-entry = let
+      inherit (pkgs) gawk coreutils gnugrep efibootmgr;
+    in
+      mkIf lanzabooteEnabled (stringAfter ["etc"] ''
+        # Get the device mounted at /boot from /proc/mounts
+        BOOT_DEV=$(${gawk}/bin/awk '$2 == "/boot" {print $1}' /proc/mounts | ${coreutils}/bin/head -1)
+        if [ -n "$BOOT_DEV" ]; then
+          # Get parent device (disk) and partition number
+          PART_DEV=$(${coreutils}/bin/basename "$BOOT_DEV")
+          DISK="/dev/$(${coreutils}/bin/basename "$(${coreutils}/bin/readlink -f "/sys/class/block/$PART_DEV/..")")"
+          PART_NUM=$(${coreutils}/bin/cat "/sys/class/block/$PART_DEV/partition")
+
+          ENTRY_NAME="NixOS"
+          ESP_PATH="\EFI\BOOT\BOOTX64.EFI"
+
+          CURRENT_ENTRIES=$(${efibootmgr}/bin/efibootmgr 2>/dev/null)
+          ENTRY_NUM=$(echo "$CURRENT_ENTRIES" | ${gnugrep}/bin/grep -oP "Boot\K[0-9A-F]+(?=\*.*$ENTRY_NAME)" | ${coreutils}/bin/head -1)
+
+          if [ -n "$ENTRY_NUM" ]; then
+            echo "EFI boot entry '$ENTRY_NAME' already exists as Boot$ENTRY_NUM"
+
+            # Check if it's first in boot order
+            BOOT_ORDER=$(echo "$CURRENT_ENTRIES" | ${gnugrep}/bin/grep -oP "BootOrder: \K.*")
+            FIRST_ENTRY=$(echo "$BOOT_ORDER" | ${coreutils}/bin/cut -d',' -f1)
+
+            if [ "$FIRST_ENTRY" != "$ENTRY_NUM" ]; then
+              # Move it to first position
+              NEW_ORDER="$ENTRY_NUM"
+              for ENTRY in $(echo "$BOOT_ORDER" | ${coreutils}/bin/tr ',' ' '); do
+                if [ "$ENTRY" != "$ENTRY_NUM" ]; then
+                  NEW_ORDER="$NEW_ORDER,$ENTRY"
+                fi
+              done
+
+              echo "Setting boot order: $NEW_ORDER"
+              ${efibootmgr}/bin/efibootmgr -o "$NEW_ORDER"
+            else
+              echo "Boot entry is already first in boot order"
+            fi
+          else
+            echo "Creating EFI boot entry on $DISK partition $PART_NUM"
+            ${efibootmgr}/bin/efibootmgr -c -d "$DISK" -p "$PART_NUM" -L "$ENTRY_NAME" -l "$ESP_PATH"
+          fi
+        fi
+      '');
   };
 }

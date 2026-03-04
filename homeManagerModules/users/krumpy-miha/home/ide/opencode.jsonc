@@ -1,13 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
 
-  "theme": "opencode",
-  //"model": "moonshotai/kimi-k2.5",
   "autoupdate": false,
 
   // Provider configuration
   // Docs: https://opencode.ai/config.json
   // Models reference: https://models.dev/api.json and use OpenRouter as provider (search for Kimi K2.5)
+  /*
   "provider": {
     "byteplus": {
       "npm": "@ai-sdk/openai-compatible",
@@ -39,6 +38,7 @@
       },
     },
   },
+  */
 
   // Use with: `use the <tool_name> tool`
   // Debug: opencode mcp list
