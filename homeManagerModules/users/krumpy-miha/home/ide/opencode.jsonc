@@ -55,6 +55,9 @@
       "type": "local",
       "command": ["go", "run", "github.com/mrjoshuak/godoc-mcp@latest"],
       "enabled": true,
+      "environment": {
+        "CGO_ENABLED": "0",
+      },
     },
     "nixos": {
       "type": "local",
