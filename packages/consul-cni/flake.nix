@@ -17,11 +17,11 @@
     packages.${system}.consul-cni = let
       consul-cni-unwrapped = pkgs.stdenv.mkDerivation rec {
         pname = "consul-cni-unwrapped";
-        version = "1.9.0";
+        version = "1.9.5";
 
         src = pkgs.fetchurl {
           url = "https://releases.hashicorp.com/consul-cni/${version}/consul-cni_${version}_linux_amd64.zip";
-          sha256 = "sha256-dSP6udVYrDOeBK79fnCe4saif88bn8aB1Iq/BSdYM0U=";
+          sha256 = "sha256-zUSht1zouaXYVP67lAs6Xx6/TfoXqy8G7YHLNAhyx8U=";
         };
         sourceRoot = ".";
 

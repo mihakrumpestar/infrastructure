@@ -6,7 +6,6 @@
   nur,
   nix-vscode-extensions,
   nixpkgs,
-  nixvirt,
   zen-browser,
   nix-index-database,
   lanzaboote,
@@ -16,7 +15,6 @@
 }: {
   imports = [
     disko.nixosModules.disko
-    nixvirt.nixosModules.default
     agenix.nixosModules.default
     stylix.nixosModules.stylix
     nix-index-database.nixosModules.default
@@ -28,7 +26,6 @@
         useUserPackages = true;
         backupFileExtension = "backup";
         sharedModules = [
-          nixvirt.homeModules.default
           zen-browser.homeModules.beta
           nix-index-database.homeModules.default
           agenix.homeManagerModules.default

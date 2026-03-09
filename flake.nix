@@ -25,11 +25,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixvirt = {
-      url = "github:AshleyYakeley/NixVirt";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     opencode = {
       url = "github:anomalyco/opencode";
       inputs.nixpkgs.follows = "nixpkgs";

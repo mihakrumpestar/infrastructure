@@ -18,6 +18,9 @@
   };
 in {
   home.packages = with pkgs; [
+    # Task runner
+    go-task
+
     # LLM
     opencode
 
@@ -199,6 +202,10 @@ in {
     Install = {
       WantedBy = ["graphical-session.target"];
     };
+  };
+
+  home.sessionVariables = {
+    CGO_ENABLED = "0";
   };
 
   age.secrets."llm_api_keys.env" = {
