@@ -41,6 +41,7 @@ in {
     # Python
     python3
     basedpyright
+    uv
 
     # LSP (language server)
     # Nix
@@ -203,6 +204,14 @@ in {
       WantedBy = ["graphical-session.target"];
     };
   };
+
+  # For "uv"
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.local/bin"
+  ];
+
+  # For OpenCode statistics
+  # uv tool install git+https://github.com/Shlomob/ocmonitor-share.git
 
   home.sessionVariables = {
     CGO_ENABLED = "0";
