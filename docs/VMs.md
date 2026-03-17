@@ -1,5 +1,7 @@
 # VMs
 
+> Thise docs are incomplete, since we don't have a unified VM setup.
+
 ```sh
 virt-manager -c 'qemu+ssh://server-03/system'
 ```

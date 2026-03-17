@@ -1,25 +1,5 @@
 # Security
 
-## Nix-SOPS
-
-Generate your own age key:
-
-```sh
-age-keygen
-```
-
-Get machines age key (from their public ssh):
-
-```sh
-ssh-keyscan -t ed25519 <server IP or hostname> | grep -v '^#' | ssh-to-age
-```
-
-If you update keys, run:
-
-```sh
-sopstool updatekeys
-```
-
 ## OnlyKey
 
 OnlyKey:

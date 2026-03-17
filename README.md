@@ -1,6 +1,6 @@
 # Infrastructure
 
-Generate per machine TPM2 age key:
+Generate per machine TPM 2.0 age key:
 
 ```sh
 nix-shell -p age-plugin-tpm --command "sudo age-plugin-tpm -g"
@@ -29,7 +29,6 @@ Reference configs:
 
 TODO:
 
-- https://github.com/nix-community/lanzaboote
 - https://github.com/yorukot/superfile
 - https://github.com/amadejkastelic/nixos-config/tree/main/hosts/server
 - https://nixos-and-flakes.thiscute.world/nixos-with-flakes/modularize-the-configuration

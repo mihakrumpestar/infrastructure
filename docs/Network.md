@@ -1,6 +1,8 @@
 # Network
 
-## Stats
+## Systemd network
+
+Stats:
 
 ```sh
 networkctl list

@@ -1,6 +1,10 @@
 # Shortcuts
 
 ```text
+# # #
+# # # KDE
+# # #
+
 # # Starting and Stopping Applications
 Meta                # Open the Application Launcher
 Alt+Space / Alt+F2  # Run Command Interface
@@ -41,7 +45,7 @@ Ctrl+Alt+Del    # Leave
 
 # # Terminal
 Ctrl+W # Delete a word backward
-Ctrl+U # K ills the whole line
+Ctrl+U # Kills the whole line
 
 # # #
 # # # Extra
