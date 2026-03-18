@@ -64,12 +64,6 @@
       "command": ["nix", "run", "github:utensils/mcp-nixos", "--"],
       "enabled": true,
     },
-    // https://github.com/VectifyAI/pageindex-mcp // Why does it require login?
-    //"pageindex": {
-    //  "type": "local",
-    //  "command": ["bunx", "-y", "pageindex-mcp"],
-    //  "enabled": true
-    //}
   },
 
   "plugin": ["cc-safety-net"],

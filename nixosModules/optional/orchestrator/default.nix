@@ -326,7 +326,7 @@ in {
       };
     };
 
-    # TODO: In testing
+    # TODO: In testing, does not work
     environment.etc."cni/config/lan.conflist".text = ''
       {
         "cniVersion": "0.4.0",

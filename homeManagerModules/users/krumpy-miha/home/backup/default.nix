@@ -17,7 +17,7 @@ with lib; {
 
     systemd.user.services.backrest = {
       Unit = {
-        Description = "ResticWeb";
+        Description = "Backrest";
         After = ["network.target"];
       };
 
@@ -36,7 +36,7 @@ with lib; {
       };
     };
 
-    my.home.mutableFile.".config/backrest/config.json".source =
+    home.mutableFile.".config/backrest/config.json".source =
       pkgs.replaceVars
       ./config.json
       {

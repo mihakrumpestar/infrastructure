@@ -63,13 +63,13 @@ tasks:
 
   tidy:
     cmds:
-      - alejandra --check --exclude ./.devbox --exclude ./secrets ./
-      - deadnix --exclude ./secrets --no-underscore
+      - alejandra --check --exclude ./.devbox --exclude ./infrastructure-secrets ./
+      - deadnix --exclude ./infrastructure-secrets --no-underscore
       - statix check
 
   update:
     desc: |
-      Can update also a specific input with: task update -- opencode
+      Can also update a specific input with: task update -- opencode
     cmds:
       - nix flake update --flake path:{{.PWD}} {{.CLI_ARGS}} # Using just "path:." does not work as it wants absolute path
 

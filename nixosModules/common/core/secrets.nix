@@ -8,10 +8,7 @@
 }: let
   age_host_identity = pkgs.writeText "age_identitiy" (builtins.readFile /${vars.secretsDir}/secrets/hosts/${hostName}.txt);
 
-  # age-with-tpm gets the following error on boot (but works on rebuild switch):
-  # > age: error: tpm plugin: failed to read line: EOF
-  # apperently was solved with migration to rage, age apperently has problem parsing multiple TPM recipients
-  # https://github.com/Foxboron/age-plugin-tpm/issues/8
+  # age does not find executable file "age-with-tpm" in env by default
   age-with-tpm = let
     wrapped = pkgs.age.withPlugins (ps: [ps.age-plugin-tpm]);
   in
@@ -22,22 +19,11 @@
           mainProgram = "age";
         };
     });
-
-  rage-with-tpm =
-    pkgs.runCommand "rage-with-tpm"
-    {
-      nativeBuildInputs = [pkgs.makeWrapper];
-      propagatedBuildInputs = [pkgs.rage];
-    }
-    ''
-      makeWrapper ${pkgs.rage}/bin/rage $out/bin/rage \
-        --prefix PATH : "${pkgs.lib.makeBinPath [pkgs.age-plugin-tpm]}"
-    ''
-    // {meta.mainProgram = "rage";};
 in {
+  # systemctl status --user agenix-istall-service.service
   age = {
     identityPaths = [age_host_identity];
-    ageBin = lib.getExe rage-with-tpm;
+    ageBin = lib.getExe age-with-tpm;
   };
 
   home-manager.sharedModules = [
@@ -45,14 +31,13 @@ in {
       # systemctl status --user agenix.service
       age = {
         inherit (config.age) identityPaths;
-        package = rage-with-tpm;
+        package = age-with-tpm;
       };
     }
   ];
 
   environment.systemPackages = with pkgs; [
     age-with-tpm
-    rage-with-tpm
     age-plugin-tpm
   ];
 

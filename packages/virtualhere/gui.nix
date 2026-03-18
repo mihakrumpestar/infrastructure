@@ -44,7 +44,10 @@
       libx11.out
     ];
 in
-  pkgs.writeShellScriptBin "virtualhere-client-gui" ''
-    export NIX_LD_LIBRARY_PATH='${NIX_LD_LIBRARY_PATH}'${"\${NIX_LD_LIBRARY_PATH:+':'}$NIX_LD_LIBRARY_PATH"}
-    exec ${vhuit64}/bin/vhuit64 "$@"
+  pkgs.runCommand "virtualhere-client-gui" {
+    nativeBuildInputs = [pkgs.makeWrapper];
+  } ''
+    makeWrapper ${vhuit64}/bin/vhuit64 $out/bin/virtualhere-client-gui \
+      --prefix PATH : "${pkgs.kmod}/bin" \
+      --set NIX_LD_LIBRARY_PATH '${NIX_LD_LIBRARY_PATH}'
   ''

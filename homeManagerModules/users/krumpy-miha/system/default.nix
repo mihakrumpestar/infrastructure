@@ -2,10 +2,10 @@
   config,
   pkgs,
   lib,
-  username,
   ...
 }:
 with lib; let
+  username = builtins.baseNameOf (builtins.dirOf (builtins.toString ./.));
   store-secrets = config.home-manager.users.${username}.my.store-secrets.secrets;
 in {
   config = mkIf (builtins.elem username config.my.users) {
@@ -29,7 +29,10 @@ in {
     # Security
     hardware.onlykey.enable = true;
 
-    my.services.virtualhere.enable = true;
+    # https://github.com/trustcrypto/python-onlykey/issues/82#issuecomment-3503421686
+    nixpkgs.config.permittedInsecurePackages = [
+      "python3.13-ecdsa-0.19.1"
+    ];
 
     # Docs: https://wiki.nixos.org/wiki/Yubikey
     security.pam = {

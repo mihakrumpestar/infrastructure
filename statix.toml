@@ -1,1 +1,1 @@
-disabled = ["bool_comparison", "repeated_keys"]
+disabled = ["bool_comparison", "repeated_keys", "empty_pattern"]

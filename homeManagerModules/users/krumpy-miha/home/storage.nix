@@ -76,7 +76,7 @@ in {
 
   # rclone listremotes
 
-  my.home.mutableFile.".config/Nextcloud/nextcloud.cfg".text = let
+  home.mutableFile.".config/Nextcloud/nextcloud.cfg".text = let
     inherit (store-secrets.nextcloud) username;
   in ''
     [General]

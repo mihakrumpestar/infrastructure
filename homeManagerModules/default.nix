@@ -3,6 +3,5 @@
 
   imports = [
     ./common
-    ./mutable-file
   ];
 }

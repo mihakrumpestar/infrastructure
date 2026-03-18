@@ -13,20 +13,17 @@ with lib; {
         "iommu=pt"
         "rd.driver.pre=vfio-pci"
       ];
+
+      # Nested virtualization
+      # cat /sys/module/kvm_amd/parameters/nested
       extraModprobeConfig = ''
         options kvm_amd nested=1
         options kvm_intel nested=1
 
         options kvm_intel emulate_invalid_guest_state=0
         options kvm ignore_msrs=1
-      ''; # Nested virtualization
-      # Validate: cat /sys/module/kvm_amd/parameters/nested
+      '';
     };
-
-    system.activationScripts.makeDefaultPool = lib.stringAfter ["var"] ''
-      mkdir -p /var/lib/libvirt/images
-      mkdir -p /var/lib/libvirt/iso
-    '';
 
     # Enable virtualization
     /*
@@ -39,6 +36,11 @@ with lib; {
         allowedBridges = ["virbr0" "br0" "br1"];
       };
     };
+
+    system.activationScripts.makeDefaultPool = lib.stringAfter ["var"] ''
+      mkdir -p /var/lib/libvirt/images
+      mkdir -p /var/lib/libvirt/iso
+    '';
 
     programs.virt-manager.enable = true;
     */

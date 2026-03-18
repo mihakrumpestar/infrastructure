@@ -1,14 +1,17 @@
 {
+  config,
   disko,
   agenix,
   stylix,
   home-manager,
+  mutable-file,
   nur,
   nix-vscode-extensions,
   nixpkgs,
   zen-browser,
   nix-index-database,
   lanzaboote,
+  virtualhere,
   vars,
   hostName,
   ...
@@ -20,6 +23,7 @@
     nix-index-database.nixosModules.default
     home-manager.nixosModules.home-manager
     lanzaboote.nixosModules.lanzaboote
+    virtualhere.nixosModules.default
     {
       home-manager = {
         useGlobalPkgs = true;
@@ -29,6 +33,10 @@
           zen-browser.homeModules.beta
           nix-index-database.homeModules.default
           agenix.homeManagerModules.default
+          mutable-file.homeModules.default
+          ({osConfig, ...}: {
+            home.stateVersion = osConfig.system.nixos.release;
+          })
           {
             imports = [
               ./homeManagerModules
@@ -45,6 +53,8 @@
     ./hosts # Per "host"
     ./nixosModules # Per "options"
   ];
+
+  system.stateVersion = config.system.nixos.release;
 
   nixpkgs.overlays = [
     nur.overlays.default

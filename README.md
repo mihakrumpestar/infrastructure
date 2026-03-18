@@ -1,10 +1,22 @@
 # Infrastructure
 
-Generate per machine TPM 2.0 age key:
+## Hardware-config
+
+Generate using (on remote):
+
+```sh
+nixos-generate-config --show-hardware-config
+```
+
+## TPM2 encryption key
+
+Generate per machine TPM2 age key:
 
 ```sh
 nix-shell -p age-plugin-tpm --command "sudo age-plugin-tpm -g"
 ```
+
+## Stress test
 
 Stress test:
 

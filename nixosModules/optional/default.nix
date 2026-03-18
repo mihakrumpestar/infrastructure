@@ -5,6 +5,5 @@
     ./nvidia
     ./orchestrator
     ./store-secrets
-    ./virtualhere
   ];
 }

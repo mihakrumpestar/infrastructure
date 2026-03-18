@@ -2,72 +2,43 @@
   config,
   lib,
   vars,
-  pkgs,
   ...
-}:
-with lib; let
-  # Users that should be enabled and imported
-  enabledUsers = config.my.users;
+}: let
+  userDirs = builtins.attrNames (builtins.readDir ./.);
+  availableUsers = builtins.filter (name: name != "default.nix" && builtins.pathExists (./. + "/${name}/system/default.nix")) userDirs;
 in {
-  options.my.users = mkOption {
-    type = types.listOf types.str;
+  options.my.users = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
     default = [];
     description = "List of users to enable and import";
   };
 
-  # Import system modules - but only import those that exist to avoid errors during early evaluation
-  #imports =
-  #  map (username: ./. + "/${username}/system")
-  #  (lib.filter (username: builtins.pathExists (./. + "/${username}/system")) enabledUsers);
+  imports = map (username: (./. + "/${username}/system")) availableUsers;
 
-  # TODO: above code gives infinite recursion, so we have to specify user systems manualy
-  imports = [
-    (import ./krumpy-miha/system {
-      username = "krumpy-miha";
-      inherit config lib pkgs;
-    })
-    (import ./kiosk/system {
-      username = "kiosk";
-      inherit config lib;
-    })
-  ];
+  config = lib.mkIf (config.my.users != []) {
+    users.users = lib.genAttrs config.my.users (_: {
+      isNormalUser = true;
+      linger = true; # Make sure user services are started on boot
+      # initialHashedPassword = "something"; # Generate using: mkpasswd
+      # Remove password: passwd -d username
+      openssh.authorizedKeys.keys = [
+        config.my.store-secrets.secrets."ssh_authorized_keys".${config.my.hostType} # Allow administrator to login as any user
+      ];
+      extraGroups = [
+        "networkmanager"
+      ];
+    });
 
-  config = mkIf (enabledUsers != []) {
-    users.users = builtins.listToAttrs (
-      map (username: {
-        name = username;
-        value = {
-          isNormalUser = true;
-          linger = true; # Make sure user services are started on boot
-          # initialHashedPassword = "something"; # Generate using: mkpasswd
-          # Remove password: passwd -d username
-          openssh.authorizedKeys.keys = [
-            config.my.store-secrets.secrets."ssh_authorized_keys".${config.my.hostType} # Allow admin to login as any user
-          ];
-          extraGroups = [
-            "networkmanager"
-          ];
-        };
-      })
-      enabledUsers
-    );
+    home-manager.users = lib.genAttrs config.my.users (username: {
+      my.store-secrets = {
+        enable = true;
+        secretsFile = "${vars.secretsDir}/secrets/users/${username}/store-secrets.nix";
+      };
 
-    home-manager.users = builtins.listToAttrs (
-      map (username: {
-        name = username;
-        value = {
-          my.store-secrets = {
-            enable = true;
-            secretsFile = "${vars.secretsDir}/secrets/users/${username}/store-secrets.nix";
-          };
+      imports = [(./. + "/${username}/home")];
 
-          imports = [(./. + "/${username}/home")];
-
-          # Pass username to system modules via special argument
-          _module.args.username = username;
-        };
-      })
-      enabledUsers
-    );
+      # Pass username to system modules via special argument
+      _module.args.username = username;
+    });
   };
 }

@@ -43,7 +43,6 @@ in {
     basedpyright
     uv
 
-    # LSP (language server)
     # Nix
     nil
 
@@ -158,12 +157,12 @@ in {
       enableExtensionUpdateCheck = true;
     };
 
-    # userSettings = lib.importJSON ./settings.json; # Using my.home.mutableFile instead
+    # userSettings = lib.importJSON ./settings.json; # Using home.mutableFile instead
   };
 
   stylix.targets.vscode.enable = false; # We are using the one from extension
 
-  my.home.mutableFile = {
+  home.mutableFile = {
     # code --diff users/krumpy-miha/home/ide/settings.json ~/.config/VSCodium/User/settings.json
     ".config/VSCodium/User/settings.json".source =
       pkgs.replaceVars
@@ -214,7 +213,7 @@ in {
   # uv tool install git+https://github.com/Shlomob/ocmonitor-share.git
 
   home.sessionVariables = {
-    CGO_ENABLED = "0";
+    CGO_ENABLED = "0"; # Disable use of CGO
   };
 
   age.secrets."llm_api_keys.env" = {

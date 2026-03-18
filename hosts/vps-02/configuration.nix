@@ -21,7 +21,6 @@ in {
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
 
-  # TODO:
   users.users.root.openssh.authorizedKeys.keys = lib.mkForce [
     store-secrets."ssh_authorized_keys".vps
   ];

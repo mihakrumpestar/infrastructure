@@ -358,6 +358,20 @@
         "type": "github"
       }
     },
+    "mutable-file": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "path": "./home-modules/mutable-file",
+        "type": "path"
+      },
+      "original": {
+        "path": "./home-modules/mutable-file",
+        "type": "path"
+      },
+      "parent": []
+    },
     "nix-index-database": {
       "inputs": {
         "nixpkgs": [
@@ -380,7 +394,7 @@
     },
     "nix-vscode-extensions": {
       "inputs": {
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1773024435,
@@ -414,6 +428,22 @@
     },
     "nixpkgs_2": {
       "locked": {
+        "lastModified": 1773646010,
+        "narHash": "sha256-iYrs97hS7p5u4lQzuNWzuALGIOdkPXvjz7bviiBjUu8=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "5b2c2d84341b2afb5647081c1386a80d7a8d8605",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
         "lastModified": 1766025857,
         "narHash": "sha256-Lav5jJazCW4mdg1iHcROpuXqmM94BWJvabLFWaJVJp0=",
         "owner": "nixos",
@@ -428,7 +458,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_3": {
+    "nixpkgs_4": {
       "locked": {
         "lastModified": 1772773019,
         "narHash": "sha256-E1bxHxNKfDoQUuvriG71+f+s/NT0qWkImXsYZNFFfCs=",
@@ -444,7 +474,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_4": {
+    "nixpkgs_5": {
       "locked": {
         "lastModified": 1772773019,
         "narHash": "sha256-E1bxHxNKfDoQUuvriG71+f+s/NT0qWkImXsYZNFFfCs=",
@@ -463,7 +493,7 @@
     "nur": {
       "inputs": {
         "flake-parts": "flake-parts",
-        "nixpkgs": "nixpkgs_4"
+        "nixpkgs": "nixpkgs_5"
       },
       "locked": {
         "lastModified": 1773048543,
@@ -554,12 +584,14 @@
         "disko": "disko",
         "home-manager": "home-manager_2",
         "lanzaboote": "lanzaboote",
+        "mutable-file": "mutable-file",
         "nix-index-database": "nix-index-database",
         "nix-vscode-extensions": "nix-vscode-extensions",
-        "nixpkgs": "nixpkgs_3",
+        "nixpkgs": "nixpkgs_4",
         "nur": "nur",
         "opencode": "opencode",
         "stylix": "stylix",
+        "virtualhere": "virtualhere",
         "zen-browser": "zen-browser"
       }
     },
@@ -728,6 +760,22 @@
         "repo": "base16-zed",
         "type": "github"
       }
+    },
+    "virtualhere": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./packages/virtualhere",
+        "type": "path"
+      },
+      "original": {
+        "path": "./packages/virtualhere",
+        "type": "path"
+      },
+      "parent": []
     },
     "zen-browser": {
       "inputs": {

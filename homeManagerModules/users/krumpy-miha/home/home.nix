@@ -51,7 +51,7 @@
     # File Management
     #xfce.thunar # Settings don't get saved, too basic
     #nautilus # Too basic
-    nemo-with-extensions
+    #nemo-with-extensions
     kdePackages.okular # PDF viewer
     kdePackages.ark # GUI to compress or uncompress data
     p7zip # Req for above

@@ -19,11 +19,7 @@
     users = ["krumpy-miha"];
   };
 
-  nix = {
-    gc = {
-      automatic = lib.mkForce false; # Disable, since this is our builder
-    };
-  };
+  nix.gc.automatic = lib.mkForce false; # Disable, since this is our builder
 
   home-manager.users."krumpy-miha" = {
     my.home = {

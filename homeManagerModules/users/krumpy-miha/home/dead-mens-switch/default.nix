@@ -50,7 +50,7 @@ in {
       Timer = {
         OnCalendar = "weekly";
         Persistent = true;
-        OnBootSec = "1m30s";
+        OnBootSec = "5m30s";
       };
 
       Install = {

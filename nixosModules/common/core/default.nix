@@ -8,12 +8,12 @@ with lib; let
   store-secrets = config.my.store-secrets.secrets;
 in {
   imports = [
+    ./shell
     ./console.nix
     ./disks.nix
     ./networking.nix
     ./nix.nix
     ./secrets.nix
-    ./shell.nix
     ./style.nix
   ];
 
@@ -38,12 +38,6 @@ in {
         if config.hardware.cpu.amd.updateMicrocode
         then ["msr"] # Required for zenstates
         else [];
-
-      # Optimizations
-      kernel.sysctl = {
-        # https://www.cockroachlabs.com/docs/stable/recommended-production-settings
-        #"vm.swappiness" = 0; # Memory swapping required to be minimal by Cockroachdb
-      };
     };
 
     security = {
@@ -129,6 +123,7 @@ in {
       users = mkMerge [
         {
           root = {
+            # bat /etc/ssh/authorized_keys.d/root
             openssh.authorizedKeys.keys = [
               store-secrets."ssh_authorized_keys".${config.my.hostType}
             ];

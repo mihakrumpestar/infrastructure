@@ -1,35 +1,31 @@
-{config, ...}: {
-  config = {
-    nix = {
-      settings = {
-        experimental-features = [
-          "nix-command"
-          "flakes"
-        ];
+{
+  nix = {
+    settings = {
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
 
-        extra-sandbox-paths = ["/tmp"];
-      };
-
-      # Optimize store
-      optimise = {
-        # Manually: nix-store --optimise
-        automatic = true;
-        dates = ["weekly"];
-      };
-
-      # Garbage collection
-      gc = {
-        # Manually: nix-collect-garbage --delete-older-than 14d
-        automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 14d";
-      };
+      extra-sandbox-paths = ["/tmp"];
     };
 
-    system.stateVersion = config.system.nixos.release;
-
-    nixpkgs.config = {
-      allowUnfree = true;
+    # Optimize store
+    optimise = {
+      # Manually: nix-store --optimise
+      automatic = true;
+      dates = ["weekly"];
     };
+
+    # Garbage collection
+    gc = {
+      # Manually: nix-collect-garbage --delete-older-than 14d
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 14d";
+    };
+  };
+
+  nixpkgs.config = {
+    allowUnfree = true;
   };
 }

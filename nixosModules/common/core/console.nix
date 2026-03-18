@@ -20,10 +20,5 @@
       earlySetup = true;
       keyMap = "slovene";
     };
-
-    # nano fix
-    programs.nano.nanorc = ''
-      unset mouse # Disable mouse support
-    '';
   };
 }

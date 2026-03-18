@@ -26,7 +26,7 @@ with lib; let
       #!/usr/bin/env bash
 
       echo "Starting full user apps"
-      sudo -E virtualhere-client-gui --start-minimized &
+      #sudo -E virtualhere-client-gui --start-minimized &
 
       bash -c "sleep 13 && codium" &
       bash -c "sleep 13 && librewolf" &

@@ -51,10 +51,16 @@
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
 
     consul-cni-flake.url = "./packages/consul-cni";
+    mutable-file.url = "./home-modules/mutable-file";
+    virtualhere = {
+      url = "./packages/virtualhere";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
     nixpkgs,
+    zen-browser,
     consul-cni-flake,
     opencode,
     ...
@@ -79,6 +85,7 @@
             inherit vars;
             inherit hostName;
 
+            inherit (zen-browser.packages."${system}") zen-browser;
             inherit (consul-cni-flake.packages."${system}") consul-cni;
             inherit (opencode.packages."${system}") opencode;
           }
