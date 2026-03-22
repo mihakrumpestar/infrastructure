@@ -45,10 +45,13 @@ with lib; {
 
     defaultFiles = [
       "/etc/machine-id"
+
       "/etc/ssh/ssh_host_ed25519_key"
       "/etc/ssh/ssh_host_ed25519_key.pub"
       "/etc/ssh/ssh_host_rsa_key"
       "/etc/ssh/ssh_host_rsa_key.pub"
+
+      "/root/.zsh_history"
     ];
 
     defaultDirectories = [
@@ -63,7 +66,7 @@ with lib; {
     defaultUserFiles = [
       ".zsh_history"
       ".ssh/known_hosts"
-      ".bash_history"
+      ".zcompdump"
     ];
 
     defaultUserDirectories = [

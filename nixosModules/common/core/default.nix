@@ -14,7 +14,6 @@ in {
     ./impermanence.nix
     ./networking.nix
     ./nix.nix
-    ./persistence.nix
     ./secrets.nix
     ./style.nix
   ];
