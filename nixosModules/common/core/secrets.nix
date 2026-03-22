@@ -20,7 +20,7 @@
         };
     });
 in {
-  # systemctl status --user agenix-istall-service.service
+  # systemctl status agenix-install-secrets.service
   age = {
     identityPaths = [age_host_identity];
     ageBin = lib.getExe age-with-tpm;

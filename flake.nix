@@ -10,8 +10,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    impermanence = {
+      url = "github:mihakrumpestar/impermanence"; # "github:nix-community/impermanence";
+      inputs = {
+        nixpkgs.follows = "";
+        home-manager.follows = "";
+      };
+    };
+
     agenix = {
-      url = "github:mihakrumpestar/agenix"; # "github:ryantm/agenix";
+      url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

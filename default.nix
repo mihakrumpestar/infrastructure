@@ -1,6 +1,7 @@
 {
   config,
   disko,
+  impermanence,
   agenix,
   stylix,
   home-manager,
@@ -18,6 +19,7 @@
 }: {
   imports = [
     disko.nixosModules.disko
+    impermanence.nixosModules.impermanence
     agenix.nixosModules.default
     stylix.nixosModules.stylix
     nix-index-database.nixosModules.default

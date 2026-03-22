@@ -6,6 +6,8 @@
       encryptRoot = "fido2";
     };
 
+    impermanence.enable = true;
+
     hostType = "client";
 
     networking.homeWifi.enable = true;

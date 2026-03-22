@@ -11,8 +11,10 @@ in {
     ./shell
     ./console.nix
     ./disks.nix
+    ./impermanence.nix
     ./networking.nix
     ./nix.nix
+    ./persistence.nix
     ./secrets.nix
     ./style.nix
   ];

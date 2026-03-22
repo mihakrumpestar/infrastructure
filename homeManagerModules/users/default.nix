@@ -6,6 +6,13 @@
 }: let
   userDirs = builtins.attrNames (builtins.readDir ./.);
   availableUsers = builtins.filter (name: name != "default.nix" && builtins.pathExists (./. + "/${name}/system/default.nix")) userDirs;
+
+  # Static UID mappings for impermanence (required for correct ownership during nixos-install)
+  userUid = {
+    "krumpy-miha" = 1000;
+    "admin" = 1001;
+    "kiosk" = 1002;
+  };
 in {
   options.my.users = lib.mkOption {
     type = lib.types.listOf lib.types.str;
@@ -16,9 +23,15 @@ in {
   imports = map (username: (./. + "/${username}/system")) availableUsers;
 
   config = lib.mkIf (config.my.users != []) {
-    users.users = lib.genAttrs config.my.users (_: {
+    users.groups."users".gid = 100;
+
+    users.users = lib.genAttrs config.my.users (username: {
       isNormalUser = true;
       linger = true; # Make sure user services are started on boot
+
+      group = "users";
+      uid = lib.mkDefault userUid.${username};
+
       # initialHashedPassword = "something"; # Generate using: mkpasswd
       # Remove password: passwd -d username
       openssh.authorizedKeys.keys = [
