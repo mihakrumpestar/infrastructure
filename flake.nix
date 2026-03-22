@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     nur.url = "github:nix-community/NUR";
 
     disko = {
@@ -21,6 +22,12 @@
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    plasma-manager = {
+      url = "github:nix-community/plasma-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
     };
 
     stylix = {
@@ -58,8 +65,12 @@
 
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
 
+    # Local
+
     consul-cni-flake.url = "./packages/consul-cni";
+
     mutable-file.url = "./home-modules/mutable-file";
+
     virtualhere = {
       url = "./packages/virtualhere";
       inputs.nixpkgs.follows = "nixpkgs";

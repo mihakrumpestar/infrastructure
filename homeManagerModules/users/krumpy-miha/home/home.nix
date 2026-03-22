@@ -36,7 +36,7 @@
     freetube # Youtube client
     #drawio # Drawing tool # UNFREE license
     kdePackages.kcalc # Calculator
-    #freecad-wayland # 3D design tool # TODO: broken
+    freecad-wayland # 3D design tool
 
     # AI
     #jan # Has hardcoded providers and endpoints
@@ -125,7 +125,6 @@
   */
 
   # fuzzel: application launcher and fuzzy finder
-  # TODO: make automatic Command+Space shortcut to open it
   programs.fuzzel = {
     enable = true;
     # man fuzzel.ini

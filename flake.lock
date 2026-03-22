@@ -321,11 +321,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1774135471,
-        "narHash": "sha256-TVeIGOxnfSPM6JvkRkXHpJECnj1OG2dXkWMSA4elzzQ=",
+        "lastModified": 1774201162,
+        "narHash": "sha256-th4i3X3P3yikPk3qu1A5DQ40tIztZKvAKPaa9hjXF+U=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "856b01ebd1de3f53c3929ce8082d9d67d799d816",
+        "rev": "932ca46013acabbedd13c27dc278e3d043707e46",
         "type": "github"
       },
       "original": {
@@ -515,11 +515,11 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1774177863,
-        "narHash": "sha256-90XgGyrk3gcp6vZVf8b/yxOz3lZ8iefTmeb9JAKdCAg=",
+        "lastModified": 1774203888,
+        "narHash": "sha256-CsgregnGmc8R6bwwvcCoROkmcXAMsHjKOpPeshN0cEA=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "5cdac90b2f97dee32b67f335a5bec30e101f722e",
+        "rev": "aecd34b62cac7c87645bb0195447a4420dc5f017",
         "type": "github"
       },
       "original": {
@@ -573,6 +573,29 @@
         "type": "github"
       }
     },
+    "plasma-manager": {
+      "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1772361940,
+        "narHash": "sha256-B1Cz+ydL1iaOnGlwOFld/C8lBECPtzhiy/pP93/CuyY=",
+        "owner": "nix-community",
+        "repo": "plasma-manager",
+        "rev": "a4b33606111c9c5dcd10009042bb710307174f51",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "plasma-manager",
+        "type": "github"
+      }
+    },
     "pre-commit": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -610,6 +633,7 @@
         "nixpkgs": "nixpkgs_4",
         "nur": "nur",
         "opencode": "opencode",
+        "plasma-manager": "plasma-manager",
         "stylix": "stylix",
         "virtualhere": "virtualhere",
         "zen-browser": "zen-browser"

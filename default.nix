@@ -7,6 +7,7 @@
   home-manager,
   mutable-file,
   nur,
+  plasma-manager,
   nix-vscode-extensions,
   nixpkgs,
   zen-browser,
@@ -32,6 +33,7 @@
         useUserPackages = true;
         backupFileExtension = "backup";
         sharedModules = [
+          plasma-manager.homeModules.plasma-manager
           zen-browser.homeModules.beta
           nix-index-database.homeModules.default
           agenix.homeManagerModules.default
