@@ -75,6 +75,7 @@ with lib; {
       ".config"
       ".local/share/"
       ".pki"
+      ".librewolf"
       "Desktop"
       "Documents"
       "Downloads"

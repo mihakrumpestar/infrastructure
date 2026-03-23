@@ -244,10 +244,6 @@ with lib; {
 
           session.sessionRestore.restoreOpenApplicationsOnLogin = "startWithEmptySession";
         };
-
-        # Enable x11 in home-manager
-        xsession.enable = true;
-        xsession.windowManager.command = "…";
       }
     ];
 
