@@ -132,9 +132,9 @@ with lib; {
                       updateRateLimit = 1000;
                     };
                     Sensors = {
-                      highPrioritySensorIds = ["cpu/all/usage"];
-                      lowPrioritySensorIds = ["cpu/all/cpuCount" "cpu/all/coreCount"];
-                      totalSensors = ["cpu/all/usage"];
+                      highPrioritySensorIds = ''["cpu/all/usage"]'';
+                      lowPrioritySensorIds = ''["cpu/all/cpuCount","cpu/all/coreCount"]'';
+                      totalSensors = ''["cpu/all/usage"]'';
                     };
                     SensorColors = {
                       "cpu/all/usage" = "46,157,174";
@@ -151,9 +151,9 @@ with lib; {
                       updateRateLimit = 1000;
                     };
                     Sensors = {
-                      highPrioritySensorIds = ["memory/physical/used"];
-                      lowPrioritySensorIds = ["memory/physical/total"];
-                      totalSensors = ["memory/physical/usedPercent"];
+                      highPrioritySensorIds = ''["memory/physical/used"]'';
+                      lowPrioritySensorIds = ''["memory/physical/total"]'';
+                      totalSensors = ''["memory/physical/usedPercent"]'';
                     };
                     SensorColors = {
                       "memory/physical/used" = "46,157,174";
