@@ -52,6 +52,7 @@ with lib; {
                   type = "filesystem";
                   format = "vfat";
                   mountpoint = "/boot";
+                  mountOptions = ["fmask=0077" "dmask=0077"];
                 };
               };
               root = let
@@ -167,6 +168,8 @@ with lib; {
         efi.canTouchEfiVariables = !lanzabooteEnabled;
       };
 
+      # Before attempting lanzaboote, your device has to have Secure Boot in Setup Mode
+
       # sbctl status
       # sbctl verify
       # bootctl status
@@ -174,6 +177,11 @@ with lib; {
         enable = true;
         pkiBundle = "/var/lib/sbctl";
         autoGenerateKeys.enable = true;
+
+        # If you don't auto-enroll, run (note that on some devices you will have to enable Secure Boot back manually):
+        # sbctl create-keys
+        # sbctl enroll-keys
+        # reboot
         autoEnrollKeys = {
           enable = true;
           includeMicrosoftKeys = false;

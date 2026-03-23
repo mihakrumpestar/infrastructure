@@ -61,7 +61,7 @@ with lib; {
       "/var/lib/nixos"
       "/var/lib/systemd/coredump"
       "/etc/NetworkManager/system-connections"
-      "/var/lib/sbctl"
+      "/var/lib/sbctl" # Lanzaboote keys
     ];
 
     defaultUserFiles = [
