@@ -186,6 +186,10 @@ with lib; {
         enable = true;
         fido2.enable = config.my.disks.encryptRoot == "fido2";
         tpm2.enable = config.my.disks.encryptRoot == "tpm2";
+        services."systemd-cryptsetup@crypted" = {
+          overrideStrategy = "asDropin";
+          serviceConfig.TimeoutStartSec = "12s";
+        };
       };
     };
 

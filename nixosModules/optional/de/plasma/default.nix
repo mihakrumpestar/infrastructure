@@ -115,6 +115,7 @@ with lib; {
 
           panels = [
             # Windows-like panel at the bottom
+            # cat  ~/.config/plasma-org.kde.plasma.desktop-appletsrc
             {
               location = "bottom";
               height = 50;
