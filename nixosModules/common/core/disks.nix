@@ -52,7 +52,7 @@ with lib; {
                   type = "filesystem";
                   format = "vfat";
                   mountpoint = "/boot";
-                  mountOptions = ["fmask=0077" "dmask=0077"];
+                  mountOptions = ["fmask=0077" "dmask=0077"]; # Prevents warning: Random seed file '/boot/loader/random-seed' is world accessible, which is a security hole!
                 };
               };
               root = let

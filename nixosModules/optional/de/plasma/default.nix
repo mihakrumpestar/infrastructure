@@ -32,11 +32,6 @@ with lib; {
         programs.plasma = {
           enable = true;
           shortcuts = {
-            "KDE Keyboard Layout Switcher" = {
-              "Switch to Last-Used Keyboard Layout" = "Meta+Alt+L";
-              "Switch to Next Keyboard Layout" = "Meta+Alt+K";
-            };
-
             ksmserver = {
               "Log Out Without Confirmation" = ["Meta+L"];
               "Reboot Without Confirmation" = ["Meta+R"];
@@ -49,7 +44,7 @@ with lib; {
 
           configFile = {
             baloofilerc."Basic Settings".Indexing-Enabled = false;
-            kwalletrc.Wallet.Enabled = false;
+            kwalletrc.Wallet.Enabled = false; # We are using KeepassXC as secret-service provider
 
             spectaclerc.General.clipboardGroup = "PostScreenshotCopyImage";
 

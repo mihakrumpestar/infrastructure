@@ -55,11 +55,8 @@ in {
     # Golang
     go
     # Next pkgs are for the extension
-    #gccgo # TODO: does not build
     gopls
     delve # dlv
-    #vscgo
-    #goplay
     impl
     gotests
     go-tools # staticcheck
