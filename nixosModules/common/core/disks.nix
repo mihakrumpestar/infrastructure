@@ -59,58 +59,37 @@ with lib; {
                 disk_content = {
                   type = "btrfs";
                   extraArgs = ["-f"];
-                  subvolumes = {
-                    "/root" = {
-                      mountpoint = "/";
-                      mountOptions = ["compress=zstd" "noatime"];
-                    };
-                    "/home" = {
-                      mountpoint = "/home";
-                      mountOptions = ["compress=zstd" "noatime"];
-                    };
-                    "/nix" = {
-                      mountpoint = "/nix";
-                      mountOptions = ["compress=zstd" "noatime"];
-                    };
-                    "/swap" = {
-                      mountpoint = "/.swapvol";
-                      swap = {
-                        swapfile.size = config.my.disks.swapSize;
+                  subvolumes =
+                    {
+                      "/root" = {
+                        mountpoint = "/";
+                        mountOptions = ["compress=zstd" "noatime"];
+                      };
+                      "/home" = {
+                        mountpoint = "/home";
+                        mountOptions = ["compress=zstd" "noatime"];
+                      };
+                      "/nix" = {
+                        mountpoint = "/nix";
+                        mountOptions = ["compress=zstd" "noatime"];
+                      };
+                      "/swap" = {
+                        mountpoint = "/.swapvol";
+                        swap = {
+                          swapfile.size = config.my.disks.swapSize;
+                        };
+                      };
+                    }
+                    // optionalAttrs config.my.impermanence.enable {
+                      "/persistent-root" = {
+                        mountpoint = "/persistent-root";
+                        mountOptions = ["compress=zstd" "noatime"];
+                      };
+                      "/persistent-home" = {
+                        mountpoint = "/persistent-home";
+                        mountOptions = ["compress=zstd" "noatime"];
                       };
                     };
-                    "/persistent-root" = {
-                      /*
-                      # === MIGRATION FOR EXISTING INSTALLATIONS ===
-                      # DEVICE=/dev/mapper/crypted (encrypted) or /dev/disk/by-partlabel/disk-system-root (unencrypted)
-                      #
-                      # mount -o subvolid=5 $DEVICE /mnt
-                      # btrfs subvolume create /mnt/persistent-root
-                      # btrfs subvolume create /mnt/persistent-home
-                      #
-                      # # System directories
-                      # mkdir -p /mnt/persistent-root/etc/ssh
-                      # mkdir -p /mnt/persistent-root/var/{log,lib/{bluetooth,nixos,systemd/coredump,sbctl}}
-                      # mkdir -p /mnt/persistent-root/etc/NetworkManager/system-connections
-                      # cp -a /etc/machine-id /mnt/persistent-root/etc/
-                      # cp -a /etc/ssh/ssh_host_* /mnt/persistent-root/etc/ssh/
-                      #
-                      # # User directories
-                      # USER=krumpy-miha
-                      # mkdir -p /mnt/persistent-home/$USER/{.ssh,.cache,.config,.local/share,.pki,Desktop,Documents,Downloads,Pictures,Videos,repos}
-                      # cp -a /home/$USER/.ssh/known_hosts /home/$USER/.zsh_history /home/$USER/.bash_history /mnt/persistent-home/$USER/
-                      # chown -R $USER:users /mnt/persistent-home/$USER
-                      #
-                      # umount /mnt
-                      # nixos-rebuild switch
-                      */
-                      mountpoint = "/persistent-root";
-                      mountOptions = ["compress=zstd" "noatime"];
-                    };
-                    "/persistent-home" = {
-                      mountpoint = "/persistent-home";
-                      mountOptions = ["compress=zstd" "noatime"];
-                    };
-                  };
                 };
               in
                 if (config.my.disks.encryptRoot != false)
@@ -201,6 +180,7 @@ with lib; {
       };
     };
 
+    # Lanzaboote does not automatically set the new EFi boot entry as first in UEFI, this code does it for us
     system.activationScripts.lanzaboote-efi-entry = let
       inherit (pkgs) gawk coreutils gnugrep efibootmgr;
     in
@@ -229,7 +209,7 @@ with lib; {
       '');
 
     systemd.services.tpm2-cryptenroll = mkIf (lanzabooteEnabled && config.my.disks.encryptRoot == "tpm2") {
-      description = "Enroll TPM2 for LUKS decryption after Secure Boot is fully active";
+      description = "Enroll TPM2 with PCR 7 for LUKS decryption after Secure Boot is fully active";
       wantedBy = ["multi-user.target"];
       after = ["boot.mount"];
       requires = ["boot.mount"];
