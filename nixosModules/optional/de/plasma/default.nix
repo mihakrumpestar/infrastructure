@@ -176,7 +176,7 @@ with lib; {
             AC = {
               powerProfile = "performance";
               powerButtonAction = "shutDown";
-              whenSleepingEnter = "standbyThenHibernate";
+              whenSleepingEnter = "hybridSleep";
               whenLaptopLidClosed = "sleep";
               inhibitLidActionWhenExternalMonitorConnected = true;
 
@@ -189,14 +189,14 @@ with lib; {
             batteryLevels = {
               lowLevel = 10; # 0 to 100
               criticalLevel = 5; # 0 to 100
-              criticalAction = "hibernate";
+              criticalAction = "sleep";
             };
 
             battery = {
               powerProfile = "powerSaving";
               powerButtonAction = "showLogoutScreen";
-              whenSleepingEnter = "standbyThenHibernate";
-              whenLaptopLidClosed = "hibernate";
+              whenSleepingEnter = "hybridSleep"; # standbyThenHibernate bricks device (fans spin a lot)
+              whenLaptopLidClosed = "sleep"; # hibernate does not wake back up
               inhibitLidActionWhenExternalMonitorConnected = true;
 
               turnOffDisplay = {
@@ -212,7 +212,9 @@ with lib; {
 
             lowBattery = {
               powerProfile = "powerSaving";
-              whenLaptopLidClosed = "hibernate";
+              powerButtonAction = "showLogoutScreen";
+              whenSleepingEnter = "hybridSleep";
+              whenLaptopLidClosed = "sleep";
 
               turnOffDisplay = {
                 idleTimeout = 60; # In seconds
@@ -220,7 +222,7 @@ with lib; {
               };
 
               autoSuspend = {
-                action = "hibernate";
+                action = "sleep";
                 idleTimeout = 2 * 60 + 20; # In seconds
               };
 
