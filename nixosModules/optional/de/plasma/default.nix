@@ -194,7 +194,7 @@ with lib; {
                   # In seconds
                   if (config.my.hostSubType == "kiosk")
                   then "never"
-                  else dimDisplay.idleTimeout * 2;
+                  else 2 * dimDisplay.idleTimeout;
                 idleTimeoutWhenLocked = 60; # In seconds
               };
 
@@ -228,7 +228,7 @@ with lib; {
               };
 
               turnOffDisplay = {
-                idleTimeout = dimDisplay.enable; # In seconds
+                idleTimeout = 2 * dimDisplay.idleTimeout; # In seconds
                 idleTimeoutWhenLocked = 60; # In seconds
               };
 
