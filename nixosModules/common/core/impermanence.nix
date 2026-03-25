@@ -93,7 +93,7 @@ with lib; {
       mkdir -p /btrfs_root/old_roots
       for subvol in root home; do
         if [[ -e /btrfs_root/$subvol ]]; then
-          timestamp=$(date --date="@$(stat -c %Y /btrfs_root/$subvol)" "+%Y-%m-%d_%H:%M:%S")
+          timestamp=$(date "+%Y-%m-%d_%H:%M:%S")
           mv /btrfs_root/$subvol "/btrfs_root/old_roots/$subvol-$timestamp"
         fi
       done
