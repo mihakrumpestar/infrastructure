@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  #pkgs,
+  hostName,
   ...
 }:
 with lib; {
@@ -177,17 +177,36 @@ with lib; {
           powerdevil = {
             general.pausePlayersOnSuspend = true;
 
-            AC = {
+            AC = rec {
               powerProfile = "performance";
               powerButtonAction = "shutDown";
               whenSleepingEnter = "standby";
               whenLaptopLidClosed = "sleep";
               inhibitLidActionWhenExternalMonitorConnected = true;
 
-              turnOffDisplay = mkIf (config.my.hostSubType != "kiosk") {
-                idleTimeout = 30 * 60; # In seconds
+              dimDisplay = {
+                enable = config.my.hostSubType != "kiosk";
+                idleTimeout = 15 * 60; # In seconds
+              };
+
+              turnOffDisplay = {
+                idleTimeout =
+                  # In seconds
+                  if (config.my.hostSubType == "kiosk")
+                  then "never"
+                  else dimDisplay.idleTimeout * 2;
                 idleTimeoutWhenLocked = 60; # In seconds
               };
+
+              autoSuspend =
+                if (hostName == "personal-laptop")
+                then {
+                  action = "sleep";
+                  idleTimeout = turnOffDisplay.idleTimeout + 20; # In seconds
+                }
+                else {
+                  action = "nothing";
+                };
             };
 
             batteryLevels = {
@@ -196,47 +215,51 @@ with lib; {
               criticalAction = "sleep";
             };
 
-            battery = {
+            battery = rec {
               powerProfile = "powerSaving";
               powerButtonAction = "showLogoutScreen";
               whenSleepingEnter = "standby";
               whenLaptopLidClosed = "sleep";
               inhibitLidActionWhenExternalMonitorConnected = true;
 
+              dimDisplay = {
+                enable = true;
+                idleTimeout = 3 * 60; # In seconds
+              };
+
               turnOffDisplay = {
-                idleTimeout = 5 * 60; # In seconds
+                idleTimeout = dimDisplay.enable; # In seconds
                 idleTimeoutWhenLocked = 60; # In seconds
               };
 
               autoSuspend = {
                 action = "sleep";
-                idleTimeout = 5 * 60 + 20; # In seconds
+                idleTimeout = turnOffDisplay.idleTimeout + 20; # In seconds
               };
             };
 
-            lowBattery = {
+            lowBattery = rec {
               powerProfile = "powerSaving";
               powerButtonAction = "showLogoutScreen";
               whenSleepingEnter = "standby";
               whenLaptopLidClosed = "sleep";
 
+              dimDisplay = {
+                enable = true;
+                idleTimeout = 30; # In seconds
+              };
+
               turnOffDisplay = {
-                idleTimeout = 60; # In seconds
+                idleTimeout = 2 * dimDisplay.idleTimeout; # In seconds
                 idleTimeoutWhenLocked = 60; # In seconds
               };
 
               autoSuspend = {
                 action = "sleep";
-                idleTimeout = 2 * 60 + 20; # In seconds
+                idleTimeout = turnOffDisplay.idleTimeout + 20; # In seconds
               };
 
-              dimDisplay = {
-                enable = true;
-                idleTimeout = 30; # In seconds
-              };
               displayBrightness = 20; # 0 to 100
-
-              dimKeyboard.enable = true;
               keyboardBrightness = 30; # 0 to 100
             };
           };
