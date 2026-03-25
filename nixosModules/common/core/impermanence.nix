@@ -110,8 +110,17 @@ with lib; {
         "${btrfs-progs}/bin/btrfs" subvolume delete "$1" 2>/dev/null || true
       }
 
-      for old_root in $(find /btrfs_root/old_roots -maxdepth 1 -type d -mtime +30 2>/dev/null); do
-        delete_subvolume_recursively "$old_root"
+      cutoff_date=$(date -d "30 days ago" +%s)
+      for old_root in /btrfs_root/old_roots/*; do
+        [[ -d "$old_root" ]] || continue
+        # Extract timestamp from name (format: subvol-YYYY-MM-DD_HH:MM:SS)
+        backup_date=$(echo "$(basename "$old_root")" | sed -n 's/[^0-9-]*-\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}_[0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}\)/\1/p')
+        [[ -n "$backup_date" ]] || continue
+        # Replace underscore with space for date parsing
+        backup_epoch=$(date -d "$${backup_date/_/ }" +%s 2>/dev/null) || continue
+        if [[ "$backup_epoch" -lt "$cutoff_date" ]]; then
+          delete_subvolume_recursively "$old_root"
+        fi
       done
 
       umount /btrfs_root
