@@ -40,7 +40,8 @@
 
     # AI
     #jan # Has hardcoded providers and endpoints
-    cherry-studio # AI chat app, app list https://github.com/billmei/every-chatgpt-gui
+    #cherry-studio # AI chat app, app list https://github.com/billmei/every-chatgpt-gui
+    # Disabled: depends on electron-38.8.4 which is EOL and marked insecure
     #gpt4all # TODO: does not compile
     chatbox
 

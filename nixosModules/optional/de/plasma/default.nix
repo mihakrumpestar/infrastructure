@@ -88,7 +88,11 @@ with lib; {
             ];
           };
 
-          kscreenlocker.timeout = 30; # In minutes
+          kscreenlocker.timeout =
+            # In minutes
+            if (config.my.hostSubType == "kiosk")
+            then 0
+            else 30;
 
           kwin = {
             effects = {
@@ -176,11 +180,11 @@ with lib; {
             AC = {
               powerProfile = "performance";
               powerButtonAction = "shutDown";
-              whenSleepingEnter = "hybridSleep";
+              whenSleepingEnter = "standby";
               whenLaptopLidClosed = "sleep";
               inhibitLidActionWhenExternalMonitorConnected = true;
 
-              turnOffDisplay = {
+              turnOffDisplay = mkIf (config.my.hostSubType != "kiosk") {
                 idleTimeout = 30 * 60; # In seconds
                 idleTimeoutWhenLocked = 60; # In seconds
               };
@@ -195,8 +199,8 @@ with lib; {
             battery = {
               powerProfile = "powerSaving";
               powerButtonAction = "showLogoutScreen";
-              whenSleepingEnter = "hybridSleep"; # standbyThenHibernate bricks device (fans spin a lot)
-              whenLaptopLidClosed = "sleep"; # hibernate does not wake back up
+              whenSleepingEnter = "standby";
+              whenLaptopLidClosed = "sleep";
               inhibitLidActionWhenExternalMonitorConnected = true;
 
               turnOffDisplay = {
@@ -213,7 +217,7 @@ with lib; {
             lowBattery = {
               powerProfile = "powerSaving";
               powerButtonAction = "showLogoutScreen";
-              whenSleepingEnter = "hybridSleep";
+              whenSleepingEnter = "standby";
               whenLaptopLidClosed = "sleep";
 
               turnOffDisplay = {

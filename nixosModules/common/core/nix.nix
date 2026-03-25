@@ -6,6 +6,8 @@
         "flakes"
       ];
 
+      download-buffer-size = 67108864; # 64MB - fixes download buffer warning
+
       extra-sandbox-paths = ["/tmp"];
     };
 
