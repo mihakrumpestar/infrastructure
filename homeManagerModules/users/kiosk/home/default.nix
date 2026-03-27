@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  zen-browser,
   lib,
   ...
 }: let
@@ -232,7 +231,7 @@ in {
 
     Service = {
       Type = "oneshot";
-      ExecStart = "${zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default}/bin/zen-beta -kiosk ${store-secrets.dashboard}";
+      ExecStart = "${pkgs.zen-browser}/bin/zen-beta -kiosk ${store-secrets.dashboard}";
     };
 
     Install = {

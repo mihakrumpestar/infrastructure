@@ -17,6 +17,7 @@ with lib; let
 in {
   options.home.mutableFile = mkOption {
     description = "Mutable files to manage in home directory.";
+    default = {};
 
     type = types.attrsOf (types.submodule ({name, ...}: {
       options = {

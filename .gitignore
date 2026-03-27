@@ -3,9 +3,14 @@
 devbox.d
 bin
 pkg
+.venv
+__pycache__
 
 # Nix build
 **/result
 
 # Secrets
 secrets
+
+# Generated statistics
+generated/

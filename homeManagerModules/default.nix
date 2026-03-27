@@ -3,5 +3,6 @@
 
   imports = [
     ./common
+    ../nixosModules/optional/store-secrets
   ];
 }

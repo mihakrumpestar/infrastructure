@@ -1,6 +1,7 @@
 {
   stdenv,
   fetchurl,
+  lib,
   ...
 }:
 stdenv.mkDerivation rec {
@@ -19,4 +20,8 @@ stdenv.mkDerivation rec {
     chmod 0755 $out/bin/${name}
     ln -s $out/bin/${name} $out/bin/virtualhere-client-cli
   '';
+
+  meta = with lib; {
+    license = licenses.unfree;
+  };
 }

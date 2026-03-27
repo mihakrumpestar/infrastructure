@@ -11,6 +11,7 @@
   nix-vscode-extensions,
   nixpkgs,
   zen-browser,
+  consul-cni,
   nix-index-database,
   lanzaboote,
   virtualhere,
@@ -44,7 +45,6 @@
           {
             imports = [
               ./homeManagerModules
-              ./nixosModules/optional/store-secrets
             ];
           }
         ];
@@ -63,6 +63,10 @@
   nixpkgs.overlays = [
     nur.overlays.default
     nix-vscode-extensions.overlays.default
+    (_: prev: {
+      zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
+      consul-cni = consul-cni.packages.${prev.stdenv.hostPlatform.system}.default;
+    })
   ];
 
   # For nixd to work properly

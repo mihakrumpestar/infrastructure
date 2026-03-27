@@ -24,6 +24,10 @@
       chmod 0755 $out/bin/${name}
       upx -d $out/bin/${name}
     '';
+
+    meta = with lib; {
+      license = licenses.unfree;
+    };
   };
 
   NIX_LD_LIBRARY_PATH = with pkgs;

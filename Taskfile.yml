@@ -17,12 +17,24 @@ tasks:
     desc: |
       Can also update a specific input with: task update -- opencode
     cmds:
-      - nix flake update --flake path:{{.PWD}} {{.CLI_ARGS}} # Using just "path:." does not work as it wants absolute path
+      - nix flake update --flake 'path:{{.ROOT_DIR}}' {{.CLI_ARGS}}
 
   generations:
     cmds:
       - sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
-  
+
   clean:
     cmds:
       - sudo nix-collect-garbage --delete-older-than 10d
+
+  generate:
+    desc: |
+      Build all hosts, show closure sizes, and update dependency graph.
+      Use --runs N for averaging: task generate -- --runs 5
+    cmds:
+      - python3 scripts/generate_stats.py {{.CLI_ARGS}}
+      - python3 scripts/generate_deps.py
+
+  generate-deps:
+    desc: Generate dependency graph of Nix files.
+    cmd: python3 scripts/generate_deps.py

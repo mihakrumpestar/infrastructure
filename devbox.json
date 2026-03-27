@@ -5,7 +5,11 @@
     "pre-commit@latest",
     "alejandra@latest",
     "deadnix@latest",
-    "statix@latest"
+    "statix@latest",
+    "python313@latest",
+    "python313Packages.tabulate@latest",
+    "python313Packages.matplotlib@latest",
+    "mermaid-cli@latest"
   ],
   "env": {
     "DEVBOX_NO_PROMPT": "true"
@@ -14,7 +18,8 @@
     "init_hook": [
       "pre-commit autoupdate",
       "pre-commit install",
-      "task decrypt"
+      "task decrypt",
+      ". $VENV_DIR/bin/activate"
     ],
     "scripts": {
       "test": ["echo \"Error: no test specified\" && exit 1"]

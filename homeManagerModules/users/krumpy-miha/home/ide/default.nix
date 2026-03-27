@@ -23,6 +23,7 @@ in {
 
     # LLM
     opencode
+    opencode-desktop
 
     # Formatters
     nodePackages.prettier

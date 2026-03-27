@@ -40,11 +40,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    opencode = {
-      url = "github:anomalyco/opencode";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs = {
@@ -67,7 +62,7 @@
 
     # Local
 
-    consul-cni-flake.url = "./packages/consul-cni";
+    consul-cni.url = "./packages/consul-cni";
 
     mutable-file.url = "./home-modules/mutable-file";
 
@@ -77,13 +72,7 @@
     };
   };
 
-  outputs = {
-    nixpkgs,
-    zen-browser,
-    consul-cni-flake,
-    opencode,
-    ...
-  } @ attrs: let
+  outputs = {nixpkgs, ...} @ attrs: let
     vars = {
       secretsDir = ./infrastructure-secrets;
 
@@ -97,16 +86,12 @@
       hostName,
       system,
     }:
-      nixpkgs.lib.nixosSystem rec {
+      nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs =
           {
             inherit vars;
             inherit hostName;
-
-            inherit (zen-browser.packages."${system}") zen-browser;
-            inherit (consul-cni-flake.packages."${system}") consul-cni;
-            inherit (opencode.packages."${system}") opencode;
           }
           // attrs;
         modules = [

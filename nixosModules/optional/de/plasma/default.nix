@@ -177,32 +177,35 @@ with lib; {
           powerdevil = {
             general.pausePlayersOnSuspend = true;
 
-            AC = rec {
+            AC = let
+              dimDisplayIdleTimeout = 15 * 60; # In seconds
+            in {
               powerProfile = "performance";
               powerButtonAction = "shutDown";
               whenSleepingEnter = "standby";
               whenLaptopLidClosed = "sleep";
               inhibitLidActionWhenExternalMonitorConnected = true;
 
-              dimDisplay = {
-                enable = config.my.hostSubType != "kiosk";
-                idleTimeout = 15 * 60; # In seconds
+              dimDisplay = lib.mkIf (config.my.hostSubType != "kiosk") {
+                enable = true;
+                idleTimeout = dimDisplayIdleTimeout;
               };
 
-              turnOffDisplay = {
-                idleTimeout =
-                  # In seconds
-                  if (config.my.hostSubType == "kiosk")
-                  then "never"
-                  else 2 * dimDisplay.idleTimeout;
-                idleTimeoutWhenLocked = 60; # In seconds
-              };
+              turnOffDisplay =
+                if (config.my.hostSubType == "kiosk")
+                then {
+                  idleTimeout = "never";
+                }
+                else {
+                  idleTimeout = 2 * dimDisplayIdleTimeout;
+                  idleTimeoutWhenLocked = 60;
+                };
 
               autoSuspend =
                 if (hostName == "personal-laptop")
                 then {
                   action = "sleep";
-                  idleTimeout = turnOffDisplay.idleTimeout + 20; # In seconds
+                  idleTimeout = 2 * dimDisplayIdleTimeout + 20;
                 }
                 else {
                   action = "nothing";
