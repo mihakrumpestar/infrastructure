@@ -14,8 +14,6 @@ with lib; let
       yakuake &
       keepassxc &
 
-      bash -c "sleep 13 && nextcloud --background" &
-
       echo "Started minimal user apps"
     '';
   };
