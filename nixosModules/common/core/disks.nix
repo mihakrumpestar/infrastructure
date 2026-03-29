@@ -180,6 +180,11 @@ with lib; {
       };
     };
 
+    # Since /var/lib/sbctl is already created by impermanence module, we have to override the check to check the subfolder
+    systemd.services.generate-sb-keys = mkIf lanzabooteEnabled {
+      unitConfig.ConditionPathExists = mkForce "!/var/lib/sbctl/keys";
+    };
+
     # Lanzaboote does not automatically set the new EFi boot entry as first in UEFI, this code does it for us
     system.activationScripts.lanzaboote-efi-entry = let
       inherit (pkgs) gawk coreutils gnugrep efibootmgr;

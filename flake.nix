@@ -12,7 +12,7 @@
     };
 
     impermanence = {
-      url = "github:mihakrumpestar/impermanence"; # "github:nix-community/impermanence";
+      url = "github:mihakrumpestar/impermanence/fix-initrd-user-permissions"; # "github:nix-community/impermanence";
       inputs = {
         nixpkgs.follows = "";
         home-manager.follows = "";

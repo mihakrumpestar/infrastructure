@@ -340,15 +340,16 @@
         "nixpkgs": []
       },
       "locked": {
-        "lastModified": 1769548169,
-        "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y=",
+        "lastModified": 1774177060,
+        "narHash": "sha256-aj+qWgD3J++Bd56w/0qxqKDYjuECCh/VlZ5lcY6/MBA=",
         "owner": "mihakrumpestar",
         "repo": "impermanence",
-        "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+        "rev": "2ae0b5ec3dd03777c35243c0398623ec12e01271",
         "type": "github"
       },
       "original": {
         "owner": "mihakrumpestar",
+        "ref": "fix-initrd-user-permissions",
         "repo": "impermanence",
         "type": "github"
       }
