@@ -52,7 +52,6 @@ with lib; {
       "/etc/ssh/ssh_host_rsa_key.pub"
 
       "/root/.zsh_history"
-      "/root/.zcompdump"
     ];
 
     defaultDirectories = [
@@ -66,7 +65,6 @@ with lib; {
 
     defaultUserFiles = [
       ".zsh_history"
-      ".zcompdump"
       ".ssh/known_hosts"
     ];
 

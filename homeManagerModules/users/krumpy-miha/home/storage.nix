@@ -83,16 +83,12 @@
         ExecStart = let
           script = pkgs.writeShellScript "rclone-bisync-Documents" ''
             SYNC_PATH="$HOME/Documents"
-            SYNC_DELAY=60 # 60 sec
-            SYNC_INTERVAL=1800 # 30 min
-            BISYNC_CACHE="$HOME/.cache/rclone/bisync"
-            LISTING1="$BISYNC_CACHE/nextcloud-personal_private_Documents..home_krumpy-miha_Documents.path1.lst"
-            LISTING2="$BISYNC_CACHE/nextcloud-personal_private_Documents..home_krumpy-miha_Documents.path2.lst"
+            SYNC_DELAY=60
+            SYNC_INTERVAL=1800
 
             do_sync() {
               RESYNC_FLAG=""
-              # First run needs --resync to initialize
-              if [ ! -f "$LISTING1" ] || [ ! -f "$LISTING2" ]; then
+              if [ ! -d "$SYNC_PATH" ] || [ -z "$(ls -A "$SYNC_PATH" 2>/dev/null)" ]; then
                 RESYNC_FLAG="--resync"
               fi
 
