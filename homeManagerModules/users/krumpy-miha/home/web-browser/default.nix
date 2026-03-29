@@ -317,16 +317,48 @@ in {
     };
   };
 
-  # Use this until Librewolf path is not fixed
-  #home.file.".librewolf/native-messaging-hosts/org.keepassxc.keepassxc_browser.json".text = ''
-  #  {
-  #      "name": "org.keepassxc.keepassxc_browser",
-  #      "description": "KeePassXC integration with native messaging support",
-  #      "path": "${pkgs.keepassxc}/bin/keepassxc-proxy",
-  #      "type": "stdio",
-  #      "allowed_extensions": [
-  #          "keepassxc-browser@keepassxc.org"
-  #      ]
-  #  }
-  #'';
+  systemd.user.services.cleanup-sidebery-downloads = {
+    Unit = {
+      Description = "Cleanup old Sidebery downloads, keeping 120 most recent";
+    };
+
+    Service = {
+      Type = "oneshot";
+      ExecStart = toString (pkgs.writeShellScript "cleanup-sidebery-downloads" ''
+        DIR="${config.home.homeDirectory}/Downloads/Sidebery"
+        KEEP=120
+
+        if [ -d "$DIR" ]; then
+          cd "$DIR" || exit 1
+
+          file_count=$(find . -type f | wc -l)
+
+          if [ "$file_count" -gt "$KEEP" ]; then
+            to_delete=$((file_count - KEEP))
+            find . -type f -printf '%T@ %p\0' | sort -zrn | tail -z -n +$((KEEP + 1)) | cut -z -d' ' -f2- | xargs -0 -r rm -f --
+            echo "Deleted $to_delete files from Sidebery downloads"
+          else
+            echo "Only $file_count files, nothing to delete"
+          fi
+        else
+          echo "Directory $DIR does not exist"
+        fi
+      '');
+    };
+  };
+
+  systemd.user.timers.cleanup-sidebery-downloads = {
+    Unit = {
+      Description = "Run cleanup-sidebery-downloads daily";
+    };
+
+    Timer = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+
+    Install = {
+      WantedBy = ["timers.target"];
+    };
+  };
 }
