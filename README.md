@@ -44,7 +44,9 @@ nix-shell -p stress s-tui --command "s-tui"
 
 ## NixOS Configuration Sizes
 
-Generated: 2026-03-27 17:57
+Generated: 2026-03-31 19:03
+
+**Statistics computed over 5 build run(s)**
 
 **Table 1:** NixOS system configuration sizes and evaluation times for each host.
 
@@ -52,19 +54,39 @@ This table presents the closure size (total disk space required for all dependen
 and evaluation time (time to compute the Nix derivation) for each configured host
 in the infrastructure. Closure size is measured in GiB (gibibytes, 2³⁰ bytes)
 and represents the complete set of packages, libraries, and system components
-required for each configuration. Evaluation time measures the computational overhead
-of the Nix expression evaluator and is performed on cached derivations, representing
-the minimal overhead when no packages need rebuilding. The derivation column shows
-the unique Nix store path identifying each configuration build.
+required for each configuration. System/Home Pkgs shows the count of packages
+in each profile (excluding -doc, -man, -info, -dev, -bin outputs).
+System/Home Refs shows the total recursive dependencies for each profile.
+Evaluation time measures the computational overhead of the Nix
+expression evaluator and is performed on cached derivations, representing the
+minimal overhead when no packages need rebuilding.
 
-| Host                 | Closure Size   | Eval Time   | Derivation                                                                                           |
-|:---------------------|:---------------|:------------|:-----------------------------------------------------------------------------------------------------|
-| kiosk                | 10.33 GiB      | 16.00s      | /nix/store/dyif7j0rjrrg3wvc6l52swyy2ahcffkc-nixos-system-kiosk-26.05.20260324.46db2e0                |
-| personal-laptop      | 33.16 GiB      | 23.07s      | /nix/store/dcklj0mynqphhnviaqfwi3faffwjsh3m-nixos-system-personal-laptop-26.05.20260324.46db2e0      |
-| personal-workstation | 34.11 GiB      | 22.62s      | /nix/store/cdvjqpdz0x294zxid10sbqmi4gbmq3lx-nixos-system-personal-workstation-26.05.20260324.46db2e0 |
-| server-01            | 4.79 GiB       | 12.71s      | /nix/store/60bllh8al62yfr3x426jxqlh83x9flwk-nixos-system-server-01-26.05.20260324.46db2e0            |
-| server-03            | 4.38 GiB       | 11.59s      | /nix/store/719yf3h9fcgvby3sc3h6rgy5rl3h4a8k-nixos-system-server-03-26.05.20260324.46db2e0            |
-| vps-02               | 3.60 GiB       | 9.93s       | /nix/store/9g9hiv4mby2fi8ynjk38y9r436f4ybwr-nixos-system-vps-02-26.05.20260324.46db2e0               |
+|                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |      Eval Time |
+|---------------------:|---------------:|--------------:|------------:|--------------:|------------:|---------------:|
+|                kiosk |      10.33 GiB |          1411 |         523 |          2107 |         583 | 15.37s ± 0.14s |
+|      personal-laptop |      33.53 GiB |          6162 |        5470 |          8181 |        6809 | 22.85s ± 0.25s |
+| personal-workstation |      34.48 GiB |          6211 |        5473 |          8218 |        6815 | 22.37s ± 0.26s |
+|            server-01 |       4.79 GiB |           657 |           - |          1142 |           - | 10.11s ± 0.05s |
+|            server-03 |       4.38 GiB |           657 |           - |          1118 |           - | 10.94s ± 0.08s |
+|               vps-02 |       3.60 GiB |           659 |           - |          1115 |           - |  9.18s ± 0.06s |
+
+## Timing Statistics
+
+**Table 3:** Detailed timing statistics across multiple runs.
+
+|                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
+|---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
+|                kiosk | 15.369s |  15.351s |    0.139s | 15.197s | 15.585s |      5 |
+|      personal-laptop | 22.849s |  22.940s |    0.252s | 22.405s | 23.016s |      5 |
+| personal-workstation | 22.367s |  22.349s |    0.263s | 22.078s | 22.642s |      5 |
+|            server-01 | 10.108s |  10.099s |    0.053s | 10.049s | 10.172s |      5 |
+|            server-03 | 10.937s |  10.932s |    0.080s | 10.838s | 11.057s |      5 |
+|               vps-02 |  9.179s |   9.145s |    0.063s |  9.120s |  9.259s |      5 |
+
+### Visualizations
+
+- ![Bar Chart](generated/stats_20260331_190333/timing_barchart.png)
+- ![Box Plot](generated/stats_20260331_190333/timing_boxplot.png)
 
 ## Closure Reuse Matrix
 
@@ -85,7 +107,7 @@ requirements in multi-host deployments.
 |                kiosk |       - |               94% |                    94% |         46% |         46% |      46% |
 |      personal-laptop |     24% |                 - |                    98% |         12% |         12% |      12% |
 | personal-workstation |     24% |               98% |                      - |         12% |         12% |      12% |
-|            server-01 |     86% |               87% |                    87% |           - |         93% |      89% |
+|            server-01 |     86% |               86% |                    87% |           - |         92% |      89% |
 |            server-03 |     87% |               90% |                    89% |         94% |           - |      92% |
 |               vps-02 |     87% |               88% |                    88% |         91% |         92% |        - |
 <!-- STATS_END -->
