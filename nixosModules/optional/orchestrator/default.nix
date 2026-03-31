@@ -1,6 +1,5 @@
 {
   pkgs,
-  consul-cni,
   vars,
   lib,
   config,
@@ -199,7 +198,7 @@ in {
 
             reserved.reserved_ports = "22222"; # SSH
 
-            cni_path = "${pkgs.cni-plugins}/bin:${consul-cni}/bin"; # This is by default hardcoded, so in NixOS it does not work, this is a workaround
+            cni_path = "${pkgs.cni-plugins}/bin:${pkgs.consul-cni}/bin"; # This is by default hardcoded, so in NixOS it does not work, this is a workaround
             cni_config_dir = "/etc/cni/config"; # Default is /opt/cni/config
             servers = ["${cfg.nodeIPAddress}:4647"]; # For single node, only itself. For 3-node, list ALL server IPs
             meta = {

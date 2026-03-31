@@ -14,7 +14,7 @@
       inherit system;
     };
   in {
-    packages.${system}.consul-cni = let
+    packages.${system} = let
       consul-cni-unwrapped = pkgs.stdenv.mkDerivation rec {
         pname = "consul-cni-unwrapped";
         version = "1.9.5";
@@ -38,19 +38,20 @@
           license = licenses.mpl20;
         };
       };
-    in
-      pkgs.runCommand "consul-cni"
-      {
-        nativeBuildInputs = [pkgs.makeWrapper];
-        propagatedBuildInputs = [consul-cni-unwrapped];
-      }
-      # We need util-linux for nsenter that consul-cni calls at runtime
-      ''
-        makeWrapper ${consul-cni-unwrapped}/bin/consul-cni $out/bin/consul-cni \
-          --prefix PATH : "${pkgs.lib.makeBinPath [pkgs.util-linux]}"
-      ''
-      // {meta.mainProgram = "consul-cni";};
-
+      consul-cni-wrapped = pkgs.runCommand "consul-cni"
+        {
+          nativeBuildInputs = [pkgs.makeWrapper];
+          propagatedBuildInputs = [consul-cni-unwrapped];
+        }
+        ''
+          makeWrapper ${consul-cni-unwrapped}/bin/consul-cni $out/bin/consul-cni \
+            --prefix PATH : "${pkgs.lib.makeBinPath [pkgs.util-linux]}"
+        ''
+        // {meta.mainProgram = "consul-cni";};
+    in {
+      consul-cni = consul-cni-wrapped;
+      default = consul-cni-wrapped;
+    };
     defaultPackage.${system} = self.packages.${system}.consul-cni;
   };
 }

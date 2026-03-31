@@ -18,13 +18,15 @@
     # Video/Audio and photo
     audacity # Sound
     mpv # Media Player (better than VLC)
-    #handbrake # Build fails due to ffmpeg build failing
+    handbrake
+    ffmpeg-full
     obs-studio
     # No color picker currently works properly on KDE6 (use the self created script command `color-picker`)
     gimp # Alternative is: https://github.com/PintaProject/Pinta
     inkscape
     upscayl # Image upscaler
     kdePackages.gwenview # Image viewer
+    kdePackages.kdenlive # Video editor
     curtail # Image compress
     gradia # Make screenshots presentable for the web
 
