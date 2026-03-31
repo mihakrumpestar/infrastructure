@@ -11,10 +11,11 @@
   }: let
     supportedSystems = ["x86_64-linux"];
     forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-    pkgsForSystem = system: import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
+    pkgsForSystem = system:
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
   in {
     packages = forAllSystems (system: let
       pkgs = pkgsForSystem system;
@@ -98,11 +99,10 @@
                 wantedBy = ["default.target"];
                 after = [
                   "graphical-session.target"
-                  "plasma-plasmashell.service"
                 ];
                 serviceConfig = {
                   Type = "simple";
-                  ExecStartPre = "${pkgs.bash}/bin/bash -c 'for i in $(seq 1 30); do [ -n \"$WAYLAND_DISPLAY\" ] && break; sleep 1; done'";
+                  ExecStartPre = "${pkgs.bash}/bin/bash -c 'for i in $(seq 1 180); do [ -n \"$DISPLAY\" ] || [ -n \"$WAYLAND_DISPLAY\" ] && break; sleep 1; done'";
                   ExecStart = "/run/wrappers/bin/sudo -E ${virtualhere-client-gui}/bin/virtualhere-client-gui --start-minimized";
                   Restart = "on-failure";
                 };

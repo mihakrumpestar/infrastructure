@@ -10,7 +10,6 @@
     mesa-demos # Check GPU drivers
     drill
     dig
-    cloc
     man
 
     kdePackages.yakuake # Drop down terminal emulator
@@ -87,13 +86,11 @@
     mission-center # System monitoring GUI
     filezilla
     droidcam # Webcam emulator from Android
-    #flameshot # alt: satty       // Screenshot tool
     rymdport # Wormhole client
     cpu-x # CPU-Z alternative
     qbittorrent-enhanced
     remmina
     moonlight-qt
-    #ffmpeg # Always broken build
     #rustdesk # Always has to be compiled
 
     # Printer and scanner
@@ -106,28 +103,6 @@
     */
   ];
 
-  /*
-  Core-dumps continuesly # TODO: find replacement
-  services.flameshot = {
-  enable = true;
-  settings = {
-    General = {
-      copyOnDoubleClick = true;
-      copyPathAfterSave = true;
-      predefinedColorPaletteLarge = true;
-      saveLastRegion = true;
-      showHelp = false;
-      showStartupLaunchMessage = false;
-      startupLaunch = true;
-      uiColor = "#dea9ed";
-      undoLimit = 100;
-      disabledTrayIcon = true;
-      userColors = "picker, #800000, #ff0000, #ffff00, #00ff00, #008000, #00ffff, #0000ff, #ff00ff, #800080, #ffffff, #000000";
-    };
-  };
-  };
-  */
-
   # fuzzel: application launcher and fuzzy finder
   programs.fuzzel = {
     enable = true;
@@ -138,7 +113,6 @@
         anchor = "center";
 
         fields = "name,generic,comment,categories,filename,keywords";
-        #font = "Hack:weight=bold:size=36";
         line-height = 40;
         width = 45;
         show-actions = true;
