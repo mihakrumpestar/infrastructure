@@ -71,9 +71,10 @@ with lib; {
     defaultUserDirectories = [
       ".cache"
       ".config"
-      ".local/share/"
+      ".local/share/" # Program data and Steam games are saved here
       ".pki"
       ".librewolf"
+      ".steam"
       "Desktop"
       "Documents"
       "Downloads"

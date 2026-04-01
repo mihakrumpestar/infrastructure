@@ -64,6 +64,18 @@
       "command": ["nix", "run", "github:utensils/mcp-nixos", "--"],
       "enabled": true,
     },
+    /*
+    // Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
+    "openrag": {
+      "type": "local",
+      "command": ["uvx", "openrag-mcp"],
+      "enabled": true,
+      "environment": {
+        "OPENRAG_URL": "https://your-openrag-instance.com",
+        "OPENRAG_API_KEY": "orag_your_api_key_here",
+      },
+    },
+    */
   },
 
   "plugin": ["cc-safety-net"],
