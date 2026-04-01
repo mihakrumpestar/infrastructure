@@ -6,7 +6,7 @@
 }:
 with lib; {
   options.my.impermanence = {
-    enable = mkEnableOption "impermanence with btrfs subvolume wiping" // {default = false;};
+    enable = mkEnableOption "impermanence with btrfs subvolume wiping" // {default = true;};
 
     fullyImpermanent = mkOption {
       type = types.bool;

@@ -9,8 +9,8 @@ with lib; {
     disks = {
       bootLoader = mkOption {
         type = types.enum ["systemd-boot" "grub" "lanzaboote"];
-        default = "systemd-boot";
-        description = "Which boot loader to use: grub for VMs, systemd-boot default, lanzaboote for Secure Boot";
+        default = "lanzaboote";
+        description = "Which boot loader to use: grub for VMs, systemd-boot, lanzaboote (default) for Secure Boot";
       };
       bootDisk = mkOption {
         type = types.str;
@@ -31,6 +31,8 @@ with lib; {
   config = let
     lanzabooteEnabled = config.my.disks.bootLoader == "lanzaboote";
     tpm2Pcrs = "7+14";
+    tpm2PcrsList = builtins.sort builtins.lessThan (map (x: builtins.fromJSON x) (lib.strings.splitString "+" tpm2Pcrs));
+    tpm2PcrsJson = builtins.toJSON tpm2PcrsList;
   in {
     disko.devices = {
       disk = {
@@ -214,19 +216,17 @@ with lib; {
       '');
 
     systemd.services.tpm2-cryptenroll = mkIf (lanzabooteEnabled && config.my.disks.encryptRoot == "tpm2") {
-      description = "Enroll TPM2 with PCR 7 for LUKS decryption after Secure Boot is fully active";
+      description = "Enroll TPM2 with PCR ${tpm2Pcrs} for LUKS decryption after Secure Boot is fully active";
       wantedBy = ["multi-user.target"];
       after = ["boot.mount"];
       requires = ["boot.mount"];
-
-      unitConfig.ConditionPathExists = "!/var/lib/tpm2-cryptenroll-done";
 
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
       };
 
-      path = [pkgs.cryptsetup pkgs.systemd pkgs.coreutils pkgs.mokutil];
+      path = [pkgs.cryptsetup pkgs.systemd pkgs.coreutils pkgs.mokutil pkgs.jq];
 
       script = ''
         LUKS_DEVICE="${config.boot.initrd.luks.devices.crypted.device}"
@@ -238,8 +238,22 @@ with lib; {
           exit 0
         fi
 
-        echo "Enrolling TPM2 with PCRs ${tpm2Pcrs} for $LUKS_DEVICE"
+        # Check existing TPM2 tokens
+        TPM2_TOKENS=$(${pkgs.cryptsetup}/bin/cryptsetup luksDump --dump-json-metadata "$LUKS_DEVICE" 2>/dev/null | \
+          ${pkgs.jq}/bin/jq -c '[.tokens // {} | to_entries[] | select(.value.type == "systemd-tpm2")]')
+        TPM2_TOKEN_COUNT=$(echo "$TPM2_TOKENS" | ${pkgs.jq}/bin/jq 'length')
 
+        if [ "$TPM2_TOKEN_COUNT" -gt 1 ]; then
+          echo "Error: Multiple TPM2 tokens found ($TPM2_TOKEN_COUNT), refusing to proceed"
+          exit 1
+        fi
+
+        if [ "$TPM2_TOKEN_COUNT" = 1 ] && [ "$(echo "$TPM2_TOKENS" | ${pkgs.jq}/bin/jq -c '.[0].value["tpm2-pcrs"] // [] | sort')" = '${tpm2PcrsJson}' ]; then
+          echo "TPM2 already enrolled with expected PCRs (${tpm2Pcrs}), skipping"
+          exit 0
+        fi
+
+        echo "Enrolling TPM2 with PCRs ${tpm2Pcrs} for $LUKS_DEVICE"
         if systemd-cryptenroll \
           --tpm2-pcrs=${tpm2Pcrs} \
           --unlock-tpm2-device=auto \
@@ -247,7 +261,6 @@ with lib; {
           --tpm2-with-pin=no \
           --wipe-slot=all \
           "$LUKS_DEVICE"; then
-          touch /var/lib/tpm2-cryptenroll-done
           echo "TPM2 enrollment complete, rebooting..."
           systemctl reboot
         else
