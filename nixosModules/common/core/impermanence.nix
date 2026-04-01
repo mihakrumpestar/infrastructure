@@ -8,6 +8,12 @@ with lib; {
   options.my.impermanence = {
     enable = mkEnableOption "impermanence with btrfs subvolume wiping" // {default = false;};
 
+    fullyImpermanent = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable fully impermanent mode - only persist bare minimum (machine-id and SSH host keys)";
+    };
+
     files = mkOption {
       type = types.listOf types.str;
       default = [];
@@ -43,25 +49,29 @@ with lib; {
     inherit (pkgs) btrfs-progs;
     systemdInitrd = config.boot.initrd.systemd.enable;
 
-    defaultFiles = [
+    minimumFiles = [
       "/etc/machine-id"
-
       "/etc/ssh/ssh_host_ed25519_key"
       "/etc/ssh/ssh_host_ed25519_key.pub"
       "/etc/ssh/ssh_host_rsa_key"
       "/etc/ssh/ssh_host_rsa_key.pub"
-
-      "/root/.zsh_history"
     ];
 
-    defaultDirectories = [
-      "/var/log"
-      "/var/lib/bluetooth"
+    minimumDirectories = [
       "/var/lib/nixos"
-      "/var/lib/systemd/coredump"
-      "/etc/NetworkManager/system-connections"
-      "/var/lib/sbctl" # Lanzaboote keys
     ];
+
+    defaultFiles = minimumFiles ++ ["/root/.zsh_history"];
+
+    defaultDirectories =
+      minimumDirectories
+      ++ [
+        "/var/log"
+        "/var/lib/bluetooth"
+        "/var/lib/systemd/coredump"
+        "/etc/NetworkManager/system-connections"
+        "/var/lib/sbctl" # Lanzaboote keys
+      ];
 
     defaultUserFiles = [
       ".zsh_history"
@@ -82,6 +92,23 @@ with lib; {
       "Videos"
       "repos"
     ];
+
+    filesToPersist =
+      if cfg.fullyImpermanent
+      then minimumFiles
+      else defaultFiles ++ cfg.files;
+    directoriesToPersist =
+      if cfg.fullyImpermanent
+      then minimumDirectories
+      else defaultDirectories ++ cfg.directories;
+    userFilesToPersist =
+      if cfg.fullyImpermanent
+      then []
+      else defaultUserFiles ++ cfg.userFiles;
+    userDirectoriesToPersist =
+      if cfg.fullyImpermanent
+      then []
+      else defaultUserDirectories ++ cfg.userDirectories;
 
     wipeScript = ''
       set -euo pipefail
@@ -149,16 +176,16 @@ with lib; {
       environment.persistence."/persistent-root" = {
         hideMounts = true;
         allowTrash = true;
-        files = defaultFiles ++ cfg.files;
-        directories = defaultDirectories ++ cfg.directories;
+        files = filesToPersist;
+        directories = directoriesToPersist;
       };
 
       home-manager.sharedModules = [
         {
           home.persistence."/persistent-home" = {
             enable = true;
-            files = defaultUserFiles ++ cfg.userFiles;
-            directories = defaultUserDirectories ++ cfg.userDirectories;
+            files = userFilesToPersist;
+            directories = userDirectoriesToPersist;
           };
         }
       ];
