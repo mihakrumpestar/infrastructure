@@ -58,11 +58,6 @@ with lib; {
               };
             };
 
-            #kcminputrc."Libinput/1121/16386/Royuan ROYUAN Gaming Keyboard Consumer Control".ScrollFactor = 7;
-            #kcminputrc."Libinput/1121/16386/Royuan ROYUAN Gaming Keyboard Mouse".PointerAcceleration = 0.600;
-            #kcminputrc."Libinput/1121/16386/Royuan ROYUAN Gaming Keyboard Mouse".PointerAccelerationProfile = 2;
-            #kcminputrc."Libinput/9639/64016/Nordic 2.4G Wireless Receiver Mouse".PointerAcceleration = 1.000;
-
             kded5rc.Module-browserintegrationreminder.autoload = false;
             kdeglobals."KFileDialog Settings"."Show hidden files" = true;
           };
@@ -223,7 +218,7 @@ with lib; {
             battery = rec {
               powerProfile = "powerSaving";
               powerButtonAction = "showLogoutScreen";
-              whenSleepingEnter = "standby";
+              whenSleepingEnter = "standbyThenHibernate";
               whenLaptopLidClosed = "sleep";
               inhibitLidActionWhenExternalMonitorConnected = true;
 
@@ -246,7 +241,7 @@ with lib; {
             lowBattery = rec {
               powerProfile = "powerSaving";
               powerButtonAction = "showLogoutScreen";
-              whenSleepingEnter = "standby";
+              whenSleepingEnter = "standbyThenHibernate";
               whenLaptopLidClosed = "sleep";
 
               dimDisplay = {
