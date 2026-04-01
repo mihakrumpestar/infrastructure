@@ -590,7 +590,7 @@ def generate_graphs(
         )
 
     plt.tight_layout()
-    bar_path = output_dir / "timing_barchart.png"
+    bar_path = output_dir / "infrastructure-configurations_timing_barchart.png"
     plt.savefig(bar_path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"✓ Generated {bar_path}", file=sys.stderr)
@@ -615,7 +615,7 @@ def generate_graphs(
     plt.xticks(rotation=45, ha="right")
 
     plt.tight_layout()
-    box_path = output_dir / "timing_boxplot.png"
+    box_path = output_dir / "infrastructure-configurations_timing_boxplot.png"
     plt.savefig(box_path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"✓ Generated {box_path}", file=sys.stderr)
@@ -725,7 +725,9 @@ def main():
     sys.stdout = original_stdout
 
     update_readme(output.getvalue())
-    save_generated(output.getvalue(), subdir, "statistics.md")
+    save_generated(
+        output.getvalue(), subdir, "infrastructure-confogurations-statistics.md"
+    )
 
 
 if __name__ == "__main__":

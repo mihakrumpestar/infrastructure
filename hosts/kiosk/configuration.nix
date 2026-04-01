@@ -3,6 +3,14 @@
     ./brightness.nix
   ];
 
+  /*
+  Hardware:
+    81SS (Lenovo IdeaPad FLEX-14API)
+    AMD Ryzen 5 3500U
+    12 GB RAM
+    256 GB NVMe SSD
+  */
+
   my = {
     disks = {
       bootDisk = "/dev/nvme0n1";

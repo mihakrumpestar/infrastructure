@@ -627,13 +627,15 @@ def main():
     update_readme(mermaid_content)
 
     # Create timestamped output
-    output_dir = GENERATED_DIR / f"deps_{datetime.now():%Y%m%d_%H%M%S}"
+    output_dir = GENERATED_DIR / f"flake-graph_{datetime.now():%Y%m%d_%H%M%S}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    (output_dir / "dependencies.md").write_text(mermaid_content)
-    print(f"✓ Saved {output_dir / 'dependencies.md'}", file=sys.stderr)
+    (output_dir / "infrastructure-flake-graph.md").write_text(mermaid_content)
+    print(f"✓ Saved {output_dir / 'infrastructure-flake-graph.md'}", file=sys.stderr)
 
-    export_mermaid_to_png(mermaid_content, output_dir / "dependencies.png")
+    export_mermaid_to_png(
+        mermaid_content, output_dir / "infrastructure-flake-graph.png"
+    )
 
 
 if __name__ == "__main__":

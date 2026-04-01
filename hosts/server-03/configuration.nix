@@ -1,6 +1,14 @@
 {vars, ...}: let
   nodeIPAddress = "10.0.30.30";
 in {
+  /*
+  Hardware:
+    Wyse 5070 Thin Client
+    Intel Celeron J4105
+    16 GB RAM
+    960 GB SATA SSD - boot and data
+  */
+
   my = {
     disks = {
       bootDisk = "/dev/sda";

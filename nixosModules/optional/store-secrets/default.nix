@@ -7,7 +7,11 @@ with lib; let
   cfg = config.my.store-secrets;
 in {
   options.my.store-secrets = {
-    enable = mkEnableOption "store-secrets module";
+    enable = mkEnableOption ''
+      store-secrets module; as the name suggests it stores secrets in nix store,
+      these secrets should be safe to expose in nix store, but not publicly in git repo,
+      examples: password hashes, public keys, public identities, URLs, etc.
+    '';
 
     secretsFile = mkOption {
       type = types.nullOr types.path;

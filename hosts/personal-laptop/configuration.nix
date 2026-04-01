@@ -1,4 +1,12 @@
 {
+  /*
+  Hardware:
+    HP 255 15.6 inch G10 Notebook PC
+    AMD Ryzen 5 7530U
+    16 GB RAM
+    512 GB NVMe SSD
+  */
+
   my = {
     disks = {
       bootLoader = "lanzaboote";

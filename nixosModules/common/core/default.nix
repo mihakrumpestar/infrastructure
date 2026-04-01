@@ -81,8 +81,8 @@ in {
       zenstates # https://github.com/r4m0n/ZenStates-Linux
     ];
 
-    # SSH
     services = {
+      # SSH
       sshd.enable = true;
       openssh = {
         openFirewall = true;
@@ -117,6 +117,9 @@ in {
       # fwupdmgr refresh
       # fwupdmgr get-updates
       # fwupdmgr update
+
+      qemuGuest.enable = config.my.hostSubType == "vm";
+      spice-vdagentd.enable = config.my.hostSubType == "vm";
     };
 
     users = {

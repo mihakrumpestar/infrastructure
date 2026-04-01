@@ -3,6 +3,14 @@
   pkgs,
   ...
 }: {
+  /*
+  Hardware:
+    MoreFine S500+
+    AMD Ryzen 9 5900HX
+    32 GB RAM
+    512 GB NVMe SSD
+  */
+
   my = {
     disks = {
       bootDisk = "/dev/nvme0n1";

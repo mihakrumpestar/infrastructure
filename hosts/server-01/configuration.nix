@@ -1,6 +1,15 @@
 {vars, ...}: let
   nodeIPAddress = "10.0.30.10";
 in {
+  /*
+  Hardware:
+    MS-7B89 (1.0)
+    AMD Ryzen 7 5700G
+    64 GB RAM
+    480 GB SATA SSD - boot
+    2 TB NVMe SSD - data
+  */
+
   my = {
     disks = {
       bootDisk = "/dev/sda";
