@@ -21,6 +21,7 @@ in {
 
     orchestrator = {
       enable = true;
+      publicDns = true;
       inherit nodeIPAddress;
     };
 

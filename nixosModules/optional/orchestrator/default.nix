@@ -16,12 +16,14 @@ in {
       example = "10.0.0.5";
       description = "IP address that Nomad and Consul bind to, as well as advertise to other nodes";
     };
+
+    publicDns = mkEnableOption "public DNS access on port 53";
   };
 
   config = mkIf cfg.enable {
     networking.firewall = {
-      allowedTCPPorts = [53 443 4646 8501]; # DNS, UIs
-      allowedUDPPorts = [53 443 4646 8501]; # DNS, UIs
+      allowedTCPPorts = [443 4646 8501] ++ lib.optionals cfg.publicDns [53]; # UIs, DNS (conditional)
+      allowedUDPPorts = [443 4646 8501] ++ lib.optionals cfg.publicDns [53]; # UIs, DNS (conditional)
       # Nomad dynamic ports
       #allowedTCPPortRanges = [
       #  {
@@ -36,10 +38,10 @@ in {
       #  }
       #];
 
-      interfaces.br0 = {
-        allowedTCPPorts = [30010]; # Registry
-        allowedUDPPorts = [30010]; # Registry
-      };
+      #interfaces.br0 = {
+      #  allowedTCPPorts = [30010]; # Registry
+      #  allowedUDPPorts = [30010]; # Registry
+      #};
     };
 
     networking = {
@@ -74,7 +76,7 @@ in {
             dns = 8600;
             http = -1; # Otherwise it stays enabled
             https = 8501;
-            #grpc = 8502; # Has to be enabled for Consul Connect service mesh (if TLS is not configured)
+            #grpc = 8502; # Has to be enabled for Consul Connect service mesh (if TLS is NOT configured)
             grpc_tls = 8503;
           };
 
@@ -100,7 +102,7 @@ in {
             enabled = true; # Enable Consul Connect service mesh
 
             # https://developer.hashicorp.com/consul/commands/connect/ca
-            # Only applys on init, after that you have to use command:
+            # Only applys on init, after that you have to use the following command:
             # consul connect ca set-config -config-file=tmp.json
             /*
             {
@@ -131,6 +133,16 @@ in {
           limits = {
             http_max_conns_per_client = 10000; # Default is 200 and we start getting: "Missing: health.service..."
           };
+
+          # ACLs
+          # Guide: https://developer.hashicorp.com/consul/docs/secure/acl/bootstrap
+          # consul acl bootstrap
+          # export CONSUL_HTTP_TOKEN="<token>"
+          acl = {
+            enabled = true;
+            default_policy = "deny";
+            enable_token_persistence = true;
+          };
         };
       };
 
@@ -156,6 +168,16 @@ in {
           server = {
             enabled = true;
             bootstrap_expect = 1; # Will change to 3 for 3-node cluster
+          };
+
+          # ACLs
+          # Config: https://developer.hashicorp.com/nomad/docs/configuration/acl
+          # Guide: https://developer.hashicorp.com/nomad/docs/secure/acl/bootstrap
+          # nomad acl bootstrap
+          # export NOMAD_TOKEN=$(cat bootstrap.token)
+          # nomad ui -authenticate
+          acl = {
+            enabled = true;
           };
 
           # This tls part is for server and client
@@ -196,7 +218,7 @@ in {
               }
             ];
 
-            reserved.reserved_ports = "22222"; # SSH
+            reserved.reserved_ports = config.services.openssh.ports; # SSH
 
             cni_path = "${pkgs.cni-plugins}/bin:${pkgs.consul-cni}/bin"; # This is by default hardcoded, so in NixOS it does not work, this is a workaround
             cni_config_dir = "/etc/cni/config"; # Default is /opt/cni/config
@@ -398,7 +420,7 @@ in {
     };
 
     systemd.services.coredns.serviceConfig = {
-      RestartSec = 2;
+      RestartSec = 2; # Give time for network to be fully up
     };
 
     #services.iperf3 = {

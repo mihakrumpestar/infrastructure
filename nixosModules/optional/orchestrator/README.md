@@ -1,5 +1,35 @@
 # Orchestrator
 
+## ACLs
+
+ACLs are enabled for both Consul and Nomad. You need to bootstrap them once after initial cluster startup.
+
+### Consul ACL Bootstrap
+
+```sh
+# Bootstrap Consul ACLs (run once)
+consul acl bootstrap
+
+# Save the SecretID (management token) - you'll need it for Nomad integration
+export CONSUL_HTTP_TOKEN=<bootstrapped-token>
+
+# Create agent token for Consul
+consul acl token create -name "agent-token" -node-name "<node-name>"
+
+# Set the agent token
+consul acl set-agent-token agent <agent-token-secret-id>
+```
+
+### Nomad ACL Bootstrap
+
+```sh
+# Bootstrap Nomad ACLs (run once)
+nomad acl bootstrap
+
+# Save the SecretID (management token)
+export NOMAD_TOKEN=<bootstrapped-token>
+```
+
 ## Nomad
 
 Generate certs (https://developer.hashicorp.com/nomad/docs/secure/traffic/tls):
