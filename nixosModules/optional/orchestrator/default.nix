@@ -135,9 +135,6 @@ in {
           };
 
           # ACLs
-          # Guide: https://developer.hashicorp.com/consul/docs/secure/acl/bootstrap
-          # consul acl bootstrap
-          # export CONSUL_HTTP_TOKEN="<token>"
           acl = {
             enabled = true;
             default_policy = "deny";
@@ -171,13 +168,10 @@ in {
           };
 
           # ACLs
-          # Config: https://developer.hashicorp.com/nomad/docs/configuration/acl
-          # Guide: https://developer.hashicorp.com/nomad/docs/secure/acl/bootstrap
-          # nomad acl bootstrap
-          # export NOMAD_TOKEN=$(cat bootstrap.token)
-          # nomad ui -authenticate
           acl = {
             enabled = true;
+            token_ttl = "24h"; # More frequent rotation
+            policy_ttl = "30s"; # Faster policy updates
           };
 
           # This tls part is for server and client
@@ -243,6 +237,18 @@ in {
             grpc_ca_file = config.age.secrets."consul-agent-ca_pem".path;
 
             ssl = true;
+
+            # Workload Identity - allows Nomad tasks/services to authenticate to Consul
+            # Requires Consul auth method to be configured (see README)
+            service_identity = {
+              aud = ["consul.io"];
+              ttl = "1h";
+            };
+
+            task_identity = {
+              aud = ["consul.io"];
+              ttl = "1h";
+            };
           };
 
           telemetry = {
