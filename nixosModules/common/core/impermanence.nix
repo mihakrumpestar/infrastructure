@@ -75,7 +75,6 @@ with lib; {
 
     defaultUserFiles = [
       ".zsh_history"
-      ".ssh/known_hosts"
     ];
 
     defaultUserDirectories = [
@@ -85,6 +84,7 @@ with lib; {
       ".pki"
       ".librewolf"
       ".steam"
+      ".ssh" # SSH has isses having just ".ssh/known_hosts" file
       "Desktop"
       "Documents"
       "Downloads"
