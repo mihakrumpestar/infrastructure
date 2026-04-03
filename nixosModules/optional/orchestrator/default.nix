@@ -186,7 +186,7 @@ in {
             key_file = config.age.secrets."global-server-nomad-key_pem".path;
 
             verify_server_hostname = true;
-            verify_https_client = true;
+            verify_https_client = true; # mTLS for all HTTPS endpoints
           };
 
           client = {
@@ -212,7 +212,7 @@ in {
               }
             ];
 
-            reserved.reserved_ports = config.services.openssh.ports; # SSH
+            reserved.reserved_ports = lib.concatStringsSep "," (map toString config.services.openssh.ports); # SSH
 
             cni_path = "${pkgs.cni-plugins}/bin:${pkgs.consul-cni}/bin"; # This is by default hardcoded, so in NixOS it does not work, this is a workaround
             cni_config_dir = "/etc/cni/config"; # Default is /opt/cni/config
@@ -341,11 +341,11 @@ in {
         group = "consul";
       };
 
-      "nomad-agent-ca_pem".file = /${vars.secretsDir}/secrets/nomad/nomad-agent-ca.pem.age;
-      "global-server-nomad_pem".file = /${vars.secretsDir}/secrets/nomad/global-server-nomad.pem.age;
-      "global-server-nomad-key_pem".file = /${vars.secretsDir}/secrets/nomad/global-server-nomad-key.pem.age;
-      "global-client-nomad_pem".file = /${vars.secretsDir}/secrets/nomad/global-client-nomad.pem.age;
-      "global-client-nomad-key_pem".file = /${vars.secretsDir}/secrets/nomad/global-client-nomad-key.pem.age;
+        "nomad-agent-ca_pem".file = /${vars.secretsDir}/secrets/nomad/nomad-agent-ca.pem.age;
+        "global-server-nomad_pem".file = /${vars.secretsDir}/secrets/nomad/global-server-nomad.pem.age;
+        "global-server-nomad-key_pem".file = /${vars.secretsDir}/secrets/nomad/global-server-nomad-key.pem.age;
+        "global-client-nomad_pem".file = /${vars.secretsDir}/secrets/nomad/global-client-nomad.pem.age;
+        "global-client-nomad-key_pem".file = /${vars.secretsDir}/secrets/nomad/global-client-nomad-key.pem.age;
 
       "containers_auth_json" = {
         file = /${vars.secretsDir}/secrets/users/containers_auth.json.age;
@@ -428,6 +428,33 @@ in {
     systemd.services.coredns.serviceConfig = {
       RestartSec = 2; # Give time for network to be fully up
     };
+
+     # Caddy reverse proxy for Nomad JWKS endpoint
+     # Exposes JWKS without requiring client certificates (for Consul workload identity)
+     services.caddy = {
+       enable = true;
+       user = "root";
+       group = "root";
+       configFile = pkgs.writeText "Caddyfile" ''
+          {
+            admin off
+          }
+
+          http://127.0.0.1:4649 {
+            @jwks path /.well-known/jwks.json
+            handle @jwks {
+              reverse_proxy https://127.0.0.1:4646 {
+               transport http {
+                 tls
+                 tls_client_auth ${config.age.secrets."global-client-nomad_pem".path} ${config.age.secrets."global-client-nomad-key_pem".path}
+                 tls_trust_pool file ${config.age.secrets."nomad-agent-ca_pem".path}
+               }
+             }
+           }
+           respond 404
+         }
+       '';
+     };
 
     #services.iperf3 = {
     #  enable = true;

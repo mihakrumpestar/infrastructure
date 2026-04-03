@@ -82,19 +82,45 @@ export CONSUL_HTTP_TOKEN=<management-token>
 
 #### 2. Consul Agent Token
 
-For the Consul agent itself (to register in the catalog), you may need an agent token:
+For the Consul agent itself (to register in the catalog and perform internal operations), you need an agent token:
 
 ```sh
-# Create agent token
+# Set management token for CLI operations
+export CONSUL_HTTP_TOKEN=<management-token-from-bootstrap>
+
+# Universal agent policy for all nodes
+cat > /tmp/agent-policy.hcl << 'EOF'
+# Allow agent to read its own agent API
+agent_prefix "" {
+  policy = "read"
+}
+
+# Allow agent to register/update any node in catalog
+node_prefix "" {
+  policy = "write"
+}
+
+# Allow agent to register services (Nomad, Consul Connect, etc.)
+service_prefix "" {
+  policy = "write"
+}
+EOF
+
+# Create the policy once
+consul acl policy create -name "agent-policy" -rules @/tmp/agent-policy.hcl
+
+# Create token with this policy (works on any node)
 consul acl token create \
   -description "agent-token" \
-  -node-identity "<node-name>:dc1"
+  -policy-name "agent-policy"
 
-# Set it on the agent (or add to config)
+# Set tokens to agent (do on each agent)
+consul acl set-agent-token default <agent-token-secret-id>
 consul acl set-agent-token agent <agent-token-secret-id>
 ```
 
-With `enable_token_persistence = true`, the token persists across restarts.
+With `enable_token_persistence = true`, tokens are persisted to disk.
+If that is not set on, we would have to specify them in config to retain them.
 
 #### 3. Create Consul Auth Method for Nomad Workload Identity
 
@@ -102,35 +128,39 @@ This allows Nomad workloads to authenticate to Consul automatically:
 
 ```sh
 # Create auth method config
+# Note: Uses http://127.0.0.1:4649 which is proxied through Caddy
+# Caddy handles mTLS to Nomad and exposes only the JWKS endpoint
 cat > /tmp/consul-auth-method.json << 'EOF'
 {
-  "Name": "nomad-workloads",
-  "Type": "jwt",
-  "Description": "Auth method for Nomad workload identities",
-  "Config": {
-    "JWKSURL": "https://127.0.0.1:4646/.well-known/jwks.json",
-    "JWTSupportedAlgs": ["RS256"],
-    "BoundAudiences": ["consul.io"],
-    "ClaimMappings": {
-      "nomad_namespace": "nomad_namespace",
-      "nomad_job_id": "nomad_job_id",
-      "nomad_task": "nomad_task",
-      "nomad_service": "nomad_service"
-    }
+  "JWKSURL": "http://127.0.0.1:4649/.well-known/jwks.json",
+  "JWTSupportedAlgs": ["RS256"],
+  "BoundAudiences": ["consul.io"],
+  "ClaimMappings": {
+    "nomad_namespace": "nomad_namespace",
+    "nomad_job_id": "nomad_job_id",
+    "nomad_task": "nomad_task",
+    "nomad_service": "nomad_service"
   }
 }
 EOF
 
 # Create the auth method
-consul acl auth-method create @/tmp/consul-auth-method.json
+consul acl auth-method create \
+  -name "nomad-workloads" \
+  -type "jwt" \
+  -description "Auth method for Nomad workload identities" \
+  -config @/tmp/consul-auth-method.json
 ```
 
-#### 3. Create Consul Binding Rules
+**Why Caddy proxy?**
+Nomad is configured with `verify_https_client = true` (mTLS), requiring client certificates on all HTTPS endpoints. Consul's JWKS fetcher cannot provide client certificates, so Caddy proxies the endpoint on localhost:4649 → Nomad:4646 with mTLS, exposing only the public JWKS endpoint.
+
+#### 4. Create Consul Binding Rules
 
 ```sh
 # Binding rule for services
 consul acl binding-rule create \
-  -method-name 'nomad-workloads' \
+  -method 'nomad-workloads' \
   -description 'Services authenticated via workload identity' \
   -selector '"nomad_service" in value' \
   -bind-type service \
@@ -138,14 +168,14 @@ consul acl binding-rule create \
 
 # Binding rule for tasks
 consul acl binding-rule create \
-  -method-name 'nomad-workloads' \
+  -method 'nomad-workloads' \
   -description 'Tasks authenticated via workload identity' \
   -selector '"nomad_service" not in value' \
   -bind-type role \
   -bind-name 'nomad-${value.nomad_namespace}-tasks'
 ```
 
-#### 4. Nomad ACL Bootstrap
+#### 5. Nomad ACL Bootstrap
 
 ```sh
 # Bootstrap Nomad ACLs (run once on any server)
@@ -172,19 +202,7 @@ Or access `https://<node-ip>:4646/ui` and login with management token.
 
 Access `https://<node-ip>:8501/ui` and login with ACL management token.
 
-#### Browser Certificate Import
-
-**Firefox:**
-- Settings → Privacy & Security → Certificates → View Certificates
-- Import → Select the `.p12` file
-
-**Chrome/Chromium:**
-- Settings → Privacy and security → Manage certificates
-- Import → Select the `.p12` file
-
-**Safari (macOS):**
-- Double-click the `.p12` file → Add to Keychain
-- Safari will use it automatically
+// TODO: from this forward it is unverified
 
 ### Metrics Access (Prometheus)
 

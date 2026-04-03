@@ -22,7 +22,10 @@
 in {
   # systemctl status agenix-install-secrets.service
   age = {
-    identityPaths = [age_host_identity];
+    identityPaths =
+      if (config.my.hostSubType != "vm")
+      then [age_host_identity]
+      else config.services.openssh.hostKeys; # The default
     ageBin = lib.getExe age-with-tpm;
   };
 
