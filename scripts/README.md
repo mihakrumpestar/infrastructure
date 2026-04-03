@@ -9,9 +9,20 @@ Generates comprehensive build statistics for all NixOS host configurations, incl
 ### Usage
 
 ```bash
-task generate                    # Single run
-task generate -- --runs 5        # 5 runs for averaging timing statistics
+task generate                       # Single run, all hosts in parallel
+task generate -- --runs 5           # 5 runs for averaging timing statistics
+task generate -- --workers 2         # Limit to 2 parallel builds
+task generate -- --runs 5 --workers 3 # 5 runs with 3 workers
 ```
+
+### Parallelism
+
+By default, all hosts build in parallel (`--workers` defaults to number of hosts). This can cause
+CPU contention on multi-core systems during Nix evaluation. Use `--workers N` to limit parallelism:
+
+- `--workers 1`: Sequential (slowest total time, most accurate per-host timing)
+- `--workers N`: Build N hosts at a time (balance between speed and resource usage)
+- `--workers` not specified: Build all hosts at once (fastest total time, may slow per-host timing)
 
 ### Output
 

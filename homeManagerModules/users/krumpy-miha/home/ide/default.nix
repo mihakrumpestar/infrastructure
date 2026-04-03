@@ -21,12 +21,15 @@ in {
     # Task runner
     go-task
 
+    # Github
+    gh
+
     # LLM
     opencode
     opencode-desktop
 
     # Formatters
-    nodePackages.prettier
+    prettier
     #nixfmt-rfc-style # Not using anymore since it hangs too much
     alejandra # For Nix
     caddy # Also a linter
@@ -218,4 +221,23 @@ in {
     file = /${vars.secretsDir}/secrets/users/krumpy-miha/llm_api_keys.env.age;
     path = "${config.home.homeDirectory}/.agenix/secrets/llm_api_keys.env";
   };
+
+  programs.zsh.initContent = ''
+    gh-auth() {
+      if [[ $# -eq 0 ]]; then
+        echo "Usage: gh-auth <profile>"
+        return 1
+      fi
+      local profile="$1"
+      local secret_name="gh-cli-''${profile}"
+      local token
+      token=$(secret-tool lookup UserName "$secret_name" 2>/dev/null) || true
+      if [[ -z "$token" ]]; then
+        echo "Error: Secret '$secret_name' not found in secret-service" >&2
+        return 1
+      fi
+      export GH_TOKEN="$token"
+      echo "GH_TOKEN set for profile '$profile'"
+    }
+  '';
 }

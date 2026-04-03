@@ -19,7 +19,6 @@ import tempfile
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
 
 REPO_ROOT = Path(__file__).parent.parent
 README_PATH = REPO_ROOT / "README.md"
@@ -42,7 +41,7 @@ EXCLUDE_DIRS = {
 }
 
 
-def find_all_nix_files() -> List[Path]:
+def find_all_nix_files() -> list[Path]:
     """Find all .nix, .json, .jsonc files in the repo."""
     files = []
     for root, dirs, files_in_dir in os.walk(REPO_ROOT):
@@ -56,7 +55,7 @@ def find_all_nix_files() -> List[Path]:
     return sorted(files)
 
 
-def resolve_import(import_path: str, current_file: Path) -> Set[str]:
+def resolve_import(import_path: str, current_file: Path) -> set[str]:
     """Resolve an import path to its actual file paths."""
     resolved = set()
     current_dir = current_file.parent
@@ -127,7 +126,7 @@ def is_inside_home_manager_users(text: str, pos: int) -> bool:
     return False
 
 
-def resolve_dynamic_pattern(pattern: str, base_dir: Path) -> List[str]:
+def resolve_dynamic_pattern(pattern: str, base_dir: Path) -> list[str]:
     """Resolve dynamic patterns like ./${username}/system to actual paths."""
     paths = []
     var_match = re.search(r"\$\{(\w+)\}", pattern)
@@ -141,24 +140,20 @@ def resolve_dynamic_pattern(pattern: str, base_dir: Path) -> List[str]:
     for subdir in sorted(base_dir.iterdir()):
         if not subdir.is_dir() or subdir.name.startswith("."):
             continue
-        if subdir.name == "default.nix":
-            continue
 
-        resolved = pattern.replace(f"${{{var}}}", subdir.name).lstrip("/")
-        candidate = base_dir / subdir.name / resolved
+        resolved = pattern.replace(f"${{{var}}}", subdir.name)
+        candidate = base_dir / resolved.lstrip("/")
 
         if candidate.exists():
             if candidate.is_dir() and (candidate / "default.nix").exists():
-                paths.append(
-                    f"./{subdir.name}/{resolved}/default.nix".replace("//", "/")
-                )
+                paths.append(f"./{resolved.lstrip('/')}/default.nix")
             else:
-                paths.append(f"./{subdir.name}/{resolved}")
+                paths.append(f"./{resolved.lstrip('/')}")
 
     return paths
 
 
-def extract_imports(content: str, file_path: Path) -> Tuple[List[str], List[str]]:
+def extract_imports(content: str, file_path: Path) -> tuple[list[str], list[str]]:
     """Extract import paths from Nix file content.
 
     Returns: (regular_imports, nested_imports)
@@ -227,7 +222,7 @@ def extract_imports(content: str, file_path: Path) -> Tuple[List[str], List[str]
     return list(set(regular_imports)), list(set(nested_imports))
 
 
-def build_dependency_graph() -> Tuple[Dict[str, Set[str]], Set[str]]:
+def build_dependency_graph() -> tuple[dict[str, set[str]], set[str]]:
     """Build dependency graph from all Nix files."""
     nix_files = find_all_nix_files()
     dependencies = defaultdict(set)
@@ -253,7 +248,7 @@ def get_mermaid_node_id(path: str) -> str:
     return path.replace("/", "__").replace(".", "_").replace("-", "_")
 
 
-def get_flake_inputs() -> Tuple[List[str], Dict[str, str]]:
+def get_flake_inputs() -> tuple[list[str], dict[str, str]]:
     """Get flake inputs using nix flake metadata."""
     try:
         result = subprocess.run(
@@ -271,7 +266,7 @@ def get_flake_inputs() -> Tuple[List[str], Dict[str, str]]:
         external = []
         local = {}
 
-        for name, node in data.get("locks", {}).get("nodes", {}).items():
+        for name, _node in data.get("locks", {}).get("nodes", {}).items():
             if name == "root":
                 continue
 
@@ -308,7 +303,7 @@ def get_flake_inputs() -> Tuple[List[str], Dict[str, str]]:
 
 
 def generate_mermaid_graph(
-    dependencies: Dict[str, Set[str]], all_files: Set[str]
+    dependencies: dict[str, set[str]], all_files: set[str]
 ) -> str:
     """Generate Mermaid diagram showing import dependencies with PHD styling."""
     lines = ["```mermaid"]
@@ -560,7 +555,7 @@ def update_readme(mermaid_content: str):
     print("✓ Updated README.md with dependency graph", file=sys.stderr)
 
 
-def find_mmdc() -> str:
+def find_mmdc() -> str | None:
     """Find mmdc executable."""
     if mmdc := shutil.which("mmdc"):
         return mmdc
@@ -604,7 +599,7 @@ def export_mermaid_to_png(mermaid_content: str, output_path: Path):
             text=True,
         )
         if result.returncode != 0:
-            print(f"⚠ Failed to export PNG:", file=sys.stderr)
+            print("⚠ Failed to export PNG:", file=sys.stderr)
             print(f"  stderr: {result.stderr}", file=sys.stderr)
         else:
             print(f"✓ Exported PNG to {output_path}", file=sys.stderr)

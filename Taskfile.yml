@@ -31,6 +31,7 @@ tasks:
     desc: |
       Build all hosts, show closure sizes, and update dependency graph.
       Use --runs N for averaging: task generate -- --runs 5
+      Use --workers N to limit parallelism: task generate -- --workers 2
     cmds:
       - python3 scripts/generate_stats.py {{.CLI_ARGS}}
       - python3 scripts/generate_deps.py

@@ -50,7 +50,6 @@
     speedtest-go # Internet speedtest in CLI
     rclone
     rsync
-    gh
     jq
     fastfetch # New Neofetch
     onefetch # Neofetch/fastfetch for Git

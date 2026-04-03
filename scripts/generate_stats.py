@@ -24,14 +24,13 @@ import statistics
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore[import-untyped]
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Dict, List, Set, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
-from tabulate import tabulate
+from tabulate import tabulate  # type: ignore[import-untyped]
 from io import StringIO
 
 README_PATH = Path(__file__).parent.parent / "README.md"
@@ -40,7 +39,7 @@ STATS_START_MARKER = "<!-- STATS_START -->"
 STATS_END_MARKER = "<!-- STATS_END -->"
 
 VERSION_PATTERN = re.compile(r"-\d+\.\d+")
-ISDIR_CACHE: Dict[str, bool] = {}
+ISDIR_CACHE: dict[str, bool] = {}
 
 
 @dataclass
@@ -49,18 +48,18 @@ class BuildResult:
     derivation: str
     size_bytes: int
     elapsed_seconds: float
-    closure_paths: Set[str]
+    closure_paths: set[str]
     system_pkgs: int = 0
     home_pkgs: int = 0
     system_refs: int = 0
     home_refs: int = 0
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
 class TimingStats:
     host: str
-    times: List[float] = field(default_factory=list)
+    times: list[float] = field(default_factory=list)
 
     @property
     def mean(self) -> float:
@@ -83,7 +82,7 @@ class TimingStats:
         return max(self.times) if self.times else 0.0
 
 
-def get_hosts(repo_root: Path) -> List[str]:
+def get_hosts(repo_root: Path) -> list[str]:
     """Get sorted list of NixOS configuration hostnames."""
     result = subprocess.run(
         [
@@ -123,12 +122,12 @@ def is_valid_nix_pkg(path: str) -> bool:
     return bool(VERSION_PATTERN.search(basename))
 
 
-def count_nix_packages(paths: List[str]) -> int:
+def count_nix_packages(paths: list[str]) -> int:
     """Count valid nix packages from a list of store paths."""
     return sum(1 for p in paths if is_valid_nix_pkg(p))
 
 
-def get_system_packages(toplevel_drv: str) -> Tuple[int, int]:
+def get_system_packages(toplevel_drv: str) -> tuple[int, int]:
     """Get system package count and recursive reference count from toplevel."""
     result = subprocess.run(
         ["nix-store", "-q", "--requisites", toplevel_drv],
@@ -138,11 +137,12 @@ def get_system_packages(toplevel_drv: str) -> Tuple[int, int]:
     if result.returncode != 0:
         return 0, 0
 
-    paths = result.stdout.strip().split("\n")
+    stdout_content = result.stdout.strip()
+    paths = stdout_content.split("\n") if stdout_content else []
     return count_nix_packages(paths), len(paths)
 
 
-def get_home_users(host: str, repo_root: Path) -> List[str]:
+def get_home_users(host: str, repo_root: Path) -> list[str]:
     """Get list of home-manager users for a host."""
     result = subprocess.run(
         [
@@ -160,7 +160,7 @@ def get_home_users(host: str, repo_root: Path) -> List[str]:
     return json.loads(result.stdout) if result.returncode == 0 else []
 
 
-def get_home_packages(host: str, user: str, repo_root: Path) -> Tuple[int, int]:
+def get_home_packages(host: str, user: str, repo_root: Path) -> tuple[int, int]:
     """Get home package count and recursive reference count for user."""
     path_result = subprocess.run(
         [
@@ -184,7 +184,8 @@ def get_home_packages(host: str, user: str, repo_root: Path) -> Tuple[int, int]:
     if reqs_result.returncode != 0:
         return 0, 0
 
-    paths = reqs_result.stdout.strip().split("\n")
+    stdout_content = reqs_result.stdout.strip()
+    paths = stdout_content.split("\n") if stdout_content else []
     return count_nix_packages(paths), len(paths)
 
 
@@ -308,7 +309,7 @@ def get_cpu_percent() -> float:
             if (active + idle + iowait) > 0
             else 0
         )
-    except:
+    except Exception:
         return 0
 
 
@@ -322,44 +323,35 @@ def cpu_monitor_thread(interval: float, stop_event: threading.Event):
 
 
 def print_size_table(
-    results: Dict[str, BuildResult],
-    hosts: List[str],
-    timing_stats: Optional[Dict[str, TimingStats]] = None,
+    results: dict[str, BuildResult],
+    hosts: list[str],
+    timing_stats: dict[str, TimingStats] | None = None,
 ):
     """Print markdown table of sizes and build times."""
-    print("\n## NixOS Configuration Sizes\n")
-    print(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+    timing_info = (
+        f"**Statistics computed over {len(next(iter(timing_stats.values())).times)} build run(s)**\n"
+        if timing_stats
+        else ""
+    )
 
-    if timing_stats:
-        print(
-            f"**Statistics computed over {len(next(iter(timing_stats.values())).times)} build run(s)**\n"
-        )
+    print(f"""
+## NixOS Configuration Sizes
 
-    print(
-        "**Table 1:** NixOS system configuration sizes and evaluation times for each host."
-    )
-    print(
-        "\nThis table presents the closure size (total disk space required for all dependencies)"
-    )
-    print(
-        "and evaluation time (time to compute the Nix derivation) for each configured host"
-    )
-    print(
-        "in the infrastructure. Closure size is measured in GiB (gibibytes, 2³⁰ bytes)"
-    )
-    print(
-        "and represents the complete set of packages, libraries, and system components"
-    )
-    print(
-        "required for each configuration. System/Home Pkgs shows the count of packages"
-    )
-    print("in each profile (excluding -doc, -man, -info, -dev, -bin outputs).")
-    print("System/Home Refs shows the total recursive dependencies for each profile.")
-    print("Evaluation time measures the computational overhead of the Nix")
-    print(
-        "expression evaluator and is performed on cached derivations, representing the"
-    )
-    print("minimal overhead when no packages need rebuilding.\n")
+Generated: {datetime.now().strftime("%Y-%m-%d %H:%M")}
+{timing_info}
+**Table 1:** NixOS system configuration sizes and evaluation times for each host.
+
+This table presents the closure size (total disk space required for all dependencies)
+and evaluation time (time to compute the Nix derivation) for each configured host
+in the infrastructure. Closure size is measured in GiB (gibibytes, 2³⁰ bytes)
+and represents the complete set of packages, libraries, and system components
+required for each configuration. System/Home Pkgs shows the count of packages
+in each profile (excluding -doc, -man, -info, -dev, -bin outputs).
+System/Home Refs shows the total recursive dependencies for each profile.
+Evaluation time measures the computational overhead of the Nix
+expression evaluator and is performed on cached derivations, representing the
+minimal overhead when no packages need rebuilding.
+""")
 
     table_data = []
     for host in hosts:
@@ -403,15 +395,18 @@ def print_size_table(
 
 
 def print_timing_statistics(
-    timing_stats: Dict[str, TimingStats],
-    hosts: List[str],
+    timing_stats: dict[str, TimingStats],
+    hosts: list[str],
     subdir: str,
     bar_path: str = "",
     box_path: str = "",
 ):
     """Print detailed timing statistics table."""
-    print("\n## Timing Statistics\n")
-    print("**Table 3:** Detailed timing statistics across multiple runs.\n")
+    print("""
+## Timing Statistics
+
+**Table 3:** Detailed timing statistics across multiple runs.
+""")
 
     table_data = [
         [
@@ -446,36 +441,23 @@ def print_timing_statistics(
             print(f"- ![Box Plot]({subdir}/{Path(box_path).name})")
 
 
-def print_reuse_matrix(results: Dict[str, BuildResult], hosts: List[str]):
+def print_reuse_matrix(results: dict[str, BuildResult], hosts: list[str]):
     """Print markdown matrix of closure reuse percentages."""
-    print("\n## Closure Reuse Matrix\n")
+    print("""
+## Closure Reuse Matrix
 
-    print("**Table 2:** Binary-level dependency sharing between host configurations.")
-    print(
-        "\nThis matrix quantifies the degree of dependency reuse across different NixOS host"
-    )
-    print(
-        "configurations. Each cell shows the percentage of packages (derivations) from the"
-    )
-    print(
-        "row host's closure that also appear in the column host's closure. A value of 100%"
-    )
-    print(
-        "would indicate complete subsumption (all packages from row host are present in column"
-    )
-    print(
-        "host). The diagonal shows dashes (-) as self-comparison is omitted. Higher percentages"
-    )
-    print(
-        "indicate greater infrastructure consolidation potential through shared package caches"
-    )
-    print(
-        "and common dependency management. This metric is particularly relevant for optimizing"
-    )
-    print(
-        "distributed builds, reducing network transfer overhead, and minimizing storage"
-    )
-    print("requirements in multi-host deployments.\n")
+**Table 2:** Binary-level dependency sharing between host configurations.
+
+This matrix quantifies the degree of dependency reuse across different NixOS host
+configurations. Each cell shows the percentage of packages (derivations) from the
+row host's closure that also appear in the column host's closure. A value of 100%
+would indicate complete subsumption (all packages from row host are present in column
+host). The diagonal shows dashes (-) as self-comparison is omitted. Higher percentages
+indicate greater infrastructure consolidation potential through shared package caches
+and common dependency management. This metric is particularly relevant for optimizing
+distributed builds, reducing network transfer overhead, and minimizing storage
+requirements in multi-host deployments.
+""")
 
     table_data = []
     for host1 in hosts:
@@ -543,8 +525,8 @@ def save_generated(content: str, subdir: str, filename: str):
 
 
 def generate_graphs(
-    timing_data: Dict[str, TimingStats], hosts: List[str], subdir: str
-) -> Tuple[str, str]:
+    timing_data: dict[str, TimingStats], hosts: list[str], subdir: str
+) -> tuple[str, str]:
     """Generate bar chart and box plot visualizations. Returns (bar_path, box_path)."""
     output_dir = Path(subdir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -553,7 +535,7 @@ def generate_graphs(
     stdev_times = [timing_data[h].stdev for h in hosts]
     host_indices = np.arange(len(hosts))
 
-    fig, ax = plt.subplots(figsize=(max(10, len(hosts) * 0.8), 6))
+    _fig, ax = plt.subplots(figsize=(max(10, len(hosts) * 0.8), 6))
     bars = ax.bar(
         host_indices,
         mean_times,
@@ -595,10 +577,9 @@ def generate_graphs(
     plt.close()
     print(f"✓ Generated {bar_path}", file=sys.stderr)
 
-    fig, ax = plt.subplots(figsize=(max(10, len(hosts) * 0.8), 6))
-    bp = ax.boxplot(
-        [timing_data[h].times for h in hosts], patch_artist=True, labels=hosts
-    )
+    _fig, ax = plt.subplots(figsize=(max(10, len(hosts) * 0.8), 6))
+    bp = ax.boxplot([timing_data[h].times for h in hosts], patch_artist=True)
+    ax.set_xticklabels(hosts)
     for patch in bp["boxes"]:
         patch.set_facecolor("#4CAF50")
         patch.set_alpha(0.7)
@@ -634,6 +615,12 @@ def main():
         default=1,
         help="Number of build runs to perform (for averaging timing statistics)",
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help="Number of parallel builds (default: number of hosts)",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).parent.parent
@@ -647,8 +634,9 @@ def main():
 
     print(f"Found {len(hosts)} hosts: {', '.join(hosts)}", file=sys.stderr)
 
-    timing_data: Dict[str, TimingStats] = {h: TimingStats(host=h) for h in hosts}
-    last_results: Dict[str, BuildResult] = {}
+    workers = args.workers if args.workers is not None else len(hosts)
+    timing_data: dict[str, TimingStats] = {h: TimingStats(host=h) for h in hosts}
+    last_results: dict[str, BuildResult] = {}
 
     for run_num in range(1, args.runs + 1):
         if args.runs > 1:
@@ -659,15 +647,15 @@ def main():
         monitor.daemon = True
         monitor.start()
 
-        results: Dict[str, BuildResult] = {}
+        results: dict[str, BuildResult] = {}
 
         try:
             print(
-                f"Building {len(hosts)} hosts with {len(hosts)} workers...\n",
+                f"Building {len(hosts)} hosts with {workers} worker(s)...\n",
                 file=sys.stderr,
             )
 
-            with ThreadPoolExecutor(max_workers=len(hosts)) as executor:
+            with ThreadPoolExecutor(max_workers=workers) as executor:
                 futures = {executor.submit(build_host, h, repo_root): h for h in hosts}
 
                 for future in as_completed(futures):
@@ -701,9 +689,6 @@ def main():
 
         last_results = results
 
-    output = StringIO()
-    original_stdout = sys.stdout
-
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     subdir = f"generated/stats_{timestamp}"
 
@@ -711,22 +696,23 @@ def main():
     if args.runs > 1:
         bar_path, box_path = generate_graphs(timing_data, hosts, subdir)
 
-    sys.stdout = original_stdout
-    print_size_table(last_results, hosts, timing_data if args.runs > 1 else None)
-    if args.runs > 1:
-        print_timing_statistics(timing_data, hosts, subdir, bar_path, box_path)
-    print_reuse_matrix(last_results, hosts)
+    # Build output once, print to stdout and capture for file
+    output_buffer = StringIO()
+    original_stdout = sys.stdout
 
-    sys.stdout = output
+    sys.stdout = output_buffer
     print_size_table(last_results, hosts, timing_data if args.runs > 1 else None)
     if args.runs > 1:
         print_timing_statistics(timing_data, hosts, subdir, bar_path, box_path)
     print_reuse_matrix(last_results, hosts)
     sys.stdout = original_stdout
 
-    update_readme(output.getvalue())
+    output_content = output_buffer.getvalue()
+    print(output_content, end="")
+
+    update_readme(output_content)
     save_generated(
-        output.getvalue(), subdir, "infrastructure-confogurations-statistics.md"
+        output_content, subdir, "infrastructure-configurations-statistics.md"
     )
 
 

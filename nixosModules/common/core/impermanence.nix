@@ -85,6 +85,7 @@ with lib; {
       ".librewolf"
       ".steam"
       ".ssh" # SSH has isses having just ".ssh/known_hosts" file
+      "go" # Golang cache
       "Desktop"
       "Documents"
       "Downloads"
@@ -180,14 +181,14 @@ with lib; {
         directories = directoriesToPersist;
       };
 
-      home-manager.sharedModules = [
-        {
-          home.persistence."/persistent-home" = {
-            enable = true;
-            files = userFilesToPersist;
-            directories = userDirectoriesToPersist;
-          };
-        }
-      ];
+      # Apperently more performant than home.persistence: https://github.com/nix-community/impermanence/issues/206#issuecomment-2978804033
+      environment.persistence."/persistent-home" = {
+        hideMounts = true;
+        allowTrash = true;
+        users = lib.genAttrs config.my.users (_: {
+          files = userFilesToPersist;
+          directories = userDirectoriesToPersist;
+        });
+      };
     };
 }
