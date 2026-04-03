@@ -43,13 +43,13 @@
 
           enableGui = mkOption {
             type = types.bool;
-            default = true;
+            default = false;
             description = "Enable the VirtualHere GUI client and start it on user session";
           };
 
           enableCli = mkOption {
             type = types.bool;
-            default = true;
+            default = false;
             description = "Enable the VirtualHere CLI client and start it on user session";
           };
 
