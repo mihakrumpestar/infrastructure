@@ -8,18 +8,45 @@ import http.server
 import socketserver
 import json
 import sys
+import os
+import hmac
+from typing import override
+
+AUTH_TOKEN = os.environ.get("BRIGHTNESS_SERVER_TOKEN", "")
+
+if not AUTH_TOKEN:
+    print("Error: BRIGHTNESS_SERVER_TOKEN environment variable is required")
+    sys.exit(1)
 
 
 class BrightnessHandler(http.server.BaseHTTPRequestHandler):
-    def log_message(self, format, *args):
-        # Suppress logging for successful requests (2xx) and 404s, but show errors
-        # Only log if the format string contains error indicators or status codes >= 400
+    def check_auth(self) -> bool:
+        auth_header = self.headers.get("Authorization", "")
+        expected = f"Bearer {AUTH_TOKEN}"
+        if len(auth_header) != len(expected):
+            return False
+        return hmac.compare_digest(auth_header.encode(), expected.encode())
+
+    def send_json_response(self, status_code: int, data: dict[str, object]) -> None:
+        response_body = json.dumps(data).encode("utf-8")
+        self.send_response(status_code)
+        self.send_header("Content-type", "application/json")
+        self.send_header("Content-Length", str(len(response_body)))
+        self.end_headers()
+        _ = self.wfile.write(response_body)
+
+    @override
+    def log_message(self, format: str, *args: object) -> None:
         if any(keyword in str(format) for keyword in ["error", "Error", "ERROR"]) or (
-            len(args) > 0 and str(args[0]).isdigit() and int(args[0]) >= 400
+            len(args) > 0 and isinstance(args[0], (int, str)) and int(args[0]) >= 400
         ):
             super().log_message(format, *args)
 
-    def do_POST(self):
+    def do_POST(self) -> None:
+        if not self.check_auth():
+            self.send_json_response(401, {"error": "Unauthorized"})
+            return
+
         if self.path == "/brightness":
             try:
                 content_length = int(self.headers.get("Content-Length", 0))
@@ -29,7 +56,6 @@ class BrightnessHandler(http.server.BaseHTTPRequestHandler):
                 if not (0 <= brightness <= 100):
                     raise ValueError("Brightness must be 0-100")
 
-                # First, set the brightness
                 result = subprocess.run(
                     ["brightnessctl", "set", f"{brightness}%"],
                     capture_output=True,
@@ -37,14 +63,9 @@ class BrightnessHandler(http.server.BaseHTTPRequestHandler):
                 )
 
                 if result.returncode != 0:
-                    response = {"error": "Failed to set brightness"}
-                    self.send_response(500)
-                    self.send_header("Content-type", "application/json")
-                    self.end_headers()
-                    _ = self.wfile.write(json.dumps(response).encode())
+                    self.send_json_response(500, {"error": "Failed to set brightness"})
                     return
 
-                # Then, ensure the screen is on
                 screen_result = subprocess.run(
                     ["kscreen-doctor", "--dpms", "on"],
                     capture_output=True,
@@ -52,22 +73,19 @@ class BrightnessHandler(http.server.BaseHTTPRequestHandler):
                 )
 
                 if screen_result.returncode == 0:
-                    response = {"success": True, "brightness": brightness}
-                    self.send_response(200)
+                    self.send_json_response(
+                        200, {"success": True, "brightness": brightness}
+                    )
                 else:
-                    response = {"error": "Brightness set but failed to wake screen"}
-                    self.send_response(500)
+                    self.send_json_response(
+                        500, {"error": "Brightness set but failed to wake screen"}
+                    )
 
             except ValueError:
-                response = {"error": "Invalid brightness value"}
-                self.send_response(400)
+                self.send_json_response(400, {"error": "Invalid brightness value"})
             except Exception:
-                response = {"error": "Server error"}
-                self.send_response(500)
+                self.send_json_response(500, {"error": "Server error"})
 
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            _ = self.wfile.write(json.dumps(response).encode())
         elif self.path == "/screen":
             try:
                 content_length = int(self.headers.get("Content-Length", 0))
@@ -85,29 +103,27 @@ class BrightnessHandler(http.server.BaseHTTPRequestHandler):
                 )
 
                 if result.returncode == 0:
-                    response = {"success": True, "screen": post_data}
-                    self.send_response(200)
+                    self.send_json_response(200, {"success": True, "screen": post_data})
                 else:
-                    response = {"error": f"Failed to set screen {post_data}"}
-                    self.send_response(500)
+                    self.send_json_response(
+                        500, {"error": f"Failed to set screen {post_data}"}
+                    )
 
             except ValueError:
-                response = {"error": "Invalid screen state (must be 'on' or 'off')"}
-                self.send_response(400)
+                self.send_json_response(
+                    400, {"error": "Invalid screen state (must be 'on' or 'off')"}
+                )
             except Exception:
-                response = {"error": "Server error"}
-                self.send_response(500)
+                self.send_json_response(500, {"error": "Server error"})
 
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            _ = self.wfile.write(json.dumps(response).encode())
         else:
-            self.send_response(404)
-            self.end_headers()
+            self.send_json_response(404, {"error": "Not found"})
 
-    def do_GET(self):
-        self.send_response(404)
-        self.end_headers()
+    def do_GET(self) -> None:
+        if not self.check_auth():
+            self.send_json_response(401, {"error": "Unauthorized"})
+            return
+        self.send_json_response(404, {"error": "Not found"})
 
 
 def main():
@@ -138,16 +154,16 @@ if __name__ == "__main__":
 
 # Curl command examples:
 # Set brightness to 50%:
-# curl -X POST -d "50" http://localhost:8080/brightness
+# curl -X POST -d "50" -H "Authorization: Bearer EXAMPLE" http://localhost:8080/brightness
 #
 # Set brightness to 75%:
-# curl -X POST -d "75" http://localhost:8080/brightness
+# curl -X POST -d "75" -H "Authorization: Bearer EXAMPLE" http://localhost:8080/brightness
 #
 # Set brightness to 25%:
-# curl -X POST -d "25" http://localhost:8080/brightness
+# curl -X POST -d "25" -H "Authorization: Bearer EXAMPLE" http://localhost:8080/brightness
 #
 # Turn screen on:
-# curl -X POST -d "on" http://localhost:8080/screen
+# curl -X POST -d "on" -H "Authorization: Bearer EXAMPLE" http://localhost:8080/screen
 #
 # Turn screen off:
-# curl -X POST -d "off" http://localhost:8080/screen
+# curl -X POST -d "off" -H "Authorization: Bearer EXAMPLE" http://localhost:8080/screen

@@ -1,8 +1,4 @@
 {...}: {
-  imports = [
-    ./brightness.nix
-  ];
-
   /*
   Hardware:
     81SS (Lenovo IdeaPad FLEX-14API)
