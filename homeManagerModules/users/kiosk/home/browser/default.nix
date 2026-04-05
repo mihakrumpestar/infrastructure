@@ -123,6 +123,8 @@ in {
           "browser.display.use_document_fonts" = 1;
 
           "general.useragent.override" = "Kiosk";
+
+          "security.default_personal_cert" = "Select Automatically";
         };
 
         userChrome = ''
