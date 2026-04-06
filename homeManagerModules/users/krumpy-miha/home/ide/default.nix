@@ -48,8 +48,8 @@ in {
     uv
 
     # Nix
-    #nil
-    tix
+    nil
+    tix # Does not appear to work yet as IDE LSP
 
     # Quarto
     quarto
@@ -176,6 +176,12 @@ in {
 
     # opencode agent list
     ".config/opencode/AGENTS.md".source = ./AGENTS.md;
+
+    # opencode skills
+    ".config/opencode/skills/caveman/SKILL.md".source = builtins.fetchurl {
+      url = "https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman/SKILL.md";
+      sha256 = "0x81fl080nc0yx7424vishq2rqbaqvvmz33ja80w3biv49lj0lf3";
+    };
   };
 
   # Attach: opencode attach http://localhost:4096

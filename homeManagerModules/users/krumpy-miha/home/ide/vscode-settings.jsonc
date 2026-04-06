@@ -126,12 +126,9 @@
   },
 
   // Nix
-
   "nix.enableLanguageServer": true,
-  "nix.serverPath": ["tix", "lsp"],
+  "nix.serverPath": ["nil"],
   "nix.serverSettings": {
-    "inlayHints": { "enable": true },
-    "diagnostics": { "enable": true, "unknownType": "hint" },
     "nixd": {
       "formatting": {
         "command": ["alejandra"],
