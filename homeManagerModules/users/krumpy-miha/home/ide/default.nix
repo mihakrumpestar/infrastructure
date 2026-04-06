@@ -48,7 +48,8 @@ in {
     uv
 
     # Nix
-    nil
+    #nil
+    tix
 
     # Quarto
     quarto

@@ -126,30 +126,19 @@
   },
 
   // Nix
+
   "nix.enableLanguageServer": true,
-  "nix.serverPath": "nil",
+  "nix.serverPath": ["tix", "lsp"],
   "nix.serverSettings": {
+    "inlayHints": { "enable": true },
+    "diagnostics": { "enable": true, "unknownType": "hint" },
     "nixd": {
       "formatting": {
         "command": ["alejandra"],
       },
-      "options": {
-        // By default, this entry will be read from `import <nixpkgs> { }`
-        // You can write arbitrary nix expression here, to produce valid "options" declaration result.
-        // Tip: for flake-based configuration, utilize `builtins.getFlake`
-        "nixos": {
-          "expr": "(builtins.getFlake (\"file://\" + toString ./.)).nixosConfigurations.personal-workstation.options",
-        },
-        "home-manager": {
-          "expr": "(builtins.getFlake (\"file://\" + toString ./.)).homeConfigurations.personal-workstation.options",
-        },
-      },
     },
   },
-  //"nix.hiddenLanguageServerErrors": [
-  //  "textDocument/definition",
-  //  "workspace/didChangeWatchedFiles"
-  //],
+
   "[nix]": {
     "editor.defaultFormatter": "kamadorueda.alejandra",
     "editor.formatOnPaste": true,

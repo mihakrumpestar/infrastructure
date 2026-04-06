@@ -60,6 +60,8 @@ with lib; {
 
             kded5rc.Module-browserintegrationreminder.autoload = false;
             kdeglobals."KFileDialog Settings"."Show hidden files" = true;
+
+            dolphinrc.Settings.HiddenFilesShown = true;
           };
 
           input = {

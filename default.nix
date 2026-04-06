@@ -14,6 +14,7 @@
   consul-cni,
   nix-index-database,
   lanzaboote,
+  tix,
   virtualhere,
   vars,
   hostName,
@@ -66,6 +67,7 @@
     (_: prev: {
       zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
       consul-cni = consul-cni.packages.${prev.stdenv.hostPlatform.system}.default;
+      tix = tix.packages.${prev.stdenv.hostPlatform.system}.default;
     })
   ];
 
