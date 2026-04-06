@@ -9,6 +9,8 @@
 - do not overengineer
 - if you do not understand something or something is strange, ask me or raise concern
 - do not remove comments, unless explicitly told to do so
+- do not write unit test unless I explicitly specify that you have to
+- but do test the code/commands so that you verify that they behave like you thouth they would
 
 ## MCP tools
 
