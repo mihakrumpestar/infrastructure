@@ -245,7 +245,7 @@ in {
       fi
       export GH_TOKEN="$token"      # Used by github cli
       export GITHUB_TOKEN="$token"  # Used by git-cliff cli
-      echo "GH_TOKEN set for profile '$profile'"
+      echo "GH_TOKEN and GITHUB_TOKEN set for profile '$profile'"
     }
   '';
 }
