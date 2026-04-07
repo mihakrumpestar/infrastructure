@@ -243,7 +243,8 @@ in {
         echo "Error: Secret '$secret_name' not found in secret-service" >&2
         return 1
       fi
-      export GH_TOKEN="$token"
+      export GH_TOKEN="$token"      # Used by github cli
+      export GITHUB_TOKEN="$token"  # Used by git-cliff cli
       echo "GH_TOKEN set for profile '$profile'"
     }
   '';
