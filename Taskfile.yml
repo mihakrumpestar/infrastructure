@@ -9,7 +9,8 @@ includes:
 tasks:
   tidy:
     cmds:
-      - alejandra --check --exclude ./.devbox --exclude ./infrastructure-secrets ./
+      - alejandra --check --exclude ./.devbox --exclude ./infrastructure-secrets
+        ./
       - deadnix --exclude ./infrastructure-secrets --no-underscore
       - statix check
 
@@ -33,7 +34,7 @@ tasks:
       Use --runs N for averaging: task generate -- --runs 5
       Use --workers N to limit parallelism: task generate -- --workers 2
     cmds:
-      - python3 scripts/generate_stats.py {{.CLI_ARGS}}
+      - python3 scripts/generate_stats.py --runs 5 --workers 1 {{.CLI_ARGS}}
       - python3 scripts/generate_deps.py
 
   generate-deps:

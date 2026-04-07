@@ -44,7 +44,8 @@ nix-shell -p stress s-tui --command "s-tui"
 
 ## NixOS Configuration Sizes
 
-Generated: 2026-04-03 20:27
+Generated: 2026-04-07 20:19
+**Statistics computed over 5 build run(s)**
 
 **Table 1:** NixOS system configuration sizes and evaluation times for each host.
 
@@ -59,14 +60,32 @@ Evaluation time measures the computational overhead of the Nix
 expression evaluator and is performed on cached derivations, representing the
 minimal overhead when no packages need rebuilding.
 
-|                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |   Eval Time |
-|---------------------:|---------------:|--------------:|------------:|--------------:|------------:|------------:|
-|                kiosk |      10.35 GiB |          1417 |         523 |          2158 |         583 |      28.01s |
-|      personal-laptop |      33.65 GiB |          6168 |        5476 |          8188 |        6816 |      41.22s |
-| personal-workstation |      34.61 GiB |          6220 |        5479 |          8270 |        6822 |      23.86s |
-|            server-01 |       4.84 GiB |           663 |           - |          1180 |           - |      13.95s |
-|            server-03 |       4.86 GiB |           663 |           - |          1177 |           - |      14.72s |
-|               vps-02 |       3.58 GiB |           658 |           - |          1137 |           - |      12.91s |
+|                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |      Eval Time |
+|---------------------:|---------------:|--------------:|------------:|--------------:|------------:|---------------:|
+|                kiosk |      10.34 GiB |          1416 |         520 |          2161 |         579 | 17.03s ± 0.11s |
+|      personal-laptop |      33.67 GiB |          6169 |        5477 |          8190 |        6817 | 24.74s ± 0.09s |
+| personal-workstation |      34.62 GiB |          6221 |        5480 |          8272 |        6823 | 25.03s ± 0.27s |
+|            server-01 |       4.84 GiB |           663 |           - |          1180 |           - | 13.48s ± 0.06s |
+|            server-03 |       4.86 GiB |           663 |           - |          1177 |           - | 13.61s ± 0.07s |
+|               vps-02 |       3.58 GiB |           658 |           - |          1137 |           - | 11.76s ± 0.04s |
+
+## Timing Statistics
+
+**Table 3:** Detailed timing statistics across multiple runs.
+
+|                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
+|---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
+|                kiosk | 17.032s |  17.075s |    0.109s | 16.865s | 17.137s |      5 |
+|      personal-laptop | 24.741s |  24.760s |    0.093s | 24.593s | 24.846s |      5 |
+| personal-workstation | 25.026s |  24.979s |    0.274s | 24.813s | 25.494s |      5 |
+|            server-01 | 13.485s |  13.502s |    0.059s | 13.389s | 13.545s |      5 |
+|            server-03 | 13.611s |  13.622s |    0.067s | 13.499s | 13.673s |      5 |
+|               vps-02 | 11.756s |  11.746s |    0.041s | 11.726s | 11.829s |      5 |
+
+### Visualizations
+
+- ![Bar Chart](generated/stats_20260407_201935/infrastructure-configurations_timing_barchart.png)
+- ![Box Plot](generated/stats_20260407_201935/infrastructure-configurations_timing_boxplot.png)
 
 ## Closure Reuse Matrix
 
@@ -84,7 +103,7 @@ requirements in multi-host deployments.
 
 |                 Host |   kiosk |   personal-laptop |   personal-workstation |   server-01 |   server-03 |   vps-02 |
 |---------------------:|--------:|------------------:|-----------------------:|------------:|------------:|---------:|
-|                kiosk |       - |               93% |                    93% |         47% |         47% |      45% |
+|                kiosk |       - |               93% |                    93% |         46% |         47% |      45% |
 |      personal-laptop |     24% |                 - |                    99% |         12% |         12% |      12% |
 | personal-workstation |     24% |               98% |                      - |         12% |         12% |      12% |
 |            server-01 |     86% |               87% |                    87% |           - |         95% |      88% |
@@ -134,6 +153,7 @@ flowchart TD
         input_nur["nur"]:::input
         input_plasma_manager["plasma-manager"]:::input
         input_stylix["stylix"]:::input
+        input_tix["tix"]:::input
         input_zen_browser["zen-browser"]:::input
         local_consul_cni["consul-cni"]:::local
         local_mutable_file["mutable-file"]:::local
@@ -188,7 +208,6 @@ flowchart TD
     end
 
     subgraph HostConfigs[Host Configs]
-        hosts__kiosk__brightness_nix["brightness"]:::config
         hosts__kiosk__configuration_nix["config"]:::config
         hosts__kiosk__hardware_configuration_nix["hw"]:::config
         hosts__personal_laptop__configuration_nix["config"]:::config
@@ -204,6 +223,8 @@ flowchart TD
     end
 
     subgraph UserConfigs[User Configs]
+        homeManagerModules__users__kiosk__home__brightness__default_nix["brightness"]:::config
+        homeManagerModules__users__kiosk__home__browser__default_nix["browser"]:::config
         homeManagerModules__users__kiosk__home__default_nix["home"]:::config
         homeManagerModules__users__kiosk__system__default_nix["system"]:::config
         homeManagerModules__users__krumpy_miha__home__autostart_nix["autostart"]:::config
@@ -233,6 +254,7 @@ flowchart TD
     input_nur --> flake
     input_plasma_manager --> flake
     input_stylix --> flake
+    input_tix --> flake
     input_zen_browser --> flake
     local_consul_cni --> flake
     local_mutable_file --> flake
@@ -249,7 +271,6 @@ flowchart TD
     hosts_node --> host_vps_02
     users_node --> user_kiosk
     users_node --> user_krumpy_miha
-    host_kiosk --> hosts__kiosk__brightness_nix
     host_kiosk --> hosts__kiosk__configuration_nix
     host_kiosk --> hosts__kiosk__hardware_configuration_nix
     host_personal_laptop --> hosts__personal_laptop__configuration_nix
@@ -290,6 +311,8 @@ flowchart TD
     nixosModules__optional__default_nix --> nixosModules__optional__nvidia__default_nix
     nixosModules__optional__default_nix --> nixosModules__optional__orchestrator__default_nix
     nixosModules__optional__default_nix --> nixosModules__optional__store_secrets__default_nix
+    homeManagerModules__users__kiosk__home__default_nix --> homeManagerModules__users__kiosk__home__brightness__default_nix
+    homeManagerModules__users__kiosk__home__default_nix --> homeManagerModules__users__kiosk__home__browser__default_nix
     homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__autostart_nix
     homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__backup__default_nix
     homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__clipboard__default_nix
