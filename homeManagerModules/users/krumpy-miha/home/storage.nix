@@ -47,7 +47,7 @@
                 --backup-dir2 "$HOME/.local/share/rclone-bisync-backup/${name}" \
                 --create-empty-src-dirs \
                 --resilient \
-                --recover \
+                --compare "size,modtime,checksum" \
                 --max-lock 2m \
                 $RESYNC_FLAG
             }

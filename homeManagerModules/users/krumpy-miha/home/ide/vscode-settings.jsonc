@@ -172,4 +172,7 @@
 
   // Yaml
   "redhat.telemetry.enabled": false,
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+  },
 }
