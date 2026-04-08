@@ -1,6 +1,8 @@
 {pkgs, ...}: {
   nix = {
     package = pkgs.nixVersions.latest;
+    # Also tested lix: pkgs.lixPackageSets.latest.lix
+    # but it is about 12% slower than nix actually
 
     settings = {
       experimental-features = [
