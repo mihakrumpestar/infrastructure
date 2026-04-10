@@ -44,7 +44,7 @@
   "mcp": {
     "context7": {
       "type": "local",
-      "command": ["bunx", "-y", "@upstash/context7-mcp"],
+      "command": ["bunx", "@upstash/context7-mcp"],
       "enabled": true,
       "environment": {
         "DEFAULT_MINIMUM_TOKENS": "6000",
@@ -63,6 +63,13 @@
       "command": ["nix", "run", "github:utensils/mcp-nixos", "--"],
       "enabled": true,
     },
+    "chrome-devtools": {
+      "type": "local",
+      "command": ["bunx", "chrome-devtools-mcp@latest", "--executable-path", "@chromium@"],
+      "environment": {
+        "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "true",
+      }
+    }
     /*
     // Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
     "openrag": {
@@ -75,6 +82,15 @@
       },
     },
     */
+  },
+
+  "permission": {
+    "external_directory": {
+      "/tmp/**": "allow"
+    },
+    "edit": {
+      "/tmp/**": "allow"
+    }
   },
 
   "plugin": ["cc-safety-net"],

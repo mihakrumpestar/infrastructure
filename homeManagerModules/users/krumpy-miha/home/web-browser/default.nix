@@ -8,9 +8,8 @@
 in {
   home.packages = with pkgs; [
     brave
-    chromium
-    # ladybird # Build unstable-2025-06-27 fails
-    #floorp-bin
+    ungoogled-chromium
+    #ladybird
   ];
 
   stylix.targets.zen-browser.profileNames = ["default"];

@@ -5,6 +5,7 @@
     ./dead-mens-switch
     ./git
     ./ide
+    ./llm
     ./password-manager
     ./scripts
     ./web-browser
