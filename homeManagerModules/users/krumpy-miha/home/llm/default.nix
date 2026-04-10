@@ -3,18 +3,20 @@
   pkgs,
   vars,
   ...
-}: {
+}: let
+  opencode-config =
+    pkgs.replaceVars
+    ./opencode.jsonc {
+      chromium = "${pkgs.ungoogled-chromium}/bin/chromium";
+    };
+in {
   home.packages = with pkgs; [
     opencode
     opencode-desktop
   ];
 
   home.mutableFile = {
-    ".config/opencode/opencode.json".source =
-      pkgs.replaceVars
-      ./opencode.jsonc {
-        chromium = "${pkgs.ungoogled-chromium}/bin/chromium";
-      };
+    ".config/opencode/opencode.json".source = opencode-config;
 
     # opencode agent list
     ".config/opencode/AGENTS.md".source = ./AGENTS.md;
@@ -42,7 +44,7 @@
       TimeoutStartSec = 60;
       WorkingDirectory = "%h";
       ExecStart = "${pkgs.opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
-      Environment = "OPENCODE_CONFIG=${./opencode.jsonc}";
+      Environment = "OPENCODE_CONFIG=${opencode-config}";
       EnvironmentFile = config.age.secrets."llm_api_keys.env".path;
 
       Restart = "on-failure";
