@@ -9,6 +9,14 @@
     ./opencode.jsonc {
       chromium = "${pkgs.ungoogled-chromium}/bin/chromium";
     };
+
+  skillDir = ./skills;
+  skillNames = builtins.attrNames (builtins.readDir skillDir);
+
+  localSkillConfigs = builtins.listToAttrs (map (name: {
+    name = "opencode/skills/${name}/SKILL.md";
+    value = {source = skillDir + "/${name}/SKILL.md";};
+  }) skillNames);
 in {
   home.packages = with pkgs; [
     opencode
@@ -20,9 +28,10 @@ in {
 
     # opencode agent list
     ".config/opencode/AGENTS.md".source = ./AGENTS.md;
+  };
 
-    # opencode skills
-    ".config/opencode/skills/caveman/SKILL.md".source = builtins.fetchurl {
+  xdg.configFile = localSkillConfigs // {
+    "opencode/skills/caveman/SKILL.md".source = builtins.fetchurl {
       url = "https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman/SKILL.md";
       sha256 = "0x81fl080nc0yx7424vishq2rqbaqvvmz33ja80w3biv49lj0lf3";
     };

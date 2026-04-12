@@ -93,30 +93,41 @@ in {
       };
       alias = let
         mkAcpAlias = prefix: let
-          script = pkgs.writeScriptBin "git-${prefix}" ''
+          name = if prefix == "" then "ACP" else prefix;
+          script = pkgs.writeScriptBin "git-${name}" ''
             #!/usr/bin/env bash
-            git acp "${prefix}: $*"
-          '';
-        in "!${script}/bin/git-${prefix}";
-      in {
-        acp = let
-          gitACP = pkgs.writeScriptBin "git-ACP" ''
-            #!/usr/bin/env bash
-
             set -euo pipefail
 
-            MESSAGE="$1"
+            COMMIT_FLAGS=()
+            MESSAGE=()
 
-            if [ -z "$MESSAGE" ]; then
+            for arg in "$@"; do
+              if [[ "$arg" == -* ]]; then
+                COMMIT_FLAGS+=("$arg")
+              else
+                MESSAGE+=("$arg")
+              fi
+            done
+
+            MSG="''${MESSAGE[*]}"
+            ${if prefix != "" then ''MSG="${prefix}: $MSG"'' else ""}
+
+            if [ -z "''${MESSAGE[*]}" ]; then
               echo 'Commit message is required';
-              return 1;
-            fi;
+              exit 1;
+            fi
 
             git add . && \
-            git commit -m "$MESSAGE" && \
-            git push;
+            if [ ''${#COMMIT_FLAGS[@]} -gt 0 ]; then
+              git commit "''${COMMIT_FLAGS[@]}" -m "$MSG"
+            else
+              git commit -m "$MSG"
+            fi && \
+            git push
           '';
-        in "!${gitACP}/bin/git-ACP";
+        in "!${script}/bin/git-${name}";
+      in {
+        acp = mkAcpAlias "";
         feat = mkAcpAlias "feat";
         fix = mkAcpAlias "fix";
         docs = mkAcpAlias "docs";
