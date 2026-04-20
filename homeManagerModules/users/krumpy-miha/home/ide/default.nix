@@ -136,8 +136,8 @@ in {
           esbenp.prettier-vscode
           astro-build.astro-vscode
 
-          # AI
-          sst-dev.opencode # Used kilocode.kilo-code, but they shifted focus to their CLI fork of Opencode
+          # AI (using it as web only now)
+          #sst-dev.opencode
 
           # Rest
           humao.rest-client
