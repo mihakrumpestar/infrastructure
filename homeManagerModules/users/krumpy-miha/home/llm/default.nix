@@ -41,15 +41,32 @@
     pkgs.runCommand "golang-skill" {inherit sub_skills;} ''
       mkdir -p $out/references
 
+      cat > $out/SKILL.md <<'HEADER'
+---
+name: golang
+description: "Comprehensive Go development guide combining best practices for testing, testify assertions and mocks, data structures, dependency injection and management, design patterns, naming, popular libraries, safety, structs/interfaces, and troubleshooting. Use whenever writing Go code, tests, or asking about Go conventions and patterns."
+user-invocable: true
+license: MIT
+compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
+---
+
+**Persona:** You are an expert Go engineer who writes idiomatic, production-ready code. You treat tests as executable specifications and prioritize correctness, readability, and performance.
+
+**Sources:** This skill combines the following sub-skills from [samber/cc-skills-golang](https://github.com/samber/cc-skills-golang):
+
+HEADER
+
       first=true
       for name in $sub_skills; do
         skillFile="${src}/skills/$name/SKILL.md"
+        # Strip YAML frontmatter: skip from first --- to second --- (inclusive)
+        body=$(awk 'BEGIN{d=0} /^---$/{d++;next} d>=2' "$skillFile")
         if [ "$first" = true ]; then
-          cat "$skillFile" > $out/SKILL.md
+          printf '%s\n' "$body" >> $out/SKILL.md
           first=false
         else
-          printf '\n\n---\n\n' >> $out/SKILL.md
-          cat "$skillFile" >> $out/SKILL.md
+          printf '\n\n***\n\n' >> $out/SKILL.md
+          printf '%s\n' "$body" >> $out/SKILL.md
         fi
 
         refDir="${src}/skills/$name/references"
