@@ -94,6 +94,7 @@ in {
           #streetsidesoftware.code-spell-checker
           tamasfe.even-better-toml
           tumido.cron-explained
+          mathematic.vscode-pdf
 
           # Latex
           james-yu.latex-workshop

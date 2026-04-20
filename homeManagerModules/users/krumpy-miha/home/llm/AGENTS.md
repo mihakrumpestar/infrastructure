@@ -20,3 +20,5 @@ When you need to search golang docs, use `godoc` tools.
 When you need to search nixos/nix docs, use `nixos` tools.
 
 When you need to actually browse the web or website (not just curl), use `chrome-devtools` tools.
+
+When you need to read/process PDF documents, use `pdf-reader` tools.
