@@ -72,7 +72,12 @@
       "environment": {
         "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "true",
       }
-    }
+    },
+    "pdf-reader": { 
+      "type": "local",
+      "command": ["bunx", "@sylphx/pdf-reader-mcp"],
+      "enabled": true,
+    },
     /*
     // Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
     "openrag": {
