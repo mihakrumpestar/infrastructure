@@ -11,6 +11,7 @@
     drill
     dig
     man
+    libnotify # For notify-send
 
     kdePackages.yakuake # Drop down terminal emulator
 

@@ -171,6 +171,10 @@ in {
 
   home.sessionVariables = {
     CGO_ENABLED = "0"; # Disable use of CGO
+
+    # Disable Github CLI telemetry
+    GH_TELEMETRY = false;
+    DO_NOT_TRACK = true;
   };
 
   programs.zsh.initContent = ''

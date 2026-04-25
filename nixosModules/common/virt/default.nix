@@ -26,6 +26,12 @@ with lib; {
     };
 
     # Enable virtualization
+
+    environment.systemPackages = with pkgs; [
+      qemu_full
+      cdrkit # For genisoimage and other tools
+    ];
+
     /*
     virtualisation = {
       spiceUSBRedirection.enable = true;

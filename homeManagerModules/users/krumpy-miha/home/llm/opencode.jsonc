@@ -46,11 +46,11 @@
   // Debug: opencode mcp list
   "mcp": {
     "context7": {
-      "type": "local",
-      "command": ["bunx", "@upstash/context7-mcp"],
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
       "enabled": true,
-      "environment": {
-        "DEFAULT_MINIMUM_TOKENS": "6000",
+      "headers": {
+        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
       },
     },
     "godoc": {
@@ -65,6 +65,22 @@
       "type": "local",
       "command": ["nix", "run", "github:utensils/mcp-nixos", "--"],
       "enabled": true,
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa",
+      "enabled": true,
+      "headers": {
+        "x-api-key": "{env:EXA_API_KEY}"
+      }
+    },
+    "websets": {
+      "type": "remote",
+      "url": "https://websetsmcp.exa.ai",
+      "enabled": true,
+      "headers": {
+        "x-api-key": "{env:EXA_API_KEY}"
+      }
     },
     "chrome-devtools": {
       "type": "local",

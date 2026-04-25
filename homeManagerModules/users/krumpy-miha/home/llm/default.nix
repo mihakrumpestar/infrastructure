@@ -98,6 +98,11 @@ in {
         sha256 = "0x81fl080nc0yx7424vishq2rqbaqvvmz33ja80w3biv49lj0lf3";
       };
 
+      "opencode/skills/grill-me/SKILL.md".source = builtins.fetchurl {
+        url = "https://raw.githubusercontent.com/mattpocock/skills/main/grill-me/SKILL.md";
+        sha256 = "0mh5c7rx1caif5lighbzxwfmr4zzngqf1fgjzrz9ar8a06v7w53l";
+      };
+
       "opencode/skills/golang/SKILL.md".source = "${golang-skill}/SKILL.md";
       "opencode/skills/golang/references".source = "${golang-skill}/references";
     };
