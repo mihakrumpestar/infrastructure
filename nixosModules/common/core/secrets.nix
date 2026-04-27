@@ -6,6 +6,7 @@
   hostName,
   ...
 }: let
+  # This is the TPM2 public key, not the secret
   age_host_identity = pkgs.writeText "age_identitiy" (builtins.readFile /${vars.secretsDir}/secrets/hosts/${hostName}.txt);
 
   # age does not find executable file "age-with-tpm" in env by default

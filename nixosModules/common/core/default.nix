@@ -110,8 +110,8 @@ in {
         };
       };
 
-      # Firmware updates (client deamon, but updates only apply upon manual request)
-      fwupd.enable = false; # Devices: https://fwupd.org/lvfs/devices/
+      # Firmware updates (client deamon, but updates only apply when run "fwupdmgr update")
+      fwupd.enable = true; # Devices: https://fwupd.org/lvfs/devices/
       # Usage:
       # fwupdmgr get-devices
       # fwupdmgr refresh

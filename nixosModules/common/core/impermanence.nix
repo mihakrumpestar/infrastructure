@@ -67,10 +67,10 @@ with lib; {
       minimumDirectories
       ++ [
         "/var/log"
-        "/var/lib/bluetooth"
-        "/var/lib/systemd/coredump"
         "/etc/NetworkManager/system-connections"
-        "/var/lib/sbctl" # Lanzaboote keys
+        "/var/lib"
+        # Simplified setup, list of subdirs that really need to persist in "/var/lib":
+        # bluetooth, systemd, auto-cryptenroll, sbctl, docker, pcrlock.d, etc.
       ];
 
     defaultUserFiles = [

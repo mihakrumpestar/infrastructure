@@ -14,6 +14,7 @@ in {
       bootDisk = "/dev/sda";
       swapSize = "16G";
       encryptRoot = "tpm2";
+      pcrlockSupport = false; # "systemd-pcrlock is-supported" returns "obsolete"
     };
 
     hostType = "server";

@@ -25,14 +25,25 @@ with lib; {
         default = false;
         description = "Whether to encrypt the root partition";
       };
+      pcrlockSupport = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Whether the machine supports systemd-pcrlock (only applicable to TPM2).
+          You have to disable it on machines that do not support it.
+          Test: /run/current-system/systemd/lib/systemd/systemd-pcrlock is-supported
+        '';
+      };
     };
   };
 
   config = let
     lanzabooteEnabled = config.my.disks.bootLoader == "lanzaboote";
-    tpm2Pcrs = "7+14";
-    tpm2PcrsList = builtins.sort builtins.lessThan (map (x: builtins.fromJSON x) (lib.strings.splitString "+" tpm2Pcrs));
-    tpm2PcrsJson = builtins.toJSON tpm2PcrsList;
+    fido2Enabled = config.my.disks.encryptRoot == "fido2";
+    tpm2Enabled = config.my.disks.encryptRoot == "tpm2";
+    tpm2PcrlockEnabled = tpm2Enabled && config.my.disks.pcrlockSupport;
+
+    pcr15 = "15:sha256=0000000000000000000000000000000000000000000000000000000000000000";
   in {
     disko.devices = {
       disk = {
@@ -54,7 +65,7 @@ with lib; {
                   type = "filesystem";
                   format = "vfat";
                   mountpoint = "/boot";
-                  mountOptions = ["fmask=0077" "dmask=0077"]; # Prevents warning: Random seed file '/boot/loader/random-seed' is world accessible, which is a security hole!
+                  mountOptions = ["fmask=0077" "dmask=0077"]; # Solves warning: Random seed file '/boot/loader/random-seed' is world accessible, which is a security hole!
                 };
               };
               root = let
@@ -100,13 +111,16 @@ with lib; {
                   content = {
                     type = "luks";
                     name = "crypted";
-                    # This means it will give user an interactive password prompt,
-                    # be carefull to not have trailing newline in file as unlocking will fail
+                    # passwordFile will give user an interactive password prompt if file will not be provided,
+                    # be carefull to not have trailing newline in file as unlocking will fail in that case
                     passwordFile = "/tmp/disko-encryption-password.txt";
                     settings = {
                       allowDiscards = true;
                       crypttabExtraOpts =
-                        if config.my.disks.encryptRoot == "fido2"
+                        #
+                        # FIDO2
+                        #
+                        if fido2Enabled
                         then ["fido2-device=auto" "token-timeout=10"]
                         # Docs: https://nixos.org/manual/nixos/stable/#sec-luks-file-systems-fido2-systemd
                         #
@@ -116,10 +130,14 @@ with lib; {
                         # List slots: cryptsetup luksDump /dev/nvme0n1p2
                         # Remove key: cryptsetup luksRemoveKey /dev/vda2 # Here you enter the password that will be deleted
                         #
-                        # systemd-cryptenroll --unlock-fido2-device=/dev/hidraw1 --fido2-device=/dev/hidraw1 --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
-                        else if config.my.disks.encryptRoot == "tpm2"
-                        then ["tpm2-device=auto" "tpm2-measure-pcr=yes"]
-                        # PCR-15 does not unlock volume, TODO: check if other systems have same problem
+                        # Rekey with another key: systemd-cryptenroll --unlock-fido2-device=/dev/hidraw1 --fido2-device=/dev/hidraw2 --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
+                        #
+                        # TPM2
+                        #
+                        else if tpm2Enabled
+                        then ["tpm2-device=auto" "tpm2-measure-pcr=yes"] # tpm2-measure-pcr is required for PCR15
+                        # Note: look below in Lanzaboote setup
+                        #
                         # systemd-cryptenroll --tpm2-device=list
                         # systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=no --wipe-slot=all /dev/vda2
                         # Test: systemd-cryptsetup attach <mapping_name> /dev/nvme0n1p2 none tpm2-device=auto
@@ -146,10 +164,12 @@ with lib; {
       loader = {
         systemd-boot.enable = config.my.disks.bootLoader == "systemd-boot";
         grub.enable = config.my.disks.bootLoader == "grub";
-        efi.canTouchEfiVariables = !lanzabooteEnabled;
+        efi.canTouchEfiVariables = true; # Allow changing boot order and boot entrys
       };
 
-      # Before attempting lanzaboote, your device has to have Secure Boot in Setup Mode
+      # IMPORTANT: Before attempting Lanzaboote, your device has to have Secure Boot in Setup Mode
+      # Docs: https://nix-community.github.io/lanzaboote/
+      # Not all options are in docs, for all look into: https://github.com/nix-community/lanzaboote/blob/master/nix/modules/lanzaboote.nix
 
       # sbctl status
       # sbctl verify
@@ -159,22 +179,42 @@ with lib; {
         pkiBundle = "/var/lib/sbctl";
         autoGenerateKeys.enable = true;
 
-        # If you don't auto-enroll, run (note that on some devices you will have to enable Secure Boot back manually):
+        # If you don't auto-enroll, run:
         # sbctl create-keys
         # sbctl enroll-keys
         # reboot
+        # (note that on some devices you will have to enable Secure Boot back manually)
         autoEnrollKeys = {
           enable = true;
           includeMicrosoftKeys = false;
           allowBrickingMyMachine = true;
           autoReboot = true;
         };
+
+        # Only available on machines that return "yes" for command:
+        # /run/current-system/systemd/lib/systemd/systemd-pcrlock is-supported
+        measuredBoot = mkIf tpm2PcrlockEnabled {
+          enable = true;
+          pcrs = [4 7];
+          # https://uapi-group.org/specifications/specs/linux_tpm_pcr_registry/
+          # No. 4 is Lanzaboote itself with full boot chain
+          # No. 7 is Secure boot state.
+          # We don't have no. 0, since it would break setup on BIOS updates
+          autoCryptenroll = {
+            enable = true; # Will wipe out any other tpm2 key
+            inherit (config.boot.initrd.luks.devices.crypted) device;
+            autoReboot = true;
+          };
+        };
       };
 
       initrd.systemd = mkIf (config.my.disks.encryptRoot != false) {
         enable = true;
-        fido2.enable = config.my.disks.encryptRoot == "fido2";
-        tpm2.enable = config.my.disks.encryptRoot == "tpm2";
+        fido2.enable = fido2Enabled;
+        tpm2.enable = tpm2Enabled;
+
+        # Sometimes on reboots the FIDO2 key is not detected immediately,
+        # so we reset the crypted service, instead of resetting (repluging) the FIDO2 key
         services."systemd-cryptsetup@crypted" = {
           overrideStrategy = "asDropin";
           serviceConfig.TimeoutStartSec = "12s";
@@ -182,91 +222,47 @@ with lib; {
       };
     };
 
-    # Since /var/lib/sbctl is already created by impermanence module, we have to override the check to check the subfolder
-    systemd.services.generate-sb-keys = mkIf lanzabooteEnabled {
-      unitConfig.ConditionPathExists = mkForce "!/var/lib/sbctl/keys";
+    systemd.services.auto-cryptenroll = mkIf tpm2PcrlockEnabled {
+      serviceConfig.ExecStart = let
+        cfg = config.boot.lanzaboote.measuredBoot;
+      in
+        lib.mkForce [
+          config.boot.loader.external.installHook
+          ''
+            systemd-cryptenroll \
+              --wipe-slot=tpm2 \
+              --tpm2-device=auto \
+              --unlock-tpm2-device=auto \
+              --tpm2-pcrlock=${cfg.pcrlockPolicy} \
+              --tpm2-pcrs=${pcr15} \
+              ${cfg.autoCryptenroll.device}
+          ''
+        ];
     };
 
-    # Lanzaboote does not automatically set the new EFi boot entry as first in UEFI, this code does it for us
-    system.activationScripts.lanzaboote-efi-entry = let
-      inherit (pkgs) gawk coreutils gnugrep efibootmgr;
-    in
-      mkIf lanzabooteEnabled (stringAfter ["etc"] ''
-        # Only run during nixos-install
-        if [ -z "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
-          true
-        else
-          BOOT_DEV=$(${gawk}/bin/awk '$2 == "/boot" {print $1}' /proc/mounts | ${coreutils}/bin/head -1)
-          if [ -n "$BOOT_DEV" ]; then
-            PART_DEV=$(${coreutils}/bin/basename "$BOOT_DEV")
-            DISK="/dev/$(${coreutils}/bin/basename $(${coreutils}/bin/readlink -f "/sys/class/block/$PART_DEV/.."))"
-            PART_NUM=$(${coreutils}/bin/cat "/sys/class/block/$PART_DEV/partition")
-
-            # Remove existing NixOS entries
-            ENTRIES=$(${efibootmgr}/bin/efibootmgr 2>/dev/null | ${gnugrep}/bin/grep -oP 'Boot\K[0-9A-F]+(?=\*.*NixOS)')
-            for entry in $ENTRIES; do
-              ${efibootmgr}/bin/efibootmgr -b "$entry" -B 2>/dev/null || true
-            done
-
-            # Create new entry
-            echo "Creating EFI boot entry on $DISK partition $PART_NUM"
-            ${efibootmgr}/bin/efibootmgr -c -d "$DISK" -p "$PART_NUM" -L "NixOS" -l '\EFI\BOOT\BOOTX64.EFI'
-          fi
-        fi
-      '');
-
-    systemd.services.tpm2-cryptenroll = mkIf (lanzabooteEnabled && config.my.disks.encryptRoot == "tpm2") {
-      description = "Enroll TPM2 with PCR ${tpm2Pcrs} for LUKS decryption after Secure Boot is fully active";
+    # Static PCR enrollment (when pcrlock not available)
+    systemd.services.tpm2-cryptenroll = mkIf (lanzabooteEnabled && tpm2Enabled && !config.my.disks.pcrlockSupport) {
+      description = "Enroll TPM2 with PCR 7+14 for LUKS decryption";
       wantedBy = ["multi-user.target"];
       after = ["boot.mount"];
       requires = ["boot.mount"];
-
+      unitConfig = {
+        ConditionPathExists = "!/var/lib/tpm2-cryptenroll/done";
+        ConditionSecurity = "uefi-secureboot";
+      };
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
+        StateDirectory = "tpm2-cryptenroll";
       };
-
-      path = [pkgs.cryptsetup pkgs.systemd pkgs.coreutils pkgs.mokutil pkgs.jq];
-
+      path = [pkgs.cryptsetup pkgs.systemd pkgs.coreutils];
       script = ''
-        LUKS_DEVICE="${config.boot.initrd.luks.devices.crypted.device}"
-
-        # Check Secure Boot is enabled
-        SECURE_BOOT_STATE=$(${pkgs.mokutil}/bin/mokutil --sb-state 2>/dev/null | ${pkgs.coreutils}/bin/head -1)
-        if [ "$SECURE_BOOT_STATE" != "SecureBoot enabled" ]; then
-          echo "Secure Boot not enabled (state: $SECURE_BOOT_STATE), skipping TPM2 enrollment"
-          exit 0
-        fi
-
-        # Check existing TPM2 tokens
-        TPM2_TOKENS=$(${pkgs.cryptsetup}/bin/cryptsetup luksDump --dump-json-metadata "$LUKS_DEVICE" 2>/dev/null | \
-          ${pkgs.jq}/bin/jq -c '[.tokens // {} | to_entries[] | select(.value.type == "systemd-tpm2")]')
-        TPM2_TOKEN_COUNT=$(echo "$TPM2_TOKENS" | ${pkgs.jq}/bin/jq 'length')
-
-        if [ "$TPM2_TOKEN_COUNT" -gt 1 ]; then
-          echo "Error: Multiple TPM2 tokens found ($TPM2_TOKEN_COUNT), refusing to proceed"
-          exit 1
-        fi
-
-        if [ "$TPM2_TOKEN_COUNT" = 1 ] && [ "$(echo "$TPM2_TOKENS" | ${pkgs.jq}/bin/jq -c '.[0].value["tpm2-pcrs"] // [] | sort')" = '${tpm2PcrsJson}' ]; then
-          echo "TPM2 already enrolled with expected PCRs (${tpm2Pcrs}), skipping"
-          exit 0
-        fi
-
-        echo "Enrolling TPM2 with PCRs ${tpm2Pcrs} for $LUKS_DEVICE"
-        if systemd-cryptenroll \
-          --tpm2-pcrs=${tpm2Pcrs} \
-          --unlock-tpm2-device=auto \
+        systemd-cryptenroll \
           --tpm2-device=auto \
-          --tpm2-with-pin=no \
+          --tpm2-pcrs=7+14+${pcr15} \
           --wipe-slot=all \
-          "$LUKS_DEVICE"; then
-          echo "TPM2 enrollment complete, rebooting..."
-          systemctl reboot
-        else
-          echo "TPM2 enrollment failed"
-          exit 1
-        fi
+          ${config.boot.initrd.luks.devices.crypted.device}
+        touch /var/lib/tpm2-cryptenroll/done
       '';
     };
   };
