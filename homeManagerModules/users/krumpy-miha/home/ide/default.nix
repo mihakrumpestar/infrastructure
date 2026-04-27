@@ -173,8 +173,8 @@ in {
     CGO_ENABLED = "0"; # Disable use of CGO
 
     # Disable Github CLI telemetry
-    GH_TELEMETRY = false;
-    DO_NOT_TRACK = true;
+    GH_TELEMETRY = "false";
+    DO_NOT_TRACK = "true";
   };
 
   programs.zsh.initContent = ''
