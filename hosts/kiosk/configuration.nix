@@ -22,6 +22,8 @@
     users = ["kiosk"];
 
     de.plasma.enable = true;
+
+    impermanence.fullyImpermanent = true;
   };
 
   # Out-of-tree kernel module for touchscreen
