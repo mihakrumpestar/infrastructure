@@ -42,6 +42,7 @@ with lib; {
     fido2Enabled = config.my.disks.encryptRoot == "fido2";
     tpm2Enabled = config.my.disks.encryptRoot == "tpm2";
     tpm2PcrlockEnabled = tpm2Enabled && config.my.disks.pcrlockSupport;
+    tpm2PcrlockDisabled = tpm2Enabled && !config.my.disks.pcrlockSupport;
 
     pcr15 = "15:sha256=0000000000000000000000000000000000000000000000000000000000000000";
   in {
@@ -178,6 +179,7 @@ with lib; {
         enable = true;
         pkiBundle = "/var/lib/sbctl";
         autoGenerateKeys.enable = true;
+        configurationLimit = mkIf tpm2PcrlockEnabled 8; # systemd-pcrlock has a strict limit to 8
 
         # If you don't auto-enroll, run:
         # sbctl create-keys
@@ -241,7 +243,7 @@ with lib; {
     };
 
     # Static PCR enrollment (when pcrlock not available)
-    systemd.services.tpm2-cryptenroll = mkIf (lanzabooteEnabled && tpm2Enabled && !config.my.disks.pcrlockSupport) {
+    systemd.services.tpm2-cryptenroll = mkIf (lanzabooteEnabled && tpm2PcrlockDisabled) {
       description = "Enroll TPM2 with PCR 7+14 for LUKS decryption";
       wantedBy = ["multi-user.target"];
       after = ["boot.mount"];

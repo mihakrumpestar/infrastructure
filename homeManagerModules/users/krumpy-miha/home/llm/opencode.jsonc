@@ -111,10 +111,13 @@
   "permission": {
     "external_directory": {
       "/tmp/**": "allow",
-      "~/repos/**": "allow"
+      "~/repos/**": "allow",
+      "~/go/**": "allow"
     },
     "edit": {
-      "/tmp/**": "allow"
+      "/tmp/**": "allow",
+      "~/repos/**": "ask",
+      "~/go/**": "deny"
     }
   },
 
