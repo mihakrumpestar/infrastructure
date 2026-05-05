@@ -130,6 +130,11 @@ in {
           # Typst
           myriad-dreamin.tinymist
 
+          # RST
+          lextudio.restructuredtext
+          swyddfa.esbonio # Live preview and IntelliSense
+          trond-snekvik.simple-rst # Syntax highlighting
+
           # HTML/VSS/JS/TS
           bradlc.vscode-tailwindcss
           dbaeumer.vscode-eslint
