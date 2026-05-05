@@ -94,6 +94,11 @@
       "command": ["bunx", "@sylphx/pdf-reader-mcp"],
       "enabled": true,
     },
+    "context-mode": {
+      "type": "local",
+      "command": ["bunx", "context-mode"],
+      "enabled": true,
+    }
     /*
     // Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
     "openrag": {
@@ -121,5 +126,5 @@
     }
   },
 
-  "plugin": ["cc-safety-net"],
+  "plugin": ["cc-safety-net", "context-mode"],
 }

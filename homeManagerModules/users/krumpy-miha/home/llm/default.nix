@@ -19,6 +19,17 @@
     })
     skillNames);
 
+  context-mode-src = builtins.fetchTarball {
+    url = "https://github.com/mksglu/context-mode/archive/main.tar.gz";
+    sha256 = "1i5wfb7ygika7vqzargg3xs5kz5h9gxd2m8bv5jnjxi37wpkvahl";
+  };
+
+  agents-combined = pkgs.runCommand "AGENTS.md" {} ''
+    cat ${./AGENTS.md} > $out
+    echo "" >> $out
+    cat ${context-mode-src}/configs/opencode/AGENTS.md >> $out
+  '';
+
   golang-skill = let
     src = builtins.fetchTarball {
       url = "https://github.com/samber/cc-skills-golang/archive/main.tar.gz";
@@ -39,43 +50,43 @@
     ];
   in
     pkgs.runCommand "golang-skill" {inherit sub_skills;} ''
-      mkdir -p $out/references
+            mkdir -p $out/references
 
-      cat > $out/SKILL.md <<'HEADER'
----
-name: golang
-description: "Comprehensive Go development guide combining best practices for testing, testify assertions and mocks, data structures, dependency injection and management, design patterns, naming, popular libraries, safety, structs/interfaces, and troubleshooting. Use whenever writing Go code, tests, or asking about Go conventions and patterns."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
----
+            cat > $out/SKILL.md <<'HEADER'
+      ---
+      name: golang
+      description: "Comprehensive Go development guide combining best practices for testing, testify assertions and mocks, data structures, dependency injection and management, design patterns, naming, popular libraries, safety, structs/interfaces, and troubleshooting. Use whenever writing Go code, tests, or asking about Go conventions and patterns."
+      user-invocable: true
+      license: MIT
+      compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
+      ---
 
-**Persona:** You are an expert Go engineer who writes idiomatic, production-ready code. You treat tests as executable specifications and prioritize correctness, readability, and performance.
+      **Persona:** You are an expert Go engineer who writes idiomatic, production-ready code. You treat tests as executable specifications and prioritize correctness, readability, and performance.
 
-**Sources:** This skill combines the following sub-skills from [samber/cc-skills-golang](https://github.com/samber/cc-skills-golang):
+      **Sources:** This skill combines the following sub-skills from [samber/cc-skills-golang](https://github.com/samber/cc-skills-golang):
 
-HEADER
+      HEADER
 
-      first=true
-      for name in $sub_skills; do
-        skillFile="${src}/skills/$name/SKILL.md"
-        # Strip YAML frontmatter: skip from first --- to second --- (inclusive)
-        body=$(awk 'BEGIN{d=0} /^---$/{d++;next} d>=2' "$skillFile")
-        if [ "$first" = true ]; then
-          printf '%s\n' "$body" >> $out/SKILL.md
-          first=false
-        else
-          printf '\n\n***\n\n' >> $out/SKILL.md
-          printf '%s\n' "$body" >> $out/SKILL.md
-        fi
+            first=true
+            for name in $sub_skills; do
+              skillFile="${src}/skills/$name/SKILL.md"
+              # Strip YAML frontmatter: skip from first --- to second --- (inclusive)
+              body=$(awk 'BEGIN{d=0} /^---$/{d++;next} d>=2' "$skillFile")
+              if [ "$first" = true ]; then
+                printf '%s\n' "$body" >> $out/SKILL.md
+                first=false
+              else
+                printf '\n\n***\n\n' >> $out/SKILL.md
+                printf '%s\n' "$body" >> $out/SKILL.md
+              fi
 
-        refDir="${src}/skills/$name/references"
-        if [ -d "$refDir" ]; then
-          for f in "$refDir"/*.md; do
-            [ -f "$f" ] && cp "$f" $out/references/$name-$(basename "$f")
-          done
-        fi
-      done
+              refDir="${src}/skills/$name/references"
+              if [ -d "$refDir" ]; then
+                for f in "$refDir"/*.md; do
+                  [ -f "$f" ] && cp "$f" $out/references/$name-$(basename "$f")
+                done
+              fi
+            done
     '';
 in {
   home.packages = with pkgs; [
@@ -87,7 +98,7 @@ in {
     ".config/opencode/opencode.json".source = opencode-config;
 
     # opencode agent list
-    ".config/opencode/AGENTS.md".source = ./AGENTS.md;
+    ".config/opencode/AGENTS.md".source = agents-combined;
   };
 
   xdg.configFile =

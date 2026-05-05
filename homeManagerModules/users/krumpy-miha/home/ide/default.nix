@@ -135,6 +135,9 @@ in {
           swyddfa.esbonio # Live preview and IntelliSense
           trond-snekvik.simple-rst # Syntax highlighting
 
+          # AsciiDoc
+          #asciidoctor.asciidoctor-vscode # TODO: won't build
+
           # HTML/VSS/JS/TS
           bradlc.vscode-tailwindcss
           dbaeumer.vscode-eslint

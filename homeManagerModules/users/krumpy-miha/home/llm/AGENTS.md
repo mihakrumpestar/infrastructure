@@ -1,4 +1,4 @@
-## General guidelines
+# General guidelines
 
 - Follow best coding practices: DRY, KISS, YAGNI principles.
 - Before making a change, scan landscape to indentify all places that need changes, and inform yourself with all the documentation we could possibly need.

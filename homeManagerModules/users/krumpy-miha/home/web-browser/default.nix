@@ -56,6 +56,7 @@ in {
           "dom.events.asyncClipboard.clipboardItem" = true;
 
           "network.protocol-handler.external.mailto" = false; # Remove annoying "add application for mailto links"
+          "widget.gtk.native-emoji-dialog" = false; # Remove emoji picker shortcut (added in Firefox 150)
 
           # Fix font
           "gfx.font_rendering.cleartype_params.force_gdi_classic_for_families" = "";
