@@ -94,7 +94,7 @@ in {
           #streetsidesoftware.code-spell-checker
           tamasfe.even-better-toml
           tumido.cron-explained
-          mathematic.vscode-pdf
+          mathematic.vscode-pdf # VSCode does not have native PDF support for some reason
 
           # Latex
           james-yu.latex-workshop
@@ -116,13 +116,14 @@ in {
           jnoortheen.nix-ide
           kamadorueda.alejandra
 
-          # MDQ
-          quarto.quarto
+          # MDQ # Not needed currently
+          #quarto.quarto
 
           # MD
           yzhang.markdown-all-in-one
           davidanson.vscode-markdownlint
-          shd101wyy.markdown-preview-enhanced # Does not support Alerts: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
+          # tanishq-chaudhary.its-markdown-studio # Breaks my normal file workflow, eg. HTML and diff
+          # shd101wyy.markdown-preview-enhanced # Generally sucks at rendering inline HTLM. Does not support Alerts: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
 
           # MDX
           unifiedjs.vscode-mdx
@@ -130,10 +131,11 @@ in {
           # Typst
           myriad-dreamin.tinymist
 
-          # RST
-          lextudio.restructuredtext
-          swyddfa.esbonio # Live preview and IntelliSense
-          trond-snekvik.simple-rst # Syntax highlighting
+          # RST # Not needed currently
+          #lextudio.restructuredtext
+          #swyddfa.esbonio # Live preview and IntelliSense
+          #chrisjsewell.myst-tml-syntax # Dependancy for above
+          #trond-snekvik.simple-rst # Syntax highlighting
 
           # AsciiDoc
           #asciidoctor.asciidoctor-vscode # TODO: won't build
@@ -148,8 +150,8 @@ in {
           # AI (using it as web only now)
           #sst-dev.opencode
 
-          # Rest
-          humao.rest-client
+          # Rest # Not needed currently
+          #humao.rest-client
 
           # HCL
           hashicorp.hcl
