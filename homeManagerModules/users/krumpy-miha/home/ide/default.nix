@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: let
-  store-secrets = config.my.store-secrets.secrets;
+{pkgs, ...}: let
   vscode-ltex-plus-offline = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
     mktplcRef = {
       name = "vscode-ltex-plus";
@@ -25,8 +20,7 @@ in {
 
     # Formatters
     prettier
-    #nixfmt-rfc-style # Not using anymore since it hangs too much
-    alejandra # For Nix
+    nixfmt
     caddy # Also a linter
 
     # Latex
@@ -66,6 +60,14 @@ in {
     bun
     nodejs
   ];
+
+  home.sessionVariables = {
+    CGO_ENABLED = "0"; # Disable use of CGO
+
+    # Disable Github CLI telemetry
+    GH_TELEMETRY = "false";
+    DO_NOT_TRACK = "true";
+  };
 
   programs.vscodium = {
     enable = true;
@@ -114,7 +116,6 @@ in {
 
           # Nix
           jnoortheen.nix-ide
-          kamadorueda.alejandra
 
           # MDQ # Not needed currently
           #quarto.quarto
@@ -172,19 +173,7 @@ in {
 
   home.mutableFile = {
     # code --diff users/krumpy-miha/home/ide/settings.json ~/.config/VSCodium/User/settings.json
-    ".config/VSCodium/User/settings.json".source =
-      pkgs.replaceVars
-      ./vscode-settings.jsonc {
-        inherit (store-secrets) languagetool_server;
-      };
-  };
-
-  home.sessionVariables = {
-    CGO_ENABLED = "0"; # Disable use of CGO
-
-    # Disable Github CLI telemetry
-    GH_TELEMETRY = "false";
-    DO_NOT_TRACK = "true";
+    ".config/VSCodium/User/settings.json".source = ./vscode-settings.jsonc;
   };
 
   programs.zsh.initContent = ''

@@ -1,28 +1,25 @@
 // ~/.config/VSCodium/User/settings.json
 {
-  // Build-in //
-
+  //            //
+  //  Build-in  //
+  //            //
   "workbench": {
     "colorTheme": "GitHub Dark Default",
     //"colorTheme": "Stylix", // TODO: proper Stylix theme
     "iconTheme": "vscode-icons",
     "panel.defaultLocation": "right"
   },
-  
   "files.associations": {
     "devbox.json": "jsonc",
     "*.tpl": "hcl"
   },
   "diffEditor.ignoreTrimWhitespace": false,
   "notebook.lineNumbers": "on",
-
   "json.schemaDownload.trustedDomains": {
     "https://opencode.ai/config.json": true,
     "https://models.dev/model-schema.json": true
   },
-
   "window.zoomLevel": 0.4,
-
   // Editor
   "editor": {
     "fontFamily": "'Droid Sans Mono', monospace, 'MesloLGS NF'",
@@ -31,24 +28,21 @@
     "formatOnType": true,
     "tabSize": 2
   },
-
   // Git
   "git": {
     "enableSmartCommit": true,
     "confirmSync": false
   },
-
   // Terminal
   "terminal": {
     "external.linuxExec": "kitty",
-    "integrated" : {
+    "integrated": {
       "enableImages": true,
       "mouseWheelZoom": true,
       "defaultProfile.linux": "zsh",
       "scrollback": 10000 // Default is 1000
     }
   },
-
   // Markdown
   "markdownlint": {
     "lintWorkspaceGlobs": [
@@ -60,16 +54,15 @@
     ],
     "run": "onSave"
   },
-
-  // Extensions //
-
+  //              //
+  //  Extensions  //
+  //              //
   // Drawio
   "hediet.vscode-drawio": {
     "theme": "Kennedy",
     "defaultVertexStyle.fontSize": 16,
     "defaultEdgeStyle.fontSize": 16
   },
-
   // LanguageTool
   "ltex": {
     "language": "auto",
@@ -92,7 +85,6 @@
       "quarto",
       "restructuredtext",
       "rsweave",
-
       // Additional (comments only)
       "shellscript",
       "go",
@@ -101,33 +93,37 @@
       "typescript"
     ]
   },
-
   // Gitblame
   "gitblame": {
     "inlineMessageEnabled": true,
     "inlineMessageFormat": "${author.name} (${time.ago})",
     "inlineMessageMargin": 6
   },
-
   // cSpell
-  "cSpell.enableFiletypes": ["!jsonc", "!yaml"],
-
-  // Language specific settings //
-
+  "cSpell.enableFiletypes": [
+    "!jsonc",
+    "!yaml"
+  ],
+  //                              //
+  //  Language specific settings  //
+  //                              //
   // Python
-  "pylint.args": ["--disable=missing-module-docstring"],
+  "pylint.args": [
+    "--disable=missing-module-docstring"
+  ],
   "basedpyright": {
     "importStrategy": "useBundled", // The default "fronEnvironment" does not even load the extension
-    "analysis.exclude": ["**/.venv", "**/.devbox"]
+    "analysis.exclude": [
+      "**/.venv",
+      "**/.devbox"
+    ]
   },
-
   // Quarto
   "[quarto]": {
     "editor.defaultFormatter": "quarto.quarto",
     "editor.tabSize": 3,
     "editor.insertSpaces": true
   },
-
   // Latex
   "[latex]": {
     "editor.wordWrap": "on"
@@ -136,7 +132,6 @@
     "latex.outDir": "%DIR%/tmp",
     "formatting.latex": "tex-fmt"
   },
-
   // Nix
   "[nix]": {
     "editor": {
@@ -148,22 +143,19 @@
   },
   "nix": {
     "enableLanguageServer": true,
-    "serverPath": ["nil"],
-    "serverSettings.nixd.formatting.command": ["alejandra"]
+    "serverPath": [
+      "nil"
+    ]
   },
-  "alejandra.program": "alejandra",
-
   // HTML
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-
   // MDX
   "[mdx]": {
     "editor.wordWrap": "on",
     "editor.defaultFormatter": "unifiedjs.vscode-mdx"
   },
-
   // Go
   "[go]": {
     "editor.defaultFormatter": "golang.go"
@@ -183,10 +175,9 @@
     "showWelcome": false,
     "survey.prompt": false
   },
-  "gopls": { 
+  "gopls": {
     "ui.semanticTokens": true
   },
-
   // Yaml
   "[yaml]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
