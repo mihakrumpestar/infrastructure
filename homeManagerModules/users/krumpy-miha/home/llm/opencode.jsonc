@@ -44,6 +44,7 @@
 
   // Use with: `use the <tool_name> tool`
   // Debug: opencode mcp list
+  // Note: keep some disabled if not used as they add multiple 1000s tokens to context for the tool instructions
   "mcp": {
     "context7": {
       "type": "remote",
@@ -66,10 +67,13 @@
       "command": ["nix", "run", "github:utensils/mcp-nixos", "--"],
       "enabled": true,
     },
+
+    // Not needed most of the time and add a lot to context
+
     "exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa",
-      "enabled": true,
+      "enabled": false,
       "headers": {
         "x-api-key": "{env:EXA_API_KEY}"
       }
@@ -77,7 +81,7 @@
     "websets": {
       "type": "remote",
       "url": "https://websetsmcp.exa.ai",
-      "enabled": false, // Keep disable if not used as it adds 12k to context due to complexity and amount of MCP tools it adds
+      "enabled": false, // Adds 12k tokens to context
       "headers": {
         "x-api-key": "{env:EXA_API_KEY}"
       }
@@ -85,6 +89,7 @@
     "chrome-devtools": {
       "type": "local",
       "command": ["bunx", "chrome-devtools-mcp@latest", "--executable-path", "@chromium@"],
+      "enabled": false,
       "environment": {
         "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "true",
       }
@@ -92,13 +97,8 @@
     "pdf-reader": { 
       "type": "local",
       "command": ["bunx", "@sylphx/pdf-reader-mcp"],
-      "enabled": true,
+      "enabled": false,
     },
-    "context-mode": {
-      "type": "local",
-      "command": ["bunx", "context-mode"],
-      "enabled": true,
-    }
     /*
     // Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
     "openrag": {
@@ -126,5 +126,5 @@
     }
   },
 
-  "plugin": ["cc-safety-net", "context-mode"],
+  "plugin": ["cc-safety-net"],
 }

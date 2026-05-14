@@ -31,7 +31,7 @@ in {
 
     # https://github.com/trustcrypto/python-onlykey/issues/82#issuecomment-3503421686
     nixpkgs.config.permittedInsecurePackages = [
-      "python3.13-ecdsa-0.19.1"
+      "python3.13-ecdsa-0.19.2"
     ];
 
     # Docs: https://wiki.nixos.org/wiki/Yubikey

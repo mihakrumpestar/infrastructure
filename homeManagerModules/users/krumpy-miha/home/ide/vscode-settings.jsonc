@@ -2,177 +2,194 @@
 {
   // Build-in //
 
-  "workbench.colorTheme": "GitHub Dark Default",
-  // "workbench.colorTheme": "Stylix", // TODO: proper Stylix theme
-  "workbench.iconTheme": "vscode-icons",
-  "remote.SSH.defaultExtensions": ["ms-azuretools.vscode-docker"],
+  "workbench": {
+    "colorTheme": "GitHub Dark Default",
+    //"colorTheme": "Stylix", // TODO: proper Stylix theme
+    "iconTheme": "vscode-icons",
+    "panel.defaultLocation": "right"
+  },
+  
   "files.associations": {
     "devbox.json": "jsonc",
-    "*.tpl": "hcl",
+    "*.tpl": "hcl"
   },
   "diffEditor.ignoreTrimWhitespace": false,
-  "workbench.panel.defaultLocation": "right",
   "notebook.lineNumbers": "on",
-  "workbench.editorAssociations": {
-    "*.svg": "default", // Prevent default image preview
-  },
+
   "json.schemaDownload.trustedDomains": {
     "https://opencode.ai/config.json": true,
-    "https://models.dev/model-schema.json": true,
+    "https://models.dev/model-schema.json": true
   },
 
   "window.zoomLevel": 0.4,
 
   // Editor
-  "editor.fontFamily": "'Droid Sans Mono', monospace, 'MesloLGS NF'",
-  "editor.formatOnPaste": false,
-  "editor.formatOnSave": true,
-  "editor.formatOnType": true,
-  "editor.tabSize": 2,
+  "editor": {
+    "fontFamily": "'Droid Sans Mono', monospace, 'MesloLGS NF'",
+    "formatOnPaste": false,
+    "formatOnSave": true,
+    "formatOnType": true,
+    "tabSize": 2
+  },
 
   // Git
-  "git.enableSmartCommit": true,
-  "git.confirmSync": false,
+  "git": {
+    "enableSmartCommit": true,
+    "confirmSync": false
+  },
 
   // Terminal
-  "terminal.external.linuxExec": "kitty",
-  "terminal.integrated.enableImages": true,
-  "terminal.integrated.mouseWheelZoom": true,
-  "terminal.integrated.defaultProfile.linux": "zsh",
-  "terminal.integrated.scrollback": 20000, // Default is 1000
+  "terminal": {
+    "external.linuxExec": "kitty",
+    "integrated" : {
+      "enableImages": true,
+      "mouseWheelZoom": true,
+      "defaultProfile.linux": "zsh",
+      "scrollback": 10000 // Default is 1000
+    }
+  },
 
   // Markdown
-  "markdownlint.lintWorkspaceGlobs": [
-    "**/*.{md,qmd}",
-    "!**/.quarto",
-    "!**/.temp",
-    "!**/.tmp",
-    "!**/assets",
-  ],
-  "markdownlint.run": "onSave",
-
-  // Json
-  "json.format.enable": false,
+  "markdownlint": {
+    "lintWorkspaceGlobs": [
+      "**/*.{md,qmd}",
+      "!**/.quarto",
+      "!**/.temp",
+      "!**/.tmp",
+      "!**/assets"
+    ],
+    "run": "onSave"
+  },
 
   // Extensions //
 
-  // Python
-  "pylint.args": ["--disable=missing-module-docstring"],
-  "basedpyright.importStrategy": "useBundled", // The default "fronEnvironment" does not even load the extension
-  "basedpyright.analysis.exclude": ["**/.venv", "**/.devbox"],
-
   // Drawio
-  "hediet.vscode-drawio.theme": "Kennedy",
-  "hediet.vscode-drawio.defaultVertexStyle": {
-    "fontSize": 16,
-  },
-  "hediet.vscode-drawio.defaultEdgeStyle": {
-    "fontSize": 16,
+  "hediet.vscode-drawio": {
+    "theme": "Kennedy",
+    "defaultVertexStyle.fontSize": 16,
+    "defaultEdgeStyle.fontSize": 16
   },
 
   // LanguageTool
-  //"ltex.languageToolHttpServerUri": "@languagetool_server@", // No need since this offline version of addon uses the build in one
-  "ltex.language": "auto",
-  "ltex.additionalRules.motherTongue": "en-US",
-  "ltex.additionalRules.enablePickyRules": true,
-  "ltex.statusBarItem": true,
-  "ltex.enabled": [
-    // Default
-    "bibtex",
-    "context",
-    "context.tex",
-    "html",
-    "latex",
-    "markdown",
-    "mdx",
-    "typst",
-    "asciidoc",
-    "neorg",
-    "org",
-    "quarto",
-    "restructuredtext",
-    "rsweave",
+  "ltex": {
+    "language": "auto",
+    "additionalRules.motherTongue": "en-US",
+    "additionalRules.enablePickyRules": true,
+    "statusBarItem": true,
+    "enabled": [
+      // Default
+      "bibtex",
+      "context",
+      "context.tex",
+      "html",
+      "latex",
+      "markdown",
+      "mdx",
+      "typst",
+      "asciidoc",
+      "neorg",
+      "org",
+      "quarto",
+      "restructuredtext",
+      "rsweave",
 
-    // Additional (comments only)
-    "shellscript",
-    "go",
-    "javascript",
-    "python",
-    "typescript",
-  ],
+      // Additional (comments only)
+      "shellscript",
+      "go",
+      "javascript",
+      "python",
+      "typescript"
+    ]
+  },
 
   // Gitblame
-  "gitblame.inlineMessageEnabled": true,
-  "gitblame.inlineMessageFormat": "${author.name} (${time.ago})",
-  "gitblame.inlineMessageMargin": 6,
+  "gitblame": {
+    "inlineMessageEnabled": true,
+    "inlineMessageFormat": "${author.name} (${time.ago})",
+    "inlineMessageMargin": 6
+  },
 
   // cSpell
   "cSpell.enableFiletypes": ["!jsonc", "!yaml"],
 
   // Language specific settings //
 
+  // Python
+  "pylint.args": ["--disable=missing-module-docstring"],
+  "basedpyright": {
+    "importStrategy": "useBundled", // The default "fronEnvironment" does not even load the extension
+    "analysis.exclude": ["**/.venv", "**/.devbox"]
+  },
+
   // Quarto
   "[quarto]": {
     "editor.defaultFormatter": "quarto.quarto",
     "editor.tabSize": 3,
-    "editor.insertSpaces": true,
+    "editor.insertSpaces": true
   },
 
   // Latex
-  "latex-workshop.latex.outDir": "%DIR%/tmp",
-  "latex-workshop.formatting.latex": "tex-fmt",
   "[latex]": {
-    "editor.wordWrap": "on",
+    "editor.wordWrap": "on"
+  },
+  "latex-workshop": {
+    "latex.outDir": "%DIR%/tmp",
+    "formatting.latex": "tex-fmt"
   },
 
   // Nix
-  "nix.enableLanguageServer": true,
-  "nix.serverPath": ["nil"],
-  "nix.serverSettings": {
-    "nixd": {
-      "formatting": {
-        "command": ["alejandra"],
-      },
-    },
-  },
-
   "[nix]": {
-    "editor.defaultFormatter": "kamadorueda.alejandra",
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnType": false,
+    "editor": {
+      "defaultFormatter": "kamadorueda.alejandra",
+      "formatOnPaste": true,
+      "formatOnSave": true,
+      "formatOnType": false
+    }
+  },
+  "nix": {
+    "enableLanguageServer": true,
+    "serverPath": ["nil"],
+    "serverSettings.nixd.formatting.command": ["alejandra"]
   },
   "alejandra.program": "alejandra",
 
   // HTML
   "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
   // MDX
   "[mdx]": {
     "editor.wordWrap": "on",
-    "editor.defaultFormatter": "unifiedjs.vscode-mdx",
+    "editor.defaultFormatter": "unifiedjs.vscode-mdx"
   },
 
   // Go
   "[go]": {
-    "editor.defaultFormatter": "golang.go",
+    "editor.defaultFormatter": "golang.go"
   },
-  "go.diagnostic.vulncheck": "Imports",
-  "go.inlayHints.compositeLiteralFields": true,
-  "go.inlayHints.compositeLiteralTypes": true,
-  "go.inlayHints.constantValues": true,
-  "go.inlayHints.functionTypeParameters": true,
-  "go.inlayHints.parameterNames": true,
-  "go.inlayHints.rangeVariableTypes": true,
-  "go.lintTool": "golangci-lint",
-  "go.survey.prompt": false,
-  "go.toolsManagement.autoUpdate": true,
+  "go": {
+    "inlayHints": {
+      "assignVariableTypes": true,
+      "compositeLiteralFields": true,
+      "compositeLiteralTypes": true,
+      "constantValues": true,
+      "functionTypeParameters": true,
+      "ignoredError": true,
+      "parameterNames": true,
+      "rangeVariableTypes": true
+    },
+    "lintTool": "golangci-lint",
+    "showWelcome": false,
+    "survey.prompt": false
+  },
+  "gopls": { 
+    "ui.semanticTokens": true
+  },
 
   // Yaml
-  "redhat.telemetry.enabled": false,
   "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.defaultFormatter": "redhat.vscode-yaml"
   },
+  "redhat.telemetry.enabled": false
 }

@@ -86,7 +86,7 @@ in {
           waderyan.gitblame
           github.github-vscode-theme
           hediet.vscode-drawio
-          jeanp413.open-remote-ssh
+          #jeanp413.open-remote-ssh
           matthewpi.caddyfile-support
           pomdtr.excalidraw-editor
           redhat.vscode-yaml
