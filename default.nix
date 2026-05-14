@@ -19,7 +19,8 @@
   vars,
   hostName,
   ...
-}: {
+}:
+{
   imports = [
     disko.nixosModules.disko
     impermanence.nixosModules.impermanence
@@ -40,9 +41,12 @@
           nix-index-database.homeModules.default
           agenix.homeManagerModules.default
           mutable-file.homeModules.default
-          ({osConfig, ...}: {
-            home.stateVersion = osConfig.system.nixos.release;
-          })
+          (
+            { osConfig, ... }:
+            {
+              home.stateVersion = osConfig.system.nixos.release;
+            }
+          )
           {
             imports = [
               ./homeManagerModules
@@ -72,5 +76,5 @@
   ];
 
   # For nixd to work properly
-  nix.nixPath = ["nixpkgs=${nixpkgs}"];
+  nix.nixPath = [ "nixpkgs=${nixpkgs}" ];
 }

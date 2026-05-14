@@ -1,4 +1,5 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   vscode-ltex-plus-offline = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
     mktplcRef = {
       name = "vscode-ltex-plus";
@@ -10,7 +11,8 @@
       sha256 = "09jp99vcafj83d4s5p8d9f2k2znv96ig9awhr4mdn4qnx8081qdy";
     };
   };
-in {
+in
+{
   home.packages = with pkgs; [
     # Task runner
     go-task
@@ -20,7 +22,6 @@ in {
 
     # Formatters
     prettier
-    nixfmt
     caddy # Also a linter
 
     # Latex
@@ -37,7 +38,8 @@ in {
     uv
 
     # Nix
-    nil
+    nixd # Language server
+    nixfmt # Formatter
     tix # Does not appear to work yet as IDE LSP
 
     # Quarto
@@ -76,7 +78,8 @@ in {
     };
     mutableExtensionsDir = false;
     profiles.default = {
-      extensions = with pkgs.open-vsx;
+      extensions =
+        with pkgs.open-vsx;
         [
           # find them on https://open-vsx.org/ # or "vscode-marketplace"
           # General
