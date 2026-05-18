@@ -1,6 +1,29 @@
 { inputs, ... }:
 let
   secretsDir = inputs.infrastructure-secrets;
+  mattpocockSkillsDir = inputs.mattpocock-skills;
+
+  # Discover skills from a directory: reads subdirectories that contain SKILL.md
+  # and generates an attrset suitable for xdg.configFile
+  discoverSkills =
+    dir:
+    let
+      entries = builtins.readDir dir;
+      isSkillDir = name: type: type == "directory" && builtins.pathExists (dir + "/${name}/SKILL.md");
+      skillNames = builtins.filter (name: isSkillDir name entries.${name}) (builtins.attrNames entries);
+    in
+    builtins.listToAttrs (
+      map (name: {
+        name = "opencode/skills/${name}/SKILL.md";
+        value = {
+          source = dir + "/${name}/SKILL.md";
+        };
+      }) skillNames
+    );
+
+  mattpocockSkillConfigs =
+    discoverSkills (mattpocockSkillsDir + "/skills/engineering")
+    // discoverSkills (mattpocockSkillsDir + "/skills/productivity");
 in
 {
   den.aspects.llm = {
@@ -12,86 +35,7 @@ in
         };
 
         skillDir = ./skills;
-        skillNames = builtins.attrNames (builtins.readDir skillDir);
-
-        localSkillConfigs = builtins.listToAttrs (
-          map (name: {
-            name = "opencode/skills/${name}/SKILL.md";
-            value = {
-              source = skillDir + "/${name}/SKILL.md";
-            };
-          }) skillNames
-        );
-
-        context-mode-src = builtins.fetchTarball {
-          url = "https://github.com/mksglu/context-mode/archive/main.tar.gz";
-          sha256 = "1i5wfb7ygika7vqzargg3xs5kz5h9gxd2m8bv5jnjxi37wpkvahl";
-        };
-
-        agents-combined = pkgs.runCommand "AGENTS.md" { } ''
-          cat ${./AGENTS.md} > $out
-          echo "" >> $out
-          cat ${context-mode-src}/configs/opencode/AGENTS.md >> $out
-        '';
-
-        golang-skill =
-          let
-            src = builtins.fetchTarball {
-              url = "https://github.com/samber/cc-skills-golang/archive/main.tar.gz";
-              sha256 = "0mqbsg2hfrq47271qjd22yqx6a75a2jdyv5bc0f8dsbp35cmf3a0";
-            };
-            sub_skills = [
-              "golang-data-structures"
-              "golang-dependency-injection"
-              "golang-dependency-management"
-              "golang-design-patterns"
-              "golang-naming"
-              "golang-popular-libraries"
-              "golang-safety"
-              "golang-stretchr-testify"
-              "golang-structs-interfaces"
-              "golang-testing"
-              "golang-troubleshooting"
-            ];
-          in
-          pkgs.runCommand "golang-skill" { inherit sub_skills; } ''
-                  mkdir -p $out/references
-
-                  cat > $out/SKILL.md <<'HEADER'
-            ---
-            name: golang
-            description: "Comprehensive Go development guide combining best practices for testing, testify assertions and mocks, data structures, dependency injection and management, design patterns, naming, popular libraries, safety, structs/interfaces, and troubleshooting. Use whenever writing Go code, tests, or asking about Go conventions and patterns."
-            user-invocable: true
-            license: MIT
-            compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
-            ---
-
-            **Persona:** You are an expert Go engineer who writes idiomatic, production-ready code. You treat tests as executable specifications and prioritize correctness, readability, and performance.
-
-            **Sources:** This skill combines the following sub-skills from [samber/cc-skills-golang](https://github.com/samber/cc-skills-golang):
-
-            HEADER
-
-                  first=true
-                  for name in $sub_skills; do
-                    skillFile="${src}/skills/$name/SKILL.md"
-                    body=$(awk 'BEGIN{d=0} /^---$/{d++;next} d>=2' "$skillFile")
-                    if [ "$first" = true ]; then
-                      printf '%s\n' "$body" >> $out/SKILL.md
-                      first=false
-                    else
-                      printf '\n\n***\n\n' >> $out/SKILL.md
-                      printf '%s\n' "$body" >> $out/SKILL.md
-                    fi
-
-                    refDir="${src}/skills/$name/references"
-                    if [ -d "$refDir" ]; then
-                      for f in "$refDir"/*.md; do
-                        [ -f "$f" ] && cp "$f" $out/references/$name-$(basename "$f")
-                      done
-                    fi
-                  done
-          '';
+        localSkillConfigs = discoverSkills skillDir;
       in
       {
         age.secrets."llm_api_keys.env" = {
@@ -104,23 +48,14 @@ in
           opencode-desktop
         ];
 
-        home.mutableFile = {
-          ".config/opencode/opencode.json".source = opencode-config;
-          ".config/opencode/AGENTS.md".source = agents-combined;
-        };
-
-        xdg.configFile = localSkillConfigs // {
-          "opencode/skills/caveman/SKILL.md".source = builtins.fetchurl {
-            url = "https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman/SKILL.md";
-            sha256 = "0x81fl080nc0yx7424vishq2rqbaqvvmz33ja80w3biv49lj0lf3";
+        # Local skills override remote skills on name collision
+        xdg.configFile =
+          mattpocockSkillConfigs
+          // localSkillConfigs
+          // {
+            ".config/opencode/opencode.json".source = opencode-config;
+            ".config/opencode/AGENTS.md".source = ./AGENTS.md;
           };
-          "opencode/skills/grill-me/SKILL.md".source = builtins.fetchurl {
-            url = "https://raw.githubusercontent.com/mattpocock/skills/main/grill-me/SKILL.md";
-            sha256 = "0mh5c7rx1caif5lighbzxwfmr4zzngqf1fgjzrz9ar8a06v7w53l";
-          };
-          "opencode/skills/golang/SKILL.md".source = "${golang-skill}/SKILL.md";
-          "opencode/skills/golang/references".source = "${golang-skill}/references";
-        };
 
         # Attach: opencode attach http://localhost:4096
         systemd.user.services.opencode = {
@@ -154,7 +89,6 @@ in
 
         # For OpenCode statistics
         # uv tool install git+https://github.com/Shlomob/ocmonitor-share.git
-
       };
   };
 }

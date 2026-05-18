@@ -80,6 +80,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Skills
+
+    mattpocock-skills = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
+
     # Secrets
 
     infrastructure-secrets = {

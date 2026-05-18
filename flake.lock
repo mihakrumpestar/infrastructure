@@ -595,6 +595,22 @@
         "type": "github"
       }
     },
+    "mattpocock-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779106888,
+        "narHash": "sha256-jyTajdFYJKoU2XBHi8rM/gsf/mg6s4oOvANVkh3jLU8=",
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "67bce91c80cd1020a4f068ced32d0281656842ad",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mattpocock",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "mutable-file": {
       "inputs": {
         "nixpkgs": "nixpkgs_2"
@@ -868,6 +884,7 @@
         "import-tree": "import-tree",
         "infrastructure-secrets": "infrastructure-secrets",
         "lanzaboote": "lanzaboote",
+        "mattpocock-skills": "mattpocock-skills",
         "mutable-file": "mutable-file",
         "nix-index-database": "nix-index-database",
         "nix-vscode-extensions": "nix-vscode-extensions",
