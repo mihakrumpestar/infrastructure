@@ -3,7 +3,7 @@ let
   data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
 in
 {
-  den.aspects.vps-02 = {
+  den.aspects.personal-vps-02 = {
     includes = [
       den.aspects.server
       den.aspects.vm-guest

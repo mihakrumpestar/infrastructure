@@ -33,8 +33,8 @@
       users.admin = { };
     };
 
-    vps-02 = {
-      includes = [ den.aspects.vps-02 ];
+    personal-vps-02 = {
+      includes = [ den.aspects.personal-vps-02 ];
       users.admin = { };
     };
 
