@@ -59,8 +59,8 @@
             hostIdentities // gitIdentities;
 
           # Ensure correct directory permissions for SSH
-          home.activation.sshIdentities = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-            chmod 0500 ${config.home.homeDirectory}/${identitiesDir} || true
+          home.activation.sshIdentities = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+            chmod 0700 ${config.home.homeDirectory}/${identitiesDir} || true
           '';
 
           programs.ssh = {

@@ -9,11 +9,12 @@ if [ -z "$USER" ]; then
     exit 1
 fi
 
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/git"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/git/identities"
 CONFIG_FILE="$CONFIG_DIR/$USER"
 
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Configuration for $USER not found at $CONFIG_FILE"
+    echo "Configuration for '$USER' not found. Available identities:"
+    ls "$CONFIG_DIR" 2>/dev/null | sed 's/^/  /'
     exit 1
 fi
 

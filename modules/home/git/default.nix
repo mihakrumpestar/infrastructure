@@ -21,12 +21,15 @@
 
             identityConfigs = lib.mapAttrs' (
               name: entry:
-              lib.nameValuePair "git/${name}" {
+              lib.nameValuePair "git/identities/${name}" {
                 text = ''
                   [user]
                     name = ${entry.name}
                     email = ${entry.email}
                     signingkey = ${entry.signingKey}
+
+                  [core]
+                    sshCommand = ssh -i ~/.ssh/identities/git-${name}.pub -o IdentitiesOnly=yes
                 '';
               }
             ) cfg;
