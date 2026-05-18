@@ -5,7 +5,9 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = {...}: {
-    homeModules.default = import ./module.nix;
-  };
+  outputs =
+    { ... }:
+    {
+      homeModules.default = import ./module.nix;
+    };
 }

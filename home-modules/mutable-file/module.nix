@@ -5,61 +5,68 @@
   pkgs,
   ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.home.mutableFile;
 
   backupExt = osConfig.home-manager.backupFileExtension or "backup";
 
-  mkSource = file:
-    if file.text != null
-    then pkgs.writeText "mutable-file" file.text
-    else file.source;
-in {
+  mkSource = file: if file.text != null then pkgs.writeText "mutable-file" file.text else file.source;
+in
+{
   options.home.mutableFile = mkOption {
     description = "Mutable files to manage in home directory.";
-    default = {};
+    default = { };
 
-    type = types.attrsOf (types.submodule ({name, ...}: {
-      options = {
-        enable = mkEnableOption "mutable file" // {default = true;};
+    type = types.attrsOf (
+      types.submodule (
+        { name, ... }:
+        {
+          options = {
+            enable = mkEnableOption "mutable file" // {
+              default = true;
+            };
 
-        target = mkOption {
-          type = types.str;
-          default = name;
-          description = "Path to target file relative to home directory.";
-        };
+            target = mkOption {
+              type = types.str;
+              default = name;
+              description = "Path to target file relative to home directory.";
+            };
 
-        text = mkOption {
-          type = types.nullOr types.lines;
-          default = null;
-          description = "Text content of the file.";
-        };
+            text = mkOption {
+              type = types.nullOr types.lines;
+              default = null;
+              description = "Text content of the file.";
+            };
 
-        source = mkOption {
-          type = types.nullOr types.path;
-          default = null;
-          description = "Source file path.";
-        };
+            source = mkOption {
+              type = types.nullOr types.path;
+              default = null;
+              description = "Source file path.";
+            };
 
-        mode = mkOption {
-          type = types.str;
-          default = "0600";
-          description = "File permissions (octal).";
-        };
-      };
-    }));
+            mode = mkOption {
+              type = types.str;
+              default = "0600";
+              description = "File permissions (octal).";
+            };
+          };
+        }
+      )
+    );
   };
 
   config = {
-    assertions = flatten (mapAttrsToList (name: file: [
+    assertions = flatten (
+      mapAttrsToList (name: file: [
         {
           assertion = !(file.text != null && file.source != null);
           message = "home.mutableFile.${name}: cannot set both 'text' and 'source'";
         }
-      ])
-      cfg);
+      ]) cfg
+    );
 
-    home.activation.mutableFiles = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    home.activation.mutableFiles = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       echo "Checking mutable files..."
       backupExt="${backupExt}"
 
@@ -83,9 +90,11 @@ in {
         fi
       }
 
-      ${concatStringsSep "\n" (mapAttrsToList (_: file: ''
-        updateFile "${mkSource file}" "$HOME/${escapeShellArg file.target}" "${file.mode}"
-      '') (filterAttrs (_: f: f.enable) cfg))}
+      ${concatStringsSep "\n" (
+        mapAttrsToList (_: file: ''
+          updateFile "${mkSource file}" "$HOME/${escapeShellArg file.target}" "${file.mode}"
+        '') (filterAttrs (_: f: f.enable) cfg)
+      )}
     '';
   };
 }

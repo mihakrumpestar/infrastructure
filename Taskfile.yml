@@ -2,16 +2,16 @@ version: "3"
 
 includes:
   secrets:
-    taskfile: infrastructure-secrets/Taskfile.yml
-    dir: infrastructure-secrets
+    taskfile: ../infrastructure-secrets/Taskfile.yml
+    dir: ../infrastructure-secrets
     flatten: true
 
 tasks:
-  tidy:
+  ci:
     cmds:
-      - alejandra --check --exclude ./.devbox --exclude ./infrastructure-secrets
-        ./
-      - deadnix --exclude ./infrastructure-secrets --no-underscore
+      - gitleaks dir --redact && gitleaks git --redact
+      - treefmt
+      - deadnix --fail
       - statix check
 
   update:
@@ -23,6 +23,12 @@ tasks:
   generations:
     cmds:
       - sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
+
+  agenix-rekey:
+    desc: Rekey secrets
+    cmds:
+      - mkdir -p /tmp/agenix-rekey
+      - nix run .#agenix-rekey.x86_64-linux.rekey --option extra-sandbox-paths /tmp/agenix-rekey
 
   clean:
     cmds:

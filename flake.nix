@@ -3,8 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
     nur.url = "github:nix-community/NUR";
+    den.url = "github:denful/den";
+    import-tree.url = "github:denful/import-tree";
 
     disko = {
       url = "github:nix-community/disko";
@@ -12,7 +13,7 @@
     };
 
     impermanence = {
-      url = "github:mihakrumpestar/impermanence/fix-initrd-user-permissions"; # "github:nix-community/impermanence";
+      url = "github:mihakrumpestar/impermanence/fix-initrd-user-permissions";
       inputs = {
         nixpkgs.follows = "";
         home-manager.follows = "";
@@ -21,6 +22,11 @@
 
     agenix = {
       url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    agenix-rekey = {
+      url = "github:oddlama/agenix-rekey";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -60,7 +66,15 @@
 
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
 
+    # Experimental
     tix.url = "github:JRMurr/tix";
+
+    # Secrets
+
+    infrastructure-secrets = {
+      url = "git+file:../infrastructure-secrets";
+      flake = false;
+    };
 
     # Local
 
@@ -74,58 +88,23 @@
     };
   };
 
-  outputs = {nixpkgs, ...} @ attrs: let
-    vars = {
-      secretsDir = ./infrastructure-secrets;
+  outputs =
+    { self, ... }@inputs:
+    let
+      den =
+        (inputs.nixpkgs.lib.evalModules {
+          modules = [ (inputs.import-tree ./modules) ];
+          specialArgs.inputs = inputs;
+        }).config;
+    in
+    {
+      inherit (den.flake) nixosConfigurations;
 
-      networkConfig = {
-        Gateway = ["10.0.0.1"];
-        DNS = ["9.9.9.9" "1.1.1.1"];
+      agenix-rekey = inputs.agenix-rekey.configure {
+        userFlake = self;
+        inherit (self) nixosConfigurations;
+        darwinConfigurations = { };
+        agePackage = p: p.age;
       };
     };
-
-    mkNixosConfiguration = {
-      hostName,
-      system,
-    }:
-      nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs =
-          {
-            inherit vars;
-            inherit hostName;
-          }
-          // attrs;
-        modules = [
-          ./.
-        ];
-      };
-  in {
-    nixosConfigurations = {
-      personal-workstation = mkNixosConfiguration {
-        hostName = "personal-workstation";
-        system = "x86_64-linux";
-      };
-      personal-laptop = mkNixosConfiguration {
-        hostName = "personal-laptop";
-        system = "x86_64-linux";
-      };
-      server-01 = mkNixosConfiguration {
-        hostName = "server-01";
-        system = "x86_64-linux";
-      };
-      server-03 = mkNixosConfiguration {
-        hostName = "server-03";
-        system = "x86_64-linux";
-      };
-      vps-02 = mkNixosConfiguration {
-        hostName = "vps-02";
-        system = "x86_64-linux";
-      };
-      kiosk = mkNixosConfiguration {
-        hostName = "kiosk";
-        system = "x86_64-linux";
-      };
-    };
-  };
 }

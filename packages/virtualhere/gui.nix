@@ -5,7 +5,8 @@
   fetchurl,
   lib,
   ...
-}: let
+}:
+let
   vhuit64 = stdenv.mkDerivation rec {
     name = "vhuit64";
 
@@ -14,7 +15,7 @@
       hash = "sha256-5WirVHTZn5UfYq+BF9vvf9Li1K0OdeK6tgyWU1uVaAE=";
     };
 
-    buildInputs = with pkgs; [upx];
+    buildInputs = with pkgs; [ upx ];
 
     unpackPhase = "true";
 
@@ -30,7 +31,8 @@
     };
   };
 
-  NIX_LD_LIBRARY_PATH = with pkgs;
+  NIX_LD_LIBRARY_PATH =
+    with pkgs;
     lib.makeLibraryPath [
       cairo.out
       fontconfig.lib
@@ -48,9 +50,11 @@
       libx11.out
     ];
 in
-  pkgs.runCommand "virtualhere-client-gui" {
-    nativeBuildInputs = [pkgs.makeWrapper];
-  } ''
+pkgs.runCommand "virtualhere-client-gui"
+  {
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+  }
+  ''
     makeWrapper ${vhuit64}/bin/vhuit64 $out/bin/virtualhere-client-gui \
       --prefix PATH : "${pkgs.kmod}/bin" \
       --set NIX_LD_LIBRARY_PATH '${NIX_LD_LIBRARY_PATH}'

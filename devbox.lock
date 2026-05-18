@@ -1,54 +1,6 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "alejandra@latest": {
-      "last_modified": "2026-03-21T07:29:51Z",
-      "resolved": "github:NixOS/nixpkgs/09061f748ee21f68a089cd5d91ec1859cd93d0be#alejandra",
-      "source": "devbox-search",
-      "version": "4.0.0",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/iac4da6njdh2p1bfscr4sg30yjni8y0r-alejandra-4.0.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/iac4da6njdh2p1bfscr4sg30yjni8y0r-alejandra-4.0.0"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/x5qzkg7vr7j44rn1jfy3z6wh79xwp97v-alejandra-4.0.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/x5qzkg7vr7j44rn1jfy3z6wh79xwp97v-alejandra-4.0.0"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/jh896dlkjz919mb6dmym5r6nd3v7p9iq-alejandra-4.0.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/jh896dlkjz919mb6dmym5r6nd3v7p9iq-alejandra-4.0.0"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/cynd1a544hd6j4s44xawchgdki5b4xwb-alejandra-4.0.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/cynd1a544hd6j4s44xawchgdki5b4xwb-alejandra-4.0.0"
-        }
-      }
-    },
     "deadnix@latest": {
       "last_modified": "2026-03-21T07:29:51Z",
       "resolved": "github:NixOS/nixpkgs/09061f748ee21f68a089cd5d91ec1859cd93d0be#deadnix",
@@ -194,6 +146,54 @@
             }
           ],
           "store_path": "/nix/store/dpf8w722cr9jmx066yvwk0i2vpq8nls7-mermaid-cli-11.12.0"
+        }
+      }
+    },
+    "nixfmt-tree@latest": {
+      "last_modified": "2026-05-04T18:13:23Z",
+      "resolved": "github:NixOS/nixpkgs/afc5551119aae6eab73a95c1960891cfe63204f6#nixfmt-tree",
+      "source": "devbox-search",
+      "version": "2.5.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/92gz755dhrw2fi9q730dshcd26rr9h2m-nixfmt-tree-2.5.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/92gz755dhrw2fi9q730dshcd26rr9h2m-nixfmt-tree-2.5.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/wf7pkcxk2xjbva43wpgya0kb3i7miszh-nixfmt-tree-2.5.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/wf7pkcxk2xjbva43wpgya0kb3i7miszh-nixfmt-tree-2.5.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/ny7vxba9bqkq0fdcafi16b3dg61jddws-nixfmt-tree-2.5.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/ny7vxba9bqkq0fdcafi16b3dg61jddws-nixfmt-tree-2.5.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/ss1qr7h9hp6v40pc3d98sjmlqqbafl99-nixfmt-tree-2.5.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/ss1qr7h9hp6v40pc3d98sjmlqqbafl99-nixfmt-tree-2.5.0"
         }
       }
     },

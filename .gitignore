@@ -9,8 +9,5 @@ __pycache__
 # Nix build
 **/result
 
-# Secrets
-secrets
-
 # Generated statistics
 generated/

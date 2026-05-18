@@ -1,21 +1,8 @@
 repos:
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.0
+  - repo: local
     hooks:
-      - id: gitleaks
-
-#  - repo: https://github.com/kamadorueda/alejandra
-#    rev: 3.1.0
-#    hooks:
-#      - id: alejandra
-
-  - repo: https://github.com/astro/deadnix
-    rev: v1.3.1
-    hooks:
-      - id: deadnix
-        stages: [pre-commit]
-
-  - repo: https://github.com/fidgetingbits/pre-commit-statix
-    rev: v1.0.0
-    hooks:
-      - id: statix-check
+      - id: ci
+        name: ci
+        entry: task ci
+        language: system
+        pass_filenames: false

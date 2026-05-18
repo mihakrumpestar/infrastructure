@@ -1,0 +1,58 @@
+{ ... }:
+{
+  den.aspects.dead-mens-switch = {
+    homeManager =
+      {
+        pkgs,
+        ...
+      }:
+      let
+        dead-mens-switch =
+          with pkgs;
+          writeShellApplication {
+            name = "dead-mens-switch";
+            runtimeInputs = [
+              p7zip
+              curl
+              coreutils # rm
+              jq
+              libsecret
+              libnotify
+            ];
+            text = builtins.readFile ./dead-mens-switch.sh;
+          };
+      in
+      {
+        home.packages = [
+          dead-mens-switch
+        ];
+
+        systemd.user.services.dead-mens-switch = {
+          Unit = {
+            Description = "Dead mens switch Upload Service";
+            After = [ "network-online.target" ];
+            Wants = [ "network-online.target" ];
+            Requires = [ "dead-mens-switch.timer" ];
+          };
+          Service = {
+            Type = "simple";
+            ExecStart = "${dead-mens-switch}/bin/dead-mens-switch";
+          };
+        };
+
+        systemd.user.timers.dead-mens-switch = {
+          Unit = {
+            Description = "Run dead-mens-switch.service every week";
+          };
+          Timer = {
+            OnCalendar = "weekly";
+            Persistent = true;
+            OnBootSec = "5m30s";
+          };
+          Install = {
+            WantedBy = [ "timers.target" ];
+          };
+        };
+      };
+  };
+}

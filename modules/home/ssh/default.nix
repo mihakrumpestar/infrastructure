@@ -1,0 +1,147 @@
+{ inputs, ... }:
+let
+  data = import "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/data.nix";
+in
+{
+  den.aspects.ssh = {
+    homeManager =
+      { config, lib, ... }:
+      let
+        sshI = data.ssh.identities;
+        sshU = data.ssh.users;
+      in
+      {
+        home = {
+          file = {
+            ".ssh/identitiesS/home_pc.pub".text = sshI.home.pc;
+            ".ssh/identitiesS/homelab_servers.pub".text = sshI.homelab.servers;
+            ".ssh/identitiesS/homelab_vms.pub".text = sshI.homelab.vms;
+            ".ssh/identitiesS/personal_vps.pub".text = sshI.personal_vps;
+            ".ssh/identitiesS/company_01_server_01.pub".text = sshI.company_01.server_01;
+
+            # Git
+            ".ssh/identitiesS/personal.pub".text = sshI.git.personal;
+            ".ssh/identitiesS/fri.pub".text = sshI.git.fri;
+          };
+
+          activation.sshIdentities = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            echo "Fixing ssh identities..."
+
+            chmod -R 0777 ~/.ssh/identities || true
+            rm -rf ~/.ssh/identities
+            cp -f -R -L -T ~/.ssh/identitiesS ~/.ssh/identities
+            chown -R ${config.home.username} ~/.ssh/identities
+            chmod 0500 ~/.ssh/identities
+            chmod -R 0400 ~/.ssh/identities/*
+
+            echo "Fixed ssh identities..."
+          '';
+        };
+
+        programs.ssh = {
+          enable = true;
+          enableDefaultConfig = false;
+          matchBlocks = {
+            "local" = {
+              hostname = "localhost";
+              user = "root";
+              port = 22222;
+              #identityFile = "~/.ssh/identities/home_pc.pub";
+              #identitiesOnly = true;
+            };
+            "personal-workstation" = {
+              hostname = "personal-workstation";
+              user = "root";
+              port = 22222;
+              identityFile = "~/.ssh/identities/home_pc.pub";
+              identitiesOnly = true;
+            };
+            "personal-laptop" = {
+              hostname = "personal-laptop";
+              user = "root";
+              port = 22222;
+              identityFile = "~/.ssh/identities/home_pc.pub";
+              identitiesOnly = true;
+            };
+            "kiosk" = {
+              hostname = "kiosk";
+              user = "root";
+              port = 22222;
+              identityFile = "~/.ssh/identities/home_pc.pub";
+              identitiesOnly = true;
+            };
+            "company_01_server_01" = {
+              hostname = "company_01_server_01";
+              user = "automations";
+              identityFile = "~/.ssh/identities/company_01_server_01.pub";
+              identitiesOnly = true;
+            };
+            "personal_vps_01" = {
+              hostname = "personal_vps_01";
+              user = "root";
+              identityFile = "~/.ssh/identities/homelab_vms.pub";
+              identitiesOnly = true;
+            };
+            "vps-02" = {
+              hostname = "vps-02";
+              user = "root";
+              port = 22222;
+              identityFile = "~/.ssh/identitiesS/personal_vps.pub";
+              identitiesOnly = true;
+            };
+            "pve-01" = {
+              hostname = "pve-01";
+              user = "root";
+              identityFile = "~/.ssh/identities/homelab_servers.pub";
+              identitiesOnly = true;
+            };
+            "server-01" = {
+              hostname = "server-01";
+              user = "root";
+              port = 22222;
+              identityFile = "~/.ssh/identities/homelab_servers.pub";
+              identitiesOnly = true;
+            };
+            "server-03" = {
+              hostname = "server-03";
+              user = "root";
+              port = 22222;
+              identityFile = "~/.ssh/identities/homelab_servers.pub";
+              identitiesOnly = true;
+            };
+            "docker-swarm" = {
+              hostname = "docker-swarm";
+              user = "admin";
+              port = 22222;
+              identityFile = "~/.ssh/identities/homelab_vms.pub";
+              identitiesOnly = true;
+            };
+            "github_personal" = {
+              hostname = "github.com";
+              user = sshU.personal.email;
+              identityFile = "~/.ssh/identities/personal.pub";
+              identitiesOnly = true;
+            };
+            "github_fri" = {
+              hostname = "github.com";
+              user = sshU.fri.email;
+              identityFile = "~/.ssh/identities/fri.pub";
+              identitiesOnly = true;
+            };
+            "*" = {
+              forwardAgent = false;
+              addKeysToAgent = "no";
+              compression = false;
+              serverAliveInterval = 0;
+              serverAliveCountMax = 3;
+              hashKnownHosts = false;
+              userKnownHostsFile = "~/.ssh/known_hosts";
+              controlMaster = "no";
+              controlPath = "~/.ssh/master-%r@%n:%p";
+              controlPersist = "no";
+            };
+          };
+        };
+      };
+  };
+}
