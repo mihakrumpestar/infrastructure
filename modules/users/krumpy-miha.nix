@@ -1,9 +1,28 @@
-{ inputs, ... }:
+{ den, inputs, ... }:
 let
   data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
+  userData = import "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/data.nix";
 in
 {
   den.aspects.krumpy-miha = {
+    includes = [
+      den.aspects.hm-common
+      den.aspects.ssh
+      den.aspects.git
+      den.aspects.web-browser
+      den.aspects.storage
+      den.aspects.home-apps
+      den.aspects.ide
+      den.aspects.llm
+      den.aspects.password-manager
+      den.aspects.clipboard
+      den.aspects.autostart
+      den.aspects.scripts
+    ];
+
+    homeManager = _: {
+      my.ssh = userData.ssh;
+    };
     nixos =
       {
         config,

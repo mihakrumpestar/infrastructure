@@ -43,7 +43,6 @@ in
               masterIdentities = [
                 {
                   identity = "../infrastructure-secrets/secrets-plain/master-key.txt";
-                  #pubkey = "age1uxr2hufap0qxrmm9vccj5s08yx7dc8eq0tgwg735qrq5ndxfvqcqgahjwq"; # TODO: remove if possible
                 }
               ];
               storageMode = "derivation";
@@ -63,6 +62,7 @@ in
               age = {
                 inherit (config.age) identityPaths;
                 package = age-with-tpm;
+                inherit (config.age) rekey;
               };
             }
           ];

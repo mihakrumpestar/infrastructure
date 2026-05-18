@@ -12,19 +12,6 @@
       users.krumpy-miha = {
         classes = [ "homeManager" ];
         includes = [
-          den.aspects.krumpy-miha
-          den.aspects.hm-common
-          den.aspects.ssh
-          den.aspects.git
-          den.aspects.web-browser
-          den.aspects.storage
-          den.aspects.home-apps
-          den.aspects.ide
-          den.aspects.llm
-          den.aspects.password-manager
-          den.aspects.clipboard
-          den.aspects.autostart
-          den.aspects.scripts
           den.aspects.backup
           den.aspects.dead-mens-switch
         ];
@@ -33,24 +20,7 @@
 
     personal-laptop = {
       includes = [ den.aspects.personal-laptop ];
-      users.krumpy-miha = {
-        classes = [ "homeManager" ];
-        includes = [
-          den.aspects.krumpy-miha
-          den.aspects.hm-common
-          den.aspects.ssh
-          den.aspects.git
-          den.aspects.web-browser
-          den.aspects.storage
-          den.aspects.home-apps
-          den.aspects.ide
-          den.aspects.llm
-          den.aspects.password-manager
-          den.aspects.clipboard
-          den.aspects.autostart
-          den.aspects.scripts
-        ];
-      };
+      users.krumpy-miha.classes = [ "homeManager" ];
     };
 
     server-01 = {
@@ -70,15 +40,7 @@
 
     kiosk = {
       includes = [ den.aspects.kiosk ];
-      users.kiosk = {
-        classes = [ "homeManager" ];
-        includes = [
-          den.aspects.kiosk-user
-          den.aspects.hm-common
-          den.aspects.kiosk-browser
-          den.aspects.kiosk-brightness
-        ];
-      };
+      users.kiosk.classes = [ "homeManager" ];
     };
   };
 
@@ -97,7 +59,6 @@
       den.aspects.locale
       den.aspects.defaults
       den.aspects.style
-      den.aspects.hm-options
     ];
 
     nixos =
@@ -139,6 +100,7 @@
             inputs.zen-browser.homeModules.beta
             inputs.nix-index-database.homeModules.default
             inputs.agenix.homeManagerModules.default
+            inputs.agenix-rekey.homeManagerModules.default
             inputs.mutable-file.homeModules.default
             (
               { osConfig, ... }:

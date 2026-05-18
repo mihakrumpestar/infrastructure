@@ -69,13 +69,6 @@
     # Experimental
     tix.url = "github:JRMurr/tix";
 
-    # Secrets
-
-    infrastructure-secrets = {
-      url = "git+file:../infrastructure-secrets";
-      flake = false;
-    };
-
     # Local
 
     consul-cni.url = "./packages/consul-cni";
@@ -85,6 +78,13 @@
     virtualhere = {
       url = "./packages/virtualhere";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Secrets
+
+    infrastructure-secrets = {
+      url = "git+file:../infrastructure-secrets";
+      flake = false;
     };
   };
 

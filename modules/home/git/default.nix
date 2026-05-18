@@ -1,35 +1,40 @@
-{ inputs, ... }:
-let
-  data = import "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/data.nix";
-in
+{ ... }:
 {
   den.aspects.git = {
     homeManager =
-      { config, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
-        sshI = data.ssh.identities or { };
-        sshU = data.ssh.users or { };
+        cfg = config.my.ssh.git;
+        gitConfigDir = "${config.xdg.configHome}/git";
       in
       {
-        home.file = {
-          # allowed_signers format: email ssh-ed64 <public-key>
-          ".ssh/allowed_signers".text = ''
-            ${sshU.personal.email}
-            ${sshU.fri.email}
-          '';
-          ".git/personal".text = ''
-            [user]
-              name = ${sshU.personal.name}
-              email = ${sshU.personal.email}
-              signingkey = ${sshI.git.personal}
-          '';
-          ".git/fri".text = ''
-            [user]
-              name = ${sshU.fri.name}
-              email = ${sshU.fri.email}
-              signingkey = ${sshI.git.fri}
-          '';
-        };
+        xdg.configFile =
+          let
+            allowedSignersText = lib.concatStrings (
+              lib.mapAttrsToList (_: entry: "${entry.email} ${entry.signingKey}\n") cfg
+            );
+
+            identityConfigs = lib.mapAttrs' (
+              name: entry:
+              lib.nameValuePair "git/${name}" {
+                text = ''
+                  [user]
+                    name = ${entry.name}
+                    email = ${entry.email}
+                    signingkey = ${entry.signingKey}
+                '';
+              }
+            ) cfg;
+          in
+          identityConfigs
+          // {
+            "git/allowed_signers".text = allowedSignersText;
+          };
 
         programs.git = {
           enable = true;
@@ -60,8 +65,7 @@ in
             gpg = {
               format = "ssh";
               ssh = {
-                # Git SSH signature verification using allowed_signers
-                allowedSignersFile = config.home.file.".ssh/allowed_signers".target;
+                allowedSignersFile = "${gitConfigDir}/allowed_signers";
               };
             };
 
@@ -69,32 +73,6 @@ in
               defaultBranch = "main";
             };
 
-            # Git URL rewriting: automatically use SSH instead of HTTPS for matching repos
-            url =
-              let
-                inherit (data.git) personal fri company_01;
-              in
-              {
-                "ssh://git@github_personal/${personal}" = {
-                  insteadOf = "https://github.com/${personal}";
-                };
-                "git@github_personal:${personal}" = {
-                  insteadOf = "git@github.com:${personal}";
-                };
-                "ssh://git@github_fri/${fri}" = {
-                  insteadOf = "https://github.com/${fri}";
-                };
-                "git@github_fri:${fri}" = {
-                  insteadOf = "git@github.com:${fri}";
-                };
-                "ssh://git@github_personal/${company_01}" = {
-                  insteadOf = "https://github.com/${company_01}";
-                };
-                "git@github_personal:${company_01}" = {
-                  insteadOf = "git@github.com:${company_01}";
-                };
-              };
-            # ACP = Add, Commit, Push; prefix variants auto-prefix the commit message
             alias =
               let
                 mkAcpAlias =

@@ -215,27 +215,28 @@
         programs.starship = {
           enable = true;
           settings = {
+            # from https://github.com/ChrisTitusTech/mybash/blob/main/starship.toml with some modifications
+
             format = lib.concatStrings [
-              "[[](#3B4252)"
+              "[](#3B4252)"
               "$username"
               "$hostname"
               "$battery"
-              "[](bg:#434C5E fg:#3B4252)"
+              "[](bg:#434C5E fg:#3B4252)"
               "$directory"
-              "[](fg:#434C5E bg:#4C566A)"
+              "[](fg:#434C5E bg:#4C566A)"
               "$git_branch"
               "$git_status"
-              "[](fg:#4C566A bg:#86BBD8)"
+              "[](fg:#4C566A bg:#86BBD8)"
               "$golang"
-              "$java"
               "$nodejs"
               "$rust"
-              "[](fg:#86BBD8 bg:#06969A)"
+              "[](fg:#86BBD8 bg:#06969A)"
               "$nix_shell"
               "$docker_context"
-              "[](fg:#06969A bg:#33658A)"
+              "[](fg:#06969A bg:#33658A)"
               "$time"
-              "[ ](fg:#33658A)"
+              "[ ](fg:#33658A)"
               "\n"
               "$cmd_duration"
               "$character"
@@ -264,10 +265,10 @@
               truncation_length = 8;
               truncation_symbol = "…/";
               substitutions = {
-                "Documents" = " ";
-                "Downloads" = " ";
-                "Music" = " ";
-                "Pictures" = " ";
+                "Documents" = " ";
+                "Downloads" = " ";
+                "Music" = " ";
+                "Pictures" = " ";
               };
             };
 
@@ -278,27 +279,28 @@
               style = "bg:#4C566A";
               format = "[ $symbol $branch ]($style)";
             };
+
             git_status = {
               style = "bold bg:#4C566A";
               format = "[$all_status$ahead_behind ]($style)";
             };
 
-            # Programming languages
+            # Language
 
             golang = {
-              symbol = "";
+              symbol = "";
               style = "bg:#86BBD8 fg:black";
               format = "[ $symbol ($version) ]($style)";
             };
 
             nodejs = {
-              symbol = "";
+              symbol = "";
               style = "bg:#86BBD8 fg:black";
               format = "[ $symbol ($version) ]($style)";
             };
 
             rust = {
-              symbol = "";
+              symbol = "";
               style = "bg:#86BBD8 fg:black";
               format = "[ $symbol ($version) ]($style)";
             };
@@ -306,7 +308,7 @@
             # Shells
 
             docker_context = {
-              symbol = "";
+              symbol = "";
               style = "bg:#06969A";
               format = "[ $symbol $context $path]($style)";
             };

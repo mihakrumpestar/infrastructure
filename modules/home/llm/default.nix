@@ -94,6 +94,11 @@ in
           '';
       in
       {
+        age.secrets."llm_api_keys.env" = {
+          rekeyFile = "${secretsDir}/secrets/users/krumpy-miha/llm_api_keys.env.age";
+          path = "${config.home.homeDirectory}/.agenix/secrets/llm_api_keys.env";
+        };
+
         home.packages = with pkgs; [
           opencode
           opencode-desktop
@@ -150,10 +155,6 @@ in
         # For OpenCode statistics
         # uv tool install git+https://github.com/Shlomob/ocmonitor-share.git
 
-        age.secrets."llm_api_keys.env" = {
-          rekeyFile = "${secretsDir}/secrets/users/krumpy-miha/llm_api_keys.env.age";
-          path = "${config.home.homeDirectory}/.agenix/secrets/llm_api_keys.env";
-        };
       };
   };
 }

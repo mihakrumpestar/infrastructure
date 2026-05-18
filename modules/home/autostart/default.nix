@@ -9,9 +9,7 @@
         ...
       }:
       {
-        options.my = {
-          home.fullAutostart.enable = lib.mkEnableOption "Autostart apps";
-        };
+        options.my.home.fullAutostart.enable = lib.mkEnableOption "Autostart apps";
 
         config =
           let

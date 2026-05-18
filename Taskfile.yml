@@ -21,8 +21,9 @@ tasks:
       - nix flake update --flake 'path:{{.ROOT_DIR}}' {{.CLI_ARGS}}
 
   generations:
+    desc: List generations
     cmds:
-      - sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
+      - nixos-rebuild list-generations
 
   agenix-rekey:
     desc: Rekey secrets
@@ -31,6 +32,7 @@ tasks:
       - nix run .#agenix-rekey.x86_64-linux.rekey --option extra-sandbox-paths /tmp/agenix-rekey
 
   clean:
+    desc: Clean garbage older than 10d
     cmds:
       - sudo nix-collect-garbage --delete-older-than 10d
 

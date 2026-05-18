@@ -1,9 +1,14 @@
-{ inputs, ... }:
+{ den, inputs, ... }:
 let
   data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
 in
 {
   den.aspects.kiosk-user = {
+    includes = [
+      den.aspects.hm-common
+      den.aspects.kiosk-browser
+      den.aspects.kiosk-brightness
+    ];
     nixos =
       {
         pkgs,

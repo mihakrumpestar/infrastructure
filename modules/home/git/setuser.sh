@@ -9,10 +9,11 @@ if [ -z "$USER" ]; then
     exit 1
 fi
 
-CONFIG_FILE="$HOME/.git/$USER"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/git"
+CONFIG_FILE="$CONFIG_DIR/$USER"
 
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Configuration for $USER not found"
+    echo "Configuration for $USER not found at $CONFIG_FILE"
     exit 1
 fi
 
