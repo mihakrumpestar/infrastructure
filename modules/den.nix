@@ -9,13 +9,7 @@
   den.hosts.x86_64-linux = {
     personal-workstation = {
       includes = [ den.aspects.personal-workstation ];
-      users.krumpy-miha = {
-        classes = [ "homeManager" ];
-        includes = [
-          den.aspects.backup
-          den.aspects.dead-mens-switch
-        ];
-      };
+      users.krumpy-miha.classes = [ "homeManager" ];
     };
 
     personal-laptop = {
@@ -57,7 +51,6 @@
       den.aspects.secrets
       den.aspects.nix
       den.aspects.locale
-      den.aspects.defaults
       den.aspects.style
     ];
 
@@ -73,7 +66,6 @@
           inputs.nur.overlays.default
           inputs.nix-vscode-extensions.overlays.default
           (_: prev: {
-            zen-browser = inputs.zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
             consul-cni = inputs.consul-cni.packages.${prev.stdenv.hostPlatform.system}.default;
             tix = inputs.tix.packages.${prev.stdenv.hostPlatform.system}.default;
           })
@@ -97,7 +89,6 @@
           backupFileExtension = "backup";
           sharedModules = [
             inputs.plasma-manager.homeModules.plasma-manager
-            inputs.zen-browser.homeModules.beta
             inputs.nix-index-database.homeModules.default
             inputs.agenix.homeManagerModules.default
             inputs.agenix-rekey.homeManagerModules.default

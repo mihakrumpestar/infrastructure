@@ -5,6 +5,9 @@
       den.aspects.client
       den.aspects.containers
       den.aspects.virtualization
+
+      den.aspects.backup
+      den.aspects.dead-mens-switch
     ];
     nixos =
       { lib, pkgs, ... }:

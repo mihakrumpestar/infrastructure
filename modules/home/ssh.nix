@@ -5,6 +5,7 @@
       { config, lib, ... }:
       let
         cfg = config.my.ssh;
+        gitIdentities = config.my.git.identities;
         identitiesDir = ".ssh/identities";
       in
       {
@@ -28,20 +29,6 @@
             );
             default = { };
           };
-
-          git = lib.mkOption {
-            type = lib.types.attrsOf (
-              lib.types.submodule {
-                options = {
-                  name = lib.mkOption { type = lib.types.str; };
-                  email = lib.mkOption { type = lib.types.str; };
-                  url = lib.mkOption { type = lib.types.str; };
-                  signingKey = lib.mkOption { type = lib.types.str; };
-                };
-              }
-            );
-            default = { };
-          };
         };
 
         config = {
@@ -52,11 +39,11 @@
                 name: entry: lib.nameValuePair "${identitiesDir}/${name}.pub" { text = entry.identity; }
               ) cfg.hosts;
 
-              gitIdentities = lib.mapAttrs' (
+              gitPubKeys = lib.mapAttrs' (
                 name: entry: lib.nameValuePair "${identitiesDir}/git-${name}.pub" { text = entry.signingKey; }
-              ) cfg.git;
+              ) gitIdentities;
             in
-            hostIdentities // gitIdentities;
+            hostIdentities // gitPubKeys;
 
           # Ensure correct directory permissions for SSH
           home.activation.sshIdentities = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
@@ -87,7 +74,7 @@
                     identityFile = "~/${identitiesDir}/git-${name}.pub";
                     identitiesOnly = true;
                   }
-                ) cfg.git;
+                ) gitIdentities;
               in
               hostMatchBlocks
               // gitMatchBlocks

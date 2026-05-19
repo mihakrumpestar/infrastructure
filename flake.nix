@@ -46,14 +46,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    zen-browser = {
-      url = "github:0xc000022070/zen-browser-flake";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        home-manager.follows = "home-manager";
-      };
-    };
-
     lanzaboote = {
       url = "github:nix-community/lanzaboote"; # Using the master branch instead of recommended v1.0.0
       inputs.nixpkgs.follows = "nixpkgs";

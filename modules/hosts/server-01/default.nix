@@ -1,13 +1,4 @@
 { den, ... }:
-let
-  networkConfig = {
-    Gateway = [ "10.0.0.1" ];
-    DNS = [
-      "9.9.9.9"
-      "1.1.1.1"
-    ];
-  };
-in
 {
   den.aspects.server-01 = {
     includes = [
@@ -16,9 +7,6 @@ in
     ];
     nixos =
       { ... }:
-      let
-        nodeIPAddress = "10.0.30.10";
-      in
       {
         /*
           Hardware:
@@ -38,49 +26,26 @@ in
             encryptRoot = "tpm2";
           };
 
+          server.networking = {
+            nodeIPAddress = "10.0.30.10";
+            nics = [
+              {
+                name = "pcie0";
+                mac = "c0:a2:b6:a6:21:29";
+              }
+            ];
+            standaloneNics = [
+              {
+                name = "nic0";
+                mac = "2c:f0:5d:21:57:d7";
+                address = "10.0.30.15/16";
+              }
+            ];
+          };
+
           orchestrator = {
             publicDns = true;
-            inherit nodeIPAddress;
-          };
-        };
-
-        systemd.network = {
-          networks = {
-            # Bridge
-            "40-br0" = {
-              matchConfig.Name = "br0";
-              networkConfig = networkConfig // {
-                Address = [ "${nodeIPAddress}/16" ];
-              };
-              linkConfig.RequiredForOnline = "routable"; # carrier is not enough, as services require this ip
-            };
-
-            # Nics connected to bridge (main)
-            "30-pcie0" = {
-              matchConfig.Name = "pcie0";
-              networkConfig.Bridge = "br0";
-              linkConfig.RequiredForOnline = "enslaved";
-            };
-
-            # Build-in NIC
-            "40-nic0" = {
-              matchConfig.Name = "nic0";
-              networkConfig = networkConfig // {
-                Address = [ "10.0.30.15/16" ];
-              };
-              linkConfig.RequiredForOnline = false; # Only br0 is required
-            };
-          };
-
-          links = {
-            "20-pcie0" = {
-              matchConfig.PermanentMACAddress = "c0:a2:b6:a6:21:29";
-              linkConfig.Name = "pcie0";
-            };
-            "20-nic0" = {
-              matchConfig.PermanentMACAddress = "2c:f0:5d:21:57:d7";
-              linkConfig.Name = "nic0";
-            };
+            nodeIPAddress = "10.0.30.10";
           };
         };
 

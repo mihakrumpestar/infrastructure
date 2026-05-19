@@ -21,7 +21,8 @@ in
     ];
 
     homeManager = _: {
-      my.ssh = userData.ssh;
+      my.ssh.hosts = userData.ssh.hosts;
+      my.git.identities = userData.git.identities;
     };
     nixos =
       {

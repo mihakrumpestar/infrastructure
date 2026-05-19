@@ -559,11 +559,11 @@
     "infrastructure-secrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1779118716,
-        "narHash": "sha256-KigUOEJchaIZ1hAhXlqq8zMG7xRZfEM3/6+jZDr7FQw=",
+        "lastModified": 1779177290,
+        "narHash": "sha256-x/NTymV7L25WsMU9eTZSeYcf6PQZbc0akGYFRhtYPWY=",
         "ref": "refs/heads/main",
-        "rev": "6b52e4921303e5c3356ed3c07e48471669f63d84",
-        "revCount": 57,
+        "rev": "247496ed9bf4ab381b8d9c2e3aa8b40e71909129",
+        "revCount": 59,
         "type": "git",
         "url": "file:../infrastructure-secrets"
       },
@@ -893,8 +893,7 @@
         "plasma-manager": "plasma-manager",
         "stylix": "stylix",
         "tix": "tix",
-        "virtualhere": "virtualhere",
-        "zen-browser": "zen-browser"
+        "virtualhere": "virtualhere"
       }
     },
     "rust-overlay": {
@@ -1140,29 +1139,6 @@
         "type": "path"
       },
       "parent": []
-    },
-    "zen-browser": {
-      "inputs": {
-        "home-manager": [
-          "home-manager"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1778585655,
-        "narHash": "sha256-yfxy9aTlIgU2Z36H8cJURgYLgjT4qvFeOzoAC/HXcKM=",
-        "owner": "0xc000022070",
-        "repo": "zen-browser-flake",
-        "rev": "42f41abcef13dc81c85407b57aa1fd1bde46e46c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "0xc000022070",
-        "repo": "zen-browser-flake",
-        "type": "github"
-      }
     }
   },
   "root": "root",
