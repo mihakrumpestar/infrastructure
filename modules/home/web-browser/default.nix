@@ -3,7 +3,7 @@ let
   data = import "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/data.nix";
 in
 {
-  den.aspects.hm-web-browser = {
+  home.web-browser = {
     homeManager =
       {
         config,

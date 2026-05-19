@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.hm-common = {
+  home.common = {
     homeManager =
       { ... }:
       {

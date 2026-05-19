@@ -1,4 +1,4 @@
-{ den, ... }:
+{ den, home, ... }:
 {
   den.aspects.personal-workstation = {
     includes = [
@@ -6,8 +6,8 @@
       den.aspects.containers
       den.aspects.virtualization
 
-      den.aspects.hm-backup
-      den.aspects.hm-dead-mens-switch
+      home.backup
+      home.dead-mens-switch
     ];
     nixos =
       { lib, pkgs, ... }:

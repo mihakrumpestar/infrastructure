@@ -1,4 +1,4 @@
-{ den, inputs, ... }:
+{ home, inputs, ... }:
 let
   data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
   userData = import "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/data.nix";
@@ -6,18 +6,18 @@ in
 {
   den.aspects.krumpy-miha = {
     includes = [
-      den.aspects.hm-common
-      den.aspects.hm-ssh
-      den.aspects.hm-git
-      den.aspects.hm-web-browser
-      den.aspects.hm-storage
-      den.aspects.hm-home-apps
-      den.aspects.hm-ide
-      den.aspects.hm-llm
-      den.aspects.hm-password-manager
-      den.aspects.hm-clipboard
-      den.aspects.hm-autostart
-      den.aspects.hm-scripts
+      home.common
+      home.ssh
+      home.git
+      home.web-browser
+      home.storage
+      home.home-apps
+      home.ide
+      home.llm
+      home.password-manager
+      home.clipboard
+      home.autostart
+      home.scripts
     ];
 
     homeManager = _: {

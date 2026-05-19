@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.hm-ssh = {
+  home.ssh = {
     homeManager =
       { config, lib, ... }:
       let

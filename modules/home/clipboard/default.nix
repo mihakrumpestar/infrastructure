@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.hm-clipboard = {
+  home.clipboard = {
     homeManager =
       { pkgs, ... }:
       {

@@ -4,7 +4,7 @@ let
   data = import "${secretsDir}/secrets/users/kiosk/data.nix";
 in
 {
-  den.aspects.hm-kiosk-browser = {
+  home.kiosk-browser = {
     homeManager =
       {
         config,

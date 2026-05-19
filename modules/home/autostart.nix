@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.hm-autostart = {
+  home.autostart = {
     homeManager =
       {
         config,

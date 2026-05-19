@@ -4,7 +4,9 @@
   ...
 }:
 {
-  imports = [ inputs.den.flakeModule ];
+  imports = [
+    inputs.den.flakeModule
+  ];
 
   den.hosts.x86_64-linux = {
     personal-workstation = {

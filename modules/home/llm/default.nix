@@ -26,7 +26,7 @@ let
     // discoverSkills (mattpocockSkillsDir + "/skills/productivity");
 in
 {
-  den.aspects.hm-llm = {
+  home.llm = {
     homeManager =
       { config, pkgs, ... }:
       let
