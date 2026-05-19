@@ -38,11 +38,11 @@ tasks:
 
   generate:
     desc: |
-      Build all hosts, show closure sizes, and update dependency graph.
-      Use --runs N for averaging: task generate -- --runs 5
-      Use --workers N to limit parallelism: task generate -- --workers 2
+      Build all hosts, show closure sizes, eval benchmarks, and update dependency graph.
+      Use --runs N for eval statistics: task generate -- --runs 5
+      Use --hosts h1 h2 for specific hosts: task generate -- --hosts kiosk pi4
     cmds:
-      - python3 scripts/generate_stats.py --runs 5 --workers 1 {{.CLI_ARGS}}
+      - python3 scripts/flake_stats.py --runs 3 {{.CLI_ARGS}}
       - task: generate-flake-graph
 
   generate-flake-graph:

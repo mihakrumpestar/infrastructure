@@ -2,33 +2,39 @@
 
 This directory contains utility scripts for generating statistics and dependency graphs for the NixOS infrastructure repository.
 
-## generate_stats.py
+## flake_stats.py
 
-Generates comprehensive build statistics for all NixOS host configurations, including closure sizes, evaluation times, and package counts.
+Generates statistics for all NixOS host configurations: closure sizes, package counts,
+closure reuse matrix, and deterministic eval benchmarks (sequential and simultaneous).
+
+Uses `nix eval --option eval-cache false` for deterministic evaluation timing,
+ensuring cache-free measurements across all runs.
 
 ### Usage
 
 ```bash
-task generate                       # Single run, all hosts in parallel
-task generate -- --runs 5           # 5 runs for averaging timing statistics
-task generate -- --workers 2         # Limit to 2 parallel builds
-task generate -- --runs 5 --workers 3 # 5 runs with 3 workers
+task generate                       # 3 runs (default), all hosts
+task generate -- --runs 5           # 5 runs for statistics
+task generate -- --hosts kiosk pi4  # specific hosts only
 ```
 
-### Parallelism
+### Parameters
 
-By default, all hosts build in parallel (`--workers` defaults to number of hosts). This can cause
-CPU contention on multi-core systems during Nix evaluation. Use `--workers N` to limit parallelism:
-
-- `--workers 1`: Sequential (slowest total time, most accurate per-host timing)
-- `--workers N`: Build N hosts at a time (balance between speed and resource usage)
-- `--workers` not specified: Build all hosts at once (fastest total time, may slow per-host timing)
+- `--runs N` — Number of eval runs per host per mode (default: 3)
+- `--hosts h1 h2 ...` — Specific nixosConfigurations (default: all)
 
 ### Output
 
 - Updates `README.md` between `<!-- STATS_START -->` and `<!-- STATS_END -->` markers
-- Saves results to `generated/stats_TIMESTAMP/statistics.md`
-- Generates timing graphs (bar chart, box plot) when `--runs > 1`
+- Saves results to `generated/stats_TIMESTAMP/infrastructure-configurations-statistics.md`
+- Generates eval comparison graphs (bar chart, box plot) to `generated/stats_TIMESTAMP/`
+
+### How It Works
+
+1. **Build** all hosts once (parallel) to collect closure size, package counts, and reuse data
+2. **Sequential eval** — each host evaluated one at a time, N runs
+3. **Simultaneous eval** — all hosts evaluated in parallel, N runs
+4. Compare sequential vs simultaneous to measure concurrent evaluation overhead
 
 ### Metrics Explained
 
@@ -48,16 +54,19 @@ The closure size includes:
 - System components (kernel, systemd, init scripts)
 - Nix store metadata
 
-#### Evaluation Time
+#### Eval Performance
 
-Time to compute the Nix derivation (expression evaluation only, not building).
+Time to evaluate the Nix expression (not build), measured deterministically using:
 
-Measured from start to end of:
 ```bash
-nix build path:.#nixosConfigurations.<host>.config.system.build.toplevel --no-link --print-out-paths
+nix eval 'path:.#nixosConfigurations.<host>.config.system.build.toplevel.drvPath' --option eval-cache false
 ```
 
-When run with `--runs N`, collects statistics (mean, median, std dev, min, max) across multiple runs.
+Two modes are benchmarked:
+- **Sequential**: one host at a time (baseline, no interference)
+- **Simultaneous**: all hosts in parallel (shows concurrent evaluation overhead)
+
+Statistics (mean, median, std dev, min, max) are computed over N runs.
 
 #### System Pkgs (Package Count)
 
@@ -134,10 +143,6 @@ closure1 & closure2 / closure1 * 100
 ```
 
 Where `closure1` and `closure2` are sets of `/nix/store/*` paths from `nix path-info --recursive <toplevel>`.
-
-### Concurrency
-
-Hosts are built in parallel using `ThreadPoolExecutor` with max workers equal to the number of hosts. Error handling implements fail-fast behavior.
 
 ---
 

@@ -5,11 +5,19 @@ NixOS configuration repository for managing multiple hosts using flakes.
 ## Repository Structure
 
 ```sh
-├── hosts/                  # Per-host configurations
-├── nixosModules/           # NixOS modules (common/optional)
-├── homeManagerModules/     # Home Manager modules and user configs
-├── packages/               # Custom packages (flakes)
-├── home-modules/           # Custom home-manager modules (flakes)
+├── flake.nix               # Flake entry point
+├── modules/
+│   ├── den.nix             # Den framework: host declarations & aspect composition
+│   ├── hosts/              # Per-host configurations & hardware configs
+│   ├── users/              # User account definitions
+│   ├── system/
+│   │   ├── default/        # Baseline system aspects (core, disks, nix, networking, …)
+│   │   ├── optional/       # Optional system aspects (plasma, containers, nvidia, …)
+│   │   └── type/           # Host type aspects (client, server, vm-guest)
+│   └── home/               # Home-manager aspects (git, ide, browser, scripts, …)
+├── packages/               # Custom package flakes (consul-cni, virtualhere)
+├── home-modules/           # Custom home-manager module flakes (mutable-file)
+├── scripts/                # Utility scripts (generate_stats.py, flake_graph.py)
 └── docs/                   # Documentation
 ```
 
@@ -44,62 +52,70 @@ nix-shell -p stress s-tui --command "s-tui"
 
 ## NixOS Configuration Sizes
 
-Generated: 2026-05-19 18:48
-**Statistics computed over 2 build run(s)**
+nix (Nix) 2.34.7
 
-**Table 1:** NixOS system configuration sizes and evaluation times for each host.
+**Table 1:** NixOS system configuration sizes for each host.
 
 This table presents the closure size (total disk space required for all dependencies)
-and evaluation time (time to compute the Nix derivation) for each configured host
-in the infrastructure. Closure size is measured in GiB (gibibytes, 2³⁰ bytes)
-and represents the complete set of packages, libraries, and system components
-required for each configuration. System/Home Pkgs shows the count of packages
-in each profile (excluding -doc, -man, -info, -dev, -bin outputs).
+for each configured host in the infrastructure. Closure size is measured in GiB
+(gibibytes, 2³⁰ bytes) and represents the complete set of packages, libraries,
+and system components required for each configuration. System/Home Pkgs shows
+the count of packages in each profile (excluding -doc, -man, -info, -dev, -bin outputs).
 System/Home Refs shows the total recursive dependencies for each profile.
-Evaluation time measures the computational overhead of the Nix
-expression evaluator and is performed on cached derivations, representing the
-minimal overhead when no packages need rebuilding.
 
-|                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |       Eval Time |
-|---------------------:|---------------:|--------------:|------------:|--------------:|------------:|----------------:|
-|                kiosk |       9.78 GiB |          1422 |         461 |          2135 |         510 |  12.60s ± 0.05s |
-|      personal-laptop |      35.96 GiB |          6251 |        5541 |          8293 |        6886 |  19.41s ± 0.60s |
-|      personal-vps-02 |       3.25 GiB |           663 |           - |          1168 |           - |   5.58s ± 4.09s |
-| personal-workstation |      36.92 GiB |          6301 |        5541 |          8366 |        6887 | 12.14s ± 12.01s |
-|            server-01 |       5.02 GiB |           697 |           - |          1236 |           - |   6.67s ± 5.55s |
-|            server-03 |       5.03 GiB |           697 |           - |          1231 |           - |   6.58s ± 5.55s |
+|                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |
+|---------------------:|---------------:|--------------:|------------:|--------------:|------------:|
+|                kiosk |       9.78 GiB |          1422 |         461 |          2135 |         510 |
+|      personal-laptop |      35.96 GiB |          6251 |        5541 |          8293 |        6886 |
+|      personal-vps-02 |       3.25 GiB |           663 |           - |          1168 |           - |
+| personal-workstation |      36.92 GiB |          6301 |        5541 |          8366 |        6887 |
+|            server-01 |       5.02 GiB |           697 |           - |          1236 |           - |
+|            server-03 |       5.03 GiB |           697 |           - |          1231 |           - |
 
-## Timing Statistics
+## Eval Performance
 
-**Table 3:** Detailed timing statistics across multiple runs.
+**Statistics computed over 1 run(s)**
+
+### Sequential
+
+**Table 2:** Evaluation time per host with no concurrent evaluation.
+
+Each host is evaluated in isolation using `nix eval --option eval-cache false` to ensure deterministic, cache-free measurements.
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 12.603s |  12.603s |    0.050s | 12.568s | 12.639s |      2 |
-|      personal-laptop | 19.405s |  19.405s |    0.596s | 18.984s | 19.826s |      2 |
-|      personal-vps-02 |  5.575s |   5.575s |    4.089s |  2.684s |  8.466s |      2 |
-| personal-workstation | 12.140s |  12.140s |   12.007s |  3.650s | 20.631s |      2 |
-|            server-01 |  6.673s |   6.673s |    5.551s |  2.748s | 10.598s |      2 |
-|            server-03 |  6.583s |   6.583s |    5.548s |  2.660s | 10.506s |      2 |
+|                kiosk | 13.275s |  13.275s |    0.000s | 13.275s | 13.275s |      1 |
+|      personal-laptop | 20.005s |  20.005s |    0.000s | 20.005s | 20.005s |      1 |
+|      personal-vps-02 |  8.812s |   8.812s |    0.000s |  8.812s |  8.812s |      1 |
+| personal-workstation | 19.968s |  19.968s |    0.000s | 19.968s | 19.968s |      1 |
+|            server-01 | 10.649s |  10.649s |    0.000s | 10.649s | 10.649s |      1 |
+|            server-03 | 10.422s |  10.422s |    0.000s | 10.422s | 10.422s |      1 |
 
-### Visualizations
+### Simultaneous
 
-- ![Bar Chart](generated/stats_20260519_184819/infrastructure-configurations_timing_barchart.png)
-- ![Box Plot](generated/stats_20260519_184819/infrastructure-configurations_timing_boxplot.png)
+**Table 3:** Evaluation time per host with all hosts evaluated concurrently.
+
+All hosts are evaluated in parallel to measure the overhead of concurrent Nix evaluation (CPU contention, lock contention, etc.).
+
+|                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
+|---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
+|                kiosk | 25.716s |  25.716s |    0.000s | 25.716s | 25.716s |      1 |
+|      personal-laptop | 33.130s |  33.130s |    0.000s | 33.130s | 33.130s |      1 |
+|      personal-vps-02 | 20.242s |  20.242s |    0.000s | 20.242s | 20.242s |      1 |
+| personal-workstation | 33.095s |  33.095s |    0.000s | 33.095s | 33.095s |      1 |
+|            server-01 | 22.782s |  22.782s |    0.000s | 22.782s | 22.782s |      1 |
+|            server-03 | 22.404s |  22.404s |    0.000s | 22.404s | 22.404s |      1 |
 
 ## Closure Reuse Matrix
 
-**Table 2:** Binary-level dependency sharing between host configurations.
+**Table 4:** Binary-level dependency sharing between host configurations.
 
 This matrix quantifies the degree of dependency reuse across different NixOS host
 configurations. Each cell shows the percentage of packages (derivations) from the
 row host's closure that also appear in the column host's closure. A value of 100%
-would indicate complete subsumption (all packages from row host are present in column
-host). The diagonal shows dashes (-) as self-comparison is omitted. Higher percentages
-indicate greater infrastructure consolidation potential through shared package caches
-and common dependency management. This metric is particularly relevant for optimizing
-distributed builds, reducing network transfer overhead, and minimizing storage
-requirements in multi-host deployments.
+would indicate complete subsumption. The diagonal shows dashes (-) as self-comparison
+is omitted. Higher percentages indicate greater infrastructure consolidation potential
+through shared package caches and common dependency management.
 
 |                 Host |   kiosk |   personal-laptop |   personal-vps-02 |   personal-workstation |   server-01 |   server-03 |
 |---------------------:|--------:|------------------:|------------------:|-----------------------:|------------:|------------:|
@@ -108,8 +124,7 @@ requirements in multi-host deployments.
 |      personal-vps-02 |     86% |               86% |                 - |                    86% |         92% |         92% |
 | personal-workstation |     24% |               98% |               12% |                      - |         12% |         12% |
 |            server-01 |     85% |               86% |               87% |                    86% |           - |         95% |
-|            server-03 |     85% |               87% |               87% |                    87% |         95% |           - |
-<!-- STATS_END -->
+|            server-03 |     85% |               87% |               87% |                    87% |         95% |           - |<!-- STATS_END -->
 
 ## Dependency Graph
 
