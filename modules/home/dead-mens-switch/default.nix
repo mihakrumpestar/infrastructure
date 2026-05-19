@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.dead-mens-switch = {
+  den.aspects.hm-dead-mens-switch = {
     homeManager =
       {
         pkgs,

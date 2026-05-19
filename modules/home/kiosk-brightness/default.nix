@@ -3,7 +3,7 @@ let
   secretsDir = inputs.infrastructure-secrets;
 in
 {
-  den.aspects.kiosk-brightness = {
+  den.aspects.hm-kiosk-brightness = {
     homeManager =
       { config, pkgs, ... }:
       let

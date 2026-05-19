@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.scripts = {
+  den.aspects.hm-scripts = {
     homeManager =
       { pkgs, ... }:
       {

@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.git = {
+  den.aspects.hm-git = {
     homeManager =
       {
         config,

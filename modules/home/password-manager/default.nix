@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.password-manager = {
+  den.aspects.hm-password-manager = {
     homeManager =
       { pkgs, ... }:
       {

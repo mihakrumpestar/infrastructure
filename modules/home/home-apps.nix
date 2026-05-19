@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.home-apps = {
+  den.aspects.hm-home-apps = {
     homeManager =
       { pkgs, ... }:
       {

@@ -1,6 +1,6 @@
 { ... }:
 {
-  den.aspects.ide = {
+  den.aspects.hm-ide = {
     homeManager =
       { pkgs, ... }:
       let

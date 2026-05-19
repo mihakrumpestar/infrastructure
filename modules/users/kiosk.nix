@@ -6,8 +6,8 @@ in
   den.aspects.kiosk-user = {
     includes = [
       den.aspects.hm-common
-      den.aspects.kiosk-browser
-      den.aspects.kiosk-brightness
+      den.aspects.hm-kiosk-browser
+      den.aspects.hm-kiosk-brightness
     ];
     nixos =
       {

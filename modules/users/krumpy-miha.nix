@@ -7,17 +7,17 @@ in
   den.aspects.krumpy-miha = {
     includes = [
       den.aspects.hm-common
-      den.aspects.ssh
-      den.aspects.git
-      den.aspects.web-browser
-      den.aspects.storage
-      den.aspects.home-apps
-      den.aspects.ide
-      den.aspects.llm
-      den.aspects.password-manager
-      den.aspects.clipboard
-      den.aspects.autostart
-      den.aspects.scripts
+      den.aspects.hm-ssh
+      den.aspects.hm-git
+      den.aspects.hm-web-browser
+      den.aspects.hm-storage
+      den.aspects.hm-home-apps
+      den.aspects.hm-ide
+      den.aspects.hm-llm
+      den.aspects.hm-password-manager
+      den.aspects.hm-clipboard
+      den.aspects.hm-autostart
+      den.aspects.hm-scripts
     ];
 
     homeManager = _: {

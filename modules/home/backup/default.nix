@@ -3,7 +3,7 @@ let
   secretsDir = inputs.infrastructure-secrets;
 in
 {
-  den.aspects.backup = {
+  den.aspects.hm-backup = {
     homeManager =
       {
         config,
