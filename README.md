@@ -44,8 +44,8 @@ nix-shell -p stress s-tui --command "s-tui"
 
 ## NixOS Configuration Sizes
 
-Generated: 2026-04-07 20:19
-**Statistics computed over 5 build run(s)**
+Generated: 2026-05-19 18:48
+**Statistics computed over 2 build run(s)**
 
 **Table 1:** NixOS system configuration sizes and evaluation times for each host.
 
@@ -60,14 +60,14 @@ Evaluation time measures the computational overhead of the Nix
 expression evaluator and is performed on cached derivations, representing the
 minimal overhead when no packages need rebuilding.
 
-|                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |      Eval Time |
-|---------------------:|---------------:|--------------:|------------:|--------------:|------------:|---------------:|
-|                kiosk |      10.34 GiB |          1416 |         520 |          2161 |         579 | 17.03s ± 0.11s |
-|      personal-laptop |      33.67 GiB |          6169 |        5477 |          8190 |        6817 | 24.74s ± 0.09s |
-| personal-workstation |      34.62 GiB |          6221 |        5480 |          8272 |        6823 | 25.03s ± 0.27s |
-|            server-01 |       4.84 GiB |           663 |           - |          1180 |           - | 13.48s ± 0.06s |
-|            server-03 |       4.86 GiB |           663 |           - |          1177 |           - | 13.61s ± 0.07s |
-|               vps-02 |       3.58 GiB |           658 |           - |          1137 |           - | 11.76s ± 0.04s |
+|                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |       Eval Time |
+|---------------------:|---------------:|--------------:|------------:|--------------:|------------:|----------------:|
+|                kiosk |       9.78 GiB |          1422 |         461 |          2135 |         510 |  12.60s ± 0.05s |
+|      personal-laptop |      35.96 GiB |          6251 |        5541 |          8293 |        6886 |  19.41s ± 0.60s |
+|      personal-vps-02 |       3.25 GiB |           663 |           - |          1168 |           - |   5.58s ± 4.09s |
+| personal-workstation |      36.92 GiB |          6301 |        5541 |          8366 |        6887 | 12.14s ± 12.01s |
+|            server-01 |       5.02 GiB |           697 |           - |          1236 |           - |   6.67s ± 5.55s |
+|            server-03 |       5.03 GiB |           697 |           - |          1231 |           - |   6.58s ± 5.55s |
 
 ## Timing Statistics
 
@@ -75,17 +75,17 @@ minimal overhead when no packages need rebuilding.
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 17.032s |  17.075s |    0.109s | 16.865s | 17.137s |      5 |
-|      personal-laptop | 24.741s |  24.760s |    0.093s | 24.593s | 24.846s |      5 |
-| personal-workstation | 25.026s |  24.979s |    0.274s | 24.813s | 25.494s |      5 |
-|            server-01 | 13.485s |  13.502s |    0.059s | 13.389s | 13.545s |      5 |
-|            server-03 | 13.611s |  13.622s |    0.067s | 13.499s | 13.673s |      5 |
-|               vps-02 | 11.756s |  11.746s |    0.041s | 11.726s | 11.829s |      5 |
+|                kiosk | 12.603s |  12.603s |    0.050s | 12.568s | 12.639s |      2 |
+|      personal-laptop | 19.405s |  19.405s |    0.596s | 18.984s | 19.826s |      2 |
+|      personal-vps-02 |  5.575s |   5.575s |    4.089s |  2.684s |  8.466s |      2 |
+| personal-workstation | 12.140s |  12.140s |   12.007s |  3.650s | 20.631s |      2 |
+|            server-01 |  6.673s |   6.673s |    5.551s |  2.748s | 10.598s |      2 |
+|            server-03 |  6.583s |   6.583s |    5.548s |  2.660s | 10.506s |      2 |
 
 ### Visualizations
 
-- ![Bar Chart](generated/stats_20260407_201935/infrastructure-configurations_timing_barchart.png)
-- ![Box Plot](generated/stats_20260407_201935/infrastructure-configurations_timing_boxplot.png)
+- ![Bar Chart](generated/stats_20260519_184819/infrastructure-configurations_timing_barchart.png)
+- ![Box Plot](generated/stats_20260519_184819/infrastructure-configurations_timing_boxplot.png)
 
 ## Closure Reuse Matrix
 
@@ -101,14 +101,14 @@ and common dependency management. This metric is particularly relevant for optim
 distributed builds, reducing network transfer overhead, and minimizing storage
 requirements in multi-host deployments.
 
-|                 Host |   kiosk |   personal-laptop |   personal-workstation |   server-01 |   server-03 |   vps-02 |
-|---------------------:|--------:|------------------:|-----------------------:|------------:|------------:|---------:|
-|                kiosk |       - |               93% |                    93% |         46% |         47% |      45% |
-|      personal-laptop |     24% |                 - |                    99% |         12% |         12% |      12% |
-| personal-workstation |     24% |               98% |                      - |         12% |         12% |      12% |
-|            server-01 |     86% |               87% |                    87% |           - |         95% |      88% |
-|            server-03 |     86% |               87% |                    87% |         96% |           - |      88% |
-|               vps-02 |     87% |               88% |                    88% |         92% |         92% |        - |
+|                 Host |   kiosk |   personal-laptop |   personal-vps-02 |   personal-workstation |   server-01 |   server-03 |
+|---------------------:|--------:|------------------:|------------------:|-----------------------:|------------:|------------:|
+|                kiosk |       - |               94% |               47% |                    94% |         49% |         49% |
+|      personal-laptop |     24% |                 - |               12% |                    99% |         12% |         13% |
+|      personal-vps-02 |     86% |               86% |                 - |                    86% |         92% |         92% |
+| personal-workstation |     24% |               98% |               12% |                      - |         12% |         12% |
+|            server-01 |     85% |               86% |               87% |                    86% |           - |         95% |
+|            server-03 |     85% |               87% |               87% |                    87% |         95% |           - |
 <!-- STATS_END -->
 
 ## Dependency Graph
@@ -130,23 +130,28 @@ requirements in multi-host deployments.
   }
 }}%%
 
-flowchart TD
+flowchart LR
 
     %% Styles
-    classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:1px,color:#1565c0
-    classDef local fill:#fff8e1,stroke:#ef6c00,stroke-width:1px,color:#e65100
+    classDef input fill:#e0f7fa,stroke:#00838f,stroke-width:1px,color:#006064
+    classDef local fill:#efebe9,stroke:#6d4c41,stroke-width:1px,color:#4e342e
     classDef flake fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1.5px,color:#7b1fa2
     classDef hosts fill:#e8f5e9,stroke:#388e3c,stroke-width:1px,color:#2e7d32
     classDef users fill:#fce4ec,stroke:#c2185b,stroke-width:1px,color:#ad1457
-    classDef modules fill:#fff8e1,stroke:#f57c00,stroke-width:1px,color:#e65100
+    classDef aspect fill:#e3f2fd,stroke:#1565c0,stroke-width:1px,color:#1565c0
     classDef config fill:#fafafa,stroke:#757575,stroke-width:0.5px,color:#424242
 
     subgraph Inputs[Inputs]
         input_agenix["agenix"]:::input
+        input_agenix_rekey["agenix-rekey"]:::input
+        input_den["den"]:::input
         input_disko["disko"]:::input
         input_home_manager["home-manager"]:::input
         input_impermanence["impermanence"]:::input
+        input_import_tree["import-tree"]:::input
+        input_infrastructure_secrets["infrastructure-secrets"]:::input
         input_lanzaboote["lanzaboote"]:::input
+        input_mattpocock_skills["mattpocock-skills"]:::input
         input_nix_index_database["nix-index-database"]:::input
         input_nix_vscode_extensions["nix-vscode-extensions"]:::input
         input_nixpkgs["nixpkgs"]:::input
@@ -154,100 +159,139 @@ flowchart TD
         input_plasma_manager["plasma-manager"]:::input
         input_stylix["stylix"]:::input
         input_tix["tix"]:::input
-        input_zen_browser["zen-browser"]:::input
-        local_consul_cni["consul-cni"]:::local
-        local_mutable_file["mutable-file"]:::local
-        local_virtualhere["virtualhere"]:::local
+        local_consul_cni["packages/consul-cni"]:::local
+        local_mutable_file["home-modules/mutable-file"]:::local
+        local_virtualhere["packages/virtualhere"]:::local
     end
 
     subgraph Core[Core]
-        flake["flake.nix"]:::flake
+        flake["flake"]:::flake
+        den["den"]:::flake
+    end
+
+    subgraph SystemAspects[System Aspects]
+        sys_core["core"]:::aspect
+        sys_disks["disks"]:::aspect
+        sys_impermanence["impermanence"]:::aspect
+        sys_locale["locale"]:::aspect
+        sys_networking["networking"]:::aspect
+        sys_nix["nix"]:::aspect
+        sys_secrets["secrets"]:::aspect
+        sys_shell["shell"]:::aspect
+        sys_shell_fonts["shell/fonts"]:::aspect
+        sys_shell_packages["shell/packages"]:::aspect
+        sys_shell_starship["shell/starship"]:::aspect
+        sys_shell_zsh["shell/zsh"]:::aspect
+        sys_style["style"]:::aspect
+        opt_containers["containers"]:::aspect
+        opt_nvidia["nvidia"]:::aspect
+        opt_orchestrator_caddy["orchestrator/caddy"]:::aspect
+        opt_orchestrator_consul["orchestrator/consul"]:::aspect
+        opt_orchestrator_coredns["orchestrator/coredns"]:::aspect
+        opt_orchestrator_nomad["orchestrator/nomad"]:::aspect
+        opt_orchestrator["orchestrator"]:::aspect
+        opt_peripherals["peripherals"]:::aspect
+        opt_plasma["plasma"]:::aspect
+        opt_virtualization["virtualization"]:::aspect
+        type_client["client"]:::aspect
+        type_server["server"]:::aspect
+        type_vm_guest["vm-guest"]:::aspect
+    end
+
+    subgraph HomeAspects[Home Namespace Aspects]
+        home_autostart["autostart"]:::aspect
+        home_backup["backup"]:::aspect
+        home_clipboard["clipboard"]:::aspect
+        home_dead_mens_switch["dead-mens-switch"]:::aspect
+        home_common["common"]:::aspect
+        home_git["git"]:::aspect
+        home_home_apps["home-apps"]:::aspect
+        home_ide["ide"]:::aspect
+        home_kiosk_brightness["kiosk-brightness"]:::aspect
+        home_kiosk_browser["kiosk-browser"]:::aspect
+        home_llm["llm"]:::aspect
+        home_password_manager["password-manager"]:::aspect
+        home_scripts["scripts"]:::aspect
+        home_ssh["ssh"]:::aspect
+        home_storage["storage"]:::aspect
+        home_web_browser_policies["web-browser/policies"]:::aspect
+        home_web_browser["web-browser"]:::aspect
     end
 
     subgraph Hosts[Hosts]
-        hosts_node["hosts"]:::hosts
         host_kiosk["kiosk"]:::hosts
+        host_kiosk_hardware["hardware"]:::config
         host_personal_laptop["personal-laptop"]:::hosts
+        host_personal_laptop_hardware["hardware"]:::config
+        host_personal_vps_02["personal-vps-02"]:::hosts
+        host_personal_vps_02_hardware["hardware"]:::config
         host_personal_workstation["personal-workstation"]:::hosts
+        host_personal_workstation_hardware["hardware"]:::config
         host_server_01["server-01"]:::hosts
+        host_server_01_hardware["hardware"]:::config
         host_server_03["server-03"]:::hosts
-        host_vps_02["vps-02"]:::hosts
+        host_server_03_hardware["hardware"]:::config
     end
 
     subgraph Users[Users]
-        users_node["users"]:::users
+        user_admin["admin"]:::users
         user_kiosk["kiosk"]:::users
         user_krumpy_miha["krumpy-miha"]:::users
     end
 
-    subgraph Modules[Modules]
-        homeManagerModules__common__default_nix["common"]:::modules
-        homeManagerModules__default_nix["homeManagerModules"]:::modules
-        nixosModules__common__core__console_nix["console"]:::modules
-        nixosModules__common__core__default_nix["core"]:::modules
-        nixosModules__common__core__disks_nix["disks"]:::modules
-        nixosModules__common__core__impermanence_nix["impermanence"]:::modules
-        nixosModules__common__core__networking_nix["networking"]:::modules
-        nixosModules__common__core__nix_nix["nix"]:::modules
-        nixosModules__common__core__secrets_nix["secrets"]:::modules
-        nixosModules__common__core__shell__default_nix["shell"]:::modules
-        nixosModules__common__core__shell__starship_nix["starship"]:::modules
-        nixosModules__common__core__shell__zsh_nix["zsh"]:::modules
-        nixosModules__common__core__style_nix["style"]:::modules
-        nixosModules__common__default_nix["common"]:::modules
-        nixosModules__common__security__default_nix["security"]:::modules
-        nixosModules__common__virt__default_nix["virt"]:::modules
-        nixosModules__default_nix["nixosModules"]:::modules
-        nixosModules__optional__de__default_nix["de"]:::modules
-        nixosModules__optional__de__plasma__default_nix["plasma"]:::modules
-        nixosModules__optional__default_nix["optional"]:::modules
-        nixosModules__optional__miscellaneous__default_nix["miscellaneous"]:::modules
-        nixosModules__optional__nvidia__default_nix["nvidia"]:::modules
-        nixosModules__optional__orchestrator__default_nix["orchestrator"]:::modules
-        nixosModules__optional__store_secrets__default_nix["store-secrets"]:::modules
-    end
 
-    subgraph HostConfigs[Host Configs]
-        hosts__kiosk__configuration_nix["config"]:::config
-        hosts__kiosk__hardware_configuration_nix["hw"]:::config
-        hosts__personal_laptop__configuration_nix["config"]:::config
-        hosts__personal_laptop__hardware_configuration_nix["hw"]:::config
-        hosts__personal_workstation__configuration_nix["config"]:::config
-        hosts__personal_workstation__hardware_configuration_nix["hw"]:::config
-        hosts__server_01__configuration_nix["config"]:::config
-        hosts__server_01__hardware_configuration_nix["hw"]:::config
-        hosts__server_03__configuration_nix["config"]:::config
-        hosts__server_03__hardware_configuration_nix["hw"]:::config
-        hosts__vps_02__configuration_nix["config"]:::config
-        hosts__vps_02__hardware_configuration_nix["hw"]:::config
-    end
-
-    subgraph UserConfigs[User Configs]
-        homeManagerModules__users__kiosk__home__brightness__default_nix["brightness"]:::config
-        homeManagerModules__users__kiosk__home__browser__default_nix["browser"]:::config
-        homeManagerModules__users__kiosk__home__default_nix["home"]:::config
-        homeManagerModules__users__kiosk__system__default_nix["system"]:::config
-        homeManagerModules__users__krumpy_miha__home__autostart_nix["autostart"]:::config
-        homeManagerModules__users__krumpy_miha__home__backup__default_nix["backup"]:::config
-        homeManagerModules__users__krumpy_miha__home__clipboard__default_nix["clipboard"]:::config
-        homeManagerModules__users__krumpy_miha__home__dead_mens_switch__default_nix["dead-mens-switch"]:::config
-        homeManagerModules__users__krumpy_miha__home__default_nix["home"]:::config
-        homeManagerModules__users__krumpy_miha__home__git__default_nix["git"]:::config
-        homeManagerModules__users__krumpy_miha__home__home_nix["home"]:::config
-        homeManagerModules__users__krumpy_miha__home__ide__default_nix["ide"]:::config
-        homeManagerModules__users__krumpy_miha__home__password_manager__default_nix["password-manager"]:::config
-        homeManagerModules__users__krumpy_miha__home__scripts__default_nix["scripts"]:::config
-        homeManagerModules__users__krumpy_miha__home__ssh_nix["ssh"]:::config
-        homeManagerModules__users__krumpy_miha__home__storage_nix["storage"]:::config
-        homeManagerModules__users__krumpy_miha__home__web_browser__default_nix["web-browser"]:::config
-        homeManagerModules__users__krumpy_miha__system__default_nix["system"]:::config
-    end
-
+    den --> host_kiosk
+    den --> host_personal_laptop
+    den --> host_personal_vps_02
+    den --> host_personal_workstation
+    den --> host_server_01
+    den --> host_server_03
+    den --> sys_core
+    den --> sys_disks
+    den --> sys_impermanence
+    den --> sys_locale
+    den --> sys_networking
+    den --> sys_nix
+    den --> sys_secrets
+    den --> sys_shell
+    den --> sys_style
+    den --> user_admin
+    den --> user_kiosk
+    den --> user_krumpy_miha
+    flake --> den
+    home_kiosk_browser --> home_web_browser_policies
+    home_web_browser --> home_web_browser_policies
+    host_kiosk --> host_kiosk_hardware
+    host_kiosk --> type_client
+    host_personal_laptop --> host_personal_laptop_hardware
+    host_personal_laptop --> opt_containers
+    host_personal_laptop --> opt_virtualization
+    host_personal_laptop --> type_client
+    host_personal_vps_02 --> host_personal_vps_02_hardware
+    host_personal_vps_02 --> type_server
+    host_personal_vps_02 --> type_vm_guest
+    host_personal_workstation --> home_backup
+    host_personal_workstation --> home_dead_mens_switch
+    host_personal_workstation --> host_personal_workstation_hardware
+    host_personal_workstation --> opt_containers
+    host_personal_workstation --> opt_virtualization
+    host_personal_workstation --> type_client
+    host_server_01 --> host_server_01_hardware
+    host_server_01 --> opt_orchestrator
+    host_server_01 --> type_server
+    host_server_03 --> host_server_03_hardware
+    host_server_03 --> opt_orchestrator
+    host_server_03 --> type_server
     input_agenix --> flake
+    input_agenix_rekey --> flake
+    input_den --> flake
     input_disko --> flake
     input_home_manager --> flake
     input_impermanence --> flake
+    input_import_tree --> flake
+    input_infrastructure_secrets --> flake
     input_lanzaboote --> flake
+    input_mattpocock_skills --> flake
     input_nix_index_database --> flake
     input_nix_vscode_extensions --> flake
     input_nixpkgs --> flake
@@ -255,76 +299,37 @@ flowchart TD
     input_plasma_manager --> flake
     input_stylix --> flake
     input_tix --> flake
-    input_zen_browser --> flake
     local_consul_cni --> flake
     local_mutable_file --> flake
     local_virtualhere --> flake
-    flake --> hosts_node
-    flake --> users_node
-    flake --> nixosModules__default_nix
-    flake --> homeManagerModules__default_nix
-    hosts_node --> host_kiosk
-    hosts_node --> host_personal_laptop
-    hosts_node --> host_personal_workstation
-    hosts_node --> host_server_01
-    hosts_node --> host_server_03
-    hosts_node --> host_vps_02
-    users_node --> user_kiosk
-    users_node --> user_krumpy_miha
-    host_kiosk --> hosts__kiosk__configuration_nix
-    host_kiosk --> hosts__kiosk__hardware_configuration_nix
-    host_personal_laptop --> hosts__personal_laptop__configuration_nix
-    host_personal_laptop --> hosts__personal_laptop__hardware_configuration_nix
-    host_personal_workstation --> hosts__personal_workstation__configuration_nix
-    host_personal_workstation --> hosts__personal_workstation__hardware_configuration_nix
-    host_server_01 --> hosts__server_01__configuration_nix
-    host_server_01 --> hosts__server_01__hardware_configuration_nix
-    host_server_03 --> hosts__server_03__configuration_nix
-    host_server_03 --> hosts__server_03__hardware_configuration_nix
-    host_vps_02 --> hosts__vps_02__configuration_nix
-    host_vps_02 --> hosts__vps_02__hardware_configuration_nix
-    user_kiosk --> homeManagerModules__users__kiosk__system__default_nix
-    user_kiosk --> homeManagerModules__users__kiosk__home__default_nix
-    user_krumpy_miha --> homeManagerModules__users__krumpy_miha__system__default_nix
-    user_krumpy_miha --> homeManagerModules__users__krumpy_miha__home__default_nix
-
-    homeManagerModules__default_nix --> homeManagerModules__common__default_nix
-    homeManagerModules__default_nix --> nixosModules__optional__store_secrets__default_nix
-    nixosModules__common__core__default_nix --> nixosModules__common__core__console_nix
-    nixosModules__common__core__default_nix --> nixosModules__common__core__disks_nix
-    nixosModules__common__core__default_nix --> nixosModules__common__core__impermanence_nix
-    nixosModules__common__core__default_nix --> nixosModules__common__core__networking_nix
-    nixosModules__common__core__default_nix --> nixosModules__common__core__nix_nix
-    nixosModules__common__core__default_nix --> nixosModules__common__core__secrets_nix
-    nixosModules__common__core__default_nix --> nixosModules__common__core__shell__default_nix
-    nixosModules__common__core__default_nix --> nixosModules__common__core__style_nix
-    nixosModules__common__core__shell__default_nix --> nixosModules__common__core__shell__starship_nix
-    nixosModules__common__core__shell__default_nix --> nixosModules__common__core__shell__zsh_nix
-    nixosModules__common__default_nix --> nixosModules__common__core__default_nix
-    nixosModules__common__default_nix --> nixosModules__common__security__default_nix
-    nixosModules__common__default_nix --> nixosModules__common__virt__default_nix
-    nixosModules__default_nix --> nixosModules__common__default_nix
-    nixosModules__default_nix --> nixosModules__optional__default_nix
-    nixosModules__optional__de__default_nix --> nixosModules__optional__de__plasma__default_nix
-    nixosModules__optional__default_nix --> nixosModules__optional__de__default_nix
-    nixosModules__optional__default_nix --> nixosModules__optional__miscellaneous__default_nix
-    nixosModules__optional__default_nix --> nixosModules__optional__nvidia__default_nix
-    nixosModules__optional__default_nix --> nixosModules__optional__orchestrator__default_nix
-    nixosModules__optional__default_nix --> nixosModules__optional__store_secrets__default_nix
-    homeManagerModules__users__kiosk__home__default_nix --> homeManagerModules__users__kiosk__home__brightness__default_nix
-    homeManagerModules__users__kiosk__home__default_nix --> homeManagerModules__users__kiosk__home__browser__default_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__autostart_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__backup__default_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__clipboard__default_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__dead_mens_switch__default_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__git__default_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__home_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__ide__default_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__password_manager__default_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__scripts__default_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__ssh_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__storage_nix
-    homeManagerModules__users__krumpy_miha__home__default_nix --> homeManagerModules__users__krumpy_miha__home__web_browser__default_nix
+    opt_orchestrator --> opt_containers
+    opt_orchestrator --> opt_orchestrator_caddy
+    opt_orchestrator --> opt_orchestrator_consul
+    opt_orchestrator --> opt_orchestrator_coredns
+    opt_orchestrator --> opt_orchestrator_nomad
+    sys_shell --> sys_shell_fonts
+    sys_shell --> sys_shell_packages
+    sys_shell --> sys_shell_starship
+    sys_shell --> sys_shell_zsh
+    type_client --> opt_peripherals
+    type_client --> opt_plasma
+    type_server --> user_admin
+    type_vm_guest --> user_admin
+    user_kiosk --> home_common
+    user_kiosk --> home_kiosk_brightness
+    user_kiosk --> home_kiosk_browser
+    user_krumpy_miha --> home_autostart
+    user_krumpy_miha --> home_clipboard
+    user_krumpy_miha --> home_common
+    user_krumpy_miha --> home_git
+    user_krumpy_miha --> home_home_apps
+    user_krumpy_miha --> home_ide
+    user_krumpy_miha --> home_llm
+    user_krumpy_miha --> home_password_manager
+    user_krumpy_miha --> home_scripts
+    user_krumpy_miha --> home_ssh
+    user_krumpy_miha --> home_storage
+    user_krumpy_miha --> home_web_browser
 
 ```
 <!-- DEPS_END -->

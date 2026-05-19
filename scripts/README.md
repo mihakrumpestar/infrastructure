@@ -141,9 +141,9 @@ Hosts are built in parallel using `ThreadPoolExecutor` with max workers equal to
 
 ---
 
-## generate_deps.py
+## flake_graph.py
 
-Generates a Mermaid dependency graph showing import relationships between Nix files in the repository.
+Generates a Mermaid dependency graph showing aspect/include relationships between Nix files in the den-based flake structure.
 
 ### Usage
 
@@ -154,5 +154,5 @@ task generate-deps
 ### Output
 
 - Updates `README.md` between `<!-- DEPS_START -->` and `<!-- DEPS_END -->` markers
-- Saves Mermaid diagram to `generated/deps_TIMESTAMP/dependencies.mmd`
-- Exports PNG to `generated/deps_TIMESTAMP/dependencies.png`
+- Saves Mermaid diagram to `generated/flake-graph_TIMESTAMP/infrastructure-flake-graph.md`
+- Exports PNG to `generated/flake-graph_TIMESTAMP/infrastructure-flake-graph.png`

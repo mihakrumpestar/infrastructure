@@ -43,8 +43,8 @@ tasks:
       Use --workers N to limit parallelism: task generate -- --workers 2
     cmds:
       - python3 scripts/generate_stats.py --runs 5 --workers 1 {{.CLI_ARGS}}
-      - python3 scripts/generate_deps.py
+      - task: generate-flake-graph
 
-  generate-deps:
-    desc: Generate dependency graph of Nix files.
-    cmd: python3 scripts/generate_deps.py
+  generate-flake-graph:
+    desc: Generate flake graph
+    cmd: python3 scripts/flake_graph.py
