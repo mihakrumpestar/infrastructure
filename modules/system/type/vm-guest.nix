@@ -3,7 +3,7 @@
   den.aspects.vm-guest = {
     includes = [ den.aspects.admin ];
     nixos =
-      { config, ... }:
+      { ... }:
       {
         services = {
           qemuGuest.enable = true;
@@ -13,7 +13,7 @@
         # users.users.root.openssh.authorizedKeys.keys set in host, as they may be in homelab or as a VPS
 
         # VM guests use SSH host keys as age identity (TPM is not available)
-        age.identityPaths = config.services.openssh.hostKeys;
+        my.secrets.useTpm = false;
       };
   };
 }

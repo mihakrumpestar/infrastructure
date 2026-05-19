@@ -61,9 +61,9 @@ in
 
               # Explicitly advertise reachable addresses to other nodes
               advertise = {
-                http = "${cfg.nodeIPAddress}:4646";
-                rpc = "${cfg.nodeIPAddress}:4647";
-                serf = "${cfg.nodeIPAddress}:4648";
+                http = "${cfg.bindAddress}:4646";
+                rpc = "${cfg.bindAddress}:4647";
+                serf = "${cfg.bindAddress}:4648";
               };
 
               server = {
@@ -120,9 +120,9 @@ in
 
                 cni_path = "${pkgs.cni-plugins}/bin:${pkgs.consul-cni}/bin"; # This is by default hardcoded, so in NixOS it does not work, this is a workaround
                 cni_config_dir = "/etc/cni/config"; # Default is /opt/cni/config
-                servers = [ "${cfg.nodeIPAddress}:4647" ]; # For single node, only itself. For 3-node, list ALL server IPs
+                servers = [ "${cfg.bindAddress}:4647" ]; # For single node, only itself. For 3-node, list ALL server IPs
                 meta = {
-                  #NOMAD_CLIENT_IP = cfg.nodeIPAddress;
+                  #NOMAD_CLIENT_IP = cfg.bindAddress;
 
                   # https://developer.hashicorp.com/nomad/docs/job-specification/sidecar_task#log_level
                   "connect.log_level" = "warning"; # trace, debug, info, warning/warn, error, critical, off
@@ -266,10 +266,10 @@ in
           #services.iperf3 = {
           #  enable = true;
           #  openFirewall = true;
-          #  bind = cfg.nodeIPAddress;
+          #  bind = cfg.bindAddress;
           #};
 
-          virtualisation.docker.daemon.settings.dns = [ "${cfg.nodeIPAddress}" ];
+          virtualisation.docker.daemon.settings.dns = [ "${cfg.bindAddress}" ];
         };
       };
   };

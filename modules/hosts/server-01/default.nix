@@ -1,4 +1,8 @@
-{ den, ... }:
+{ den, inputs, ... }:
+let
+  data = import "${inputs.infrastructure-secrets}/secrets/data.nix";
+  host = data.hosts.server-01;
+in
 {
   den.aspects.server-01 = {
     includes = [
@@ -27,25 +31,18 @@
           };
 
           server.networking = {
-            nodeIPAddress = "10.0.30.10";
-            nics = [
-              {
-                name = "pcie0";
-                mac = "c0:a2:b6:a6:21:29";
-              }
-            ];
-            standaloneNics = [
-              {
-                name = "nic0";
-                mac = "2c:f0:5d:21:57:d7";
-                address = "10.0.30.15/16";
-              }
-            ];
+            bridges.br0 = {
+              inherit (host.nics.default) ip cidr;
+              members.pcie0.mac = host.nics.default.mac;
+            };
+            standaloneNics = {
+              inherit (host.nics) nic0;
+            };
           };
 
           orchestrator = {
             publicDns = true;
-            nodeIPAddress = "10.0.30.10";
+            bindAddress = host.nics.default.ip;
           };
         };
 

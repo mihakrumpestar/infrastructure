@@ -16,10 +16,63 @@ in
       in
       {
         options.my.server.networking = {
-          nodeIPAddress = lib.mkOption {
-            type = lib.types.strMatching "^([0-9]{1,3}\\.){3}[0-9]{1,3}$";
-            example = "10.0.0.5";
-            description = "IP address of the server on the bridge network";
+          bridges = lib.mkOption {
+            type = lib.types.attrsOf (
+              lib.types.submodule {
+                options = {
+                  ip = lib.mkOption {
+                    type = lib.types.strMatching "^([0-9]{1,3}\\.){3}[0-9]{1,3}$";
+                    example = "10.0.0.5";
+                    description = "IP address of the bridge interface";
+                  };
+                  cidr = lib.mkOption {
+                    type = lib.types.ints.between 1 128;
+                    default = 16;
+                    description = "CIDR prefix length for the bridge address";
+                  };
+                  members = lib.mkOption {
+                    type = lib.types.attrsOf (
+                      lib.types.submodule {
+                        options = {
+                          mac = lib.mkOption {
+                            type = lib.types.str;
+                            description = "Permanent MAC address for udev link matching";
+                          };
+                        };
+                      }
+                    );
+                    default = { };
+                    description = "Physical NICs that are members of this bridge, keyed by interface name";
+                  };
+                };
+              }
+            );
+            default = { };
+            description = "Bridge interfaces with their IP configuration and member NICs";
+          };
+
+          standaloneNics = lib.mkOption {
+            type = lib.types.attrsOf (
+              lib.types.submodule {
+                options = {
+                  ip = lib.mkOption {
+                    type = lib.types.strMatching "^([0-9]{1,3}\\.){3}[0-9]{1,3}$";
+                    description = "IP address of the interface";
+                  };
+                  cidr = lib.mkOption {
+                    type = lib.types.ints.between 1 128;
+                    default = 16;
+                    description = "CIDR prefix length for this interface";
+                  };
+                  mac = lib.mkOption {
+                    type = lib.types.str;
+                    description = "Permanent MAC address for udev link matching";
+                  };
+                };
+              }
+            );
+            default = { };
+            description = "NICs with their own IP address, not part of any bridge, keyed by interface name";
           };
 
           gateway = lib.mkOption {
@@ -36,48 +89,6 @@ in
             ];
             description = "DNS server addresses";
           };
-
-          nics = lib.mkOption {
-            type = lib.types.listOf (
-              lib.types.submodule {
-                options = {
-                  name = lib.mkOption {
-                    type = lib.types.str;
-                    description = "Predictable network interface name";
-                  };
-                  mac = lib.mkOption {
-                    type = lib.types.str;
-                    description = "Permanent MAC address for udev link matching";
-                  };
-                };
-              }
-            );
-            default = [ ];
-            description = "NICs that are members of the br0 bridge";
-          };
-
-          standaloneNics = lib.mkOption {
-            type = lib.types.listOf (
-              lib.types.submodule {
-                options = {
-                  name = lib.mkOption {
-                    type = lib.types.str;
-                    description = "Predictable network interface name";
-                  };
-                  mac = lib.mkOption {
-                    type = lib.types.str;
-                    description = "Permanent MAC address for udev link matching";
-                  };
-                  address = lib.mkOption {
-                    type = lib.types.str;
-                    description = "IP address with CIDR prefix (e.g. 10.0.30.15/16)";
-                  };
-                };
-              }
-            );
-            default = [ ];
-            description = "NICs with their own IP address, not part of the bridge";
-          };
         };
 
         config = {
@@ -92,67 +103,96 @@ in
           systemd.network = {
             enable = true;
 
-            netdevs = {
-              "20-br0" = {
+            netdevs = lib.mapAttrs' (
+              name: _:
+              lib.nameValuePair "20-${name}" {
                 netdevConfig = {
                   Kind = "bridge";
-                  Name = "br0";
+                  Name = name;
                 };
-              };
-            };
+              }
+            ) cfg.bridges;
 
-            networks = {
-              # Bridge
-              "40-br0" = {
-                matchConfig.Name = "br0";
-                networkConfig = networkConfig // {
-                  Address = [ "${cfg.nodeIPAddress}/16" ];
-                };
-                linkConfig.RequiredForOnline = "routable";
-              };
-            }
-            // lib.listToAttrs (
-              map (
-                nic:
-                lib.nameValuePair "30-${nic.name}" {
-                  matchConfig.Name = nic.name;
-                  networkConfig.Bridge = "br0";
-                  linkConfig.RequiredForOnline = "enslaved";
-                }
-              ) cfg.nics
-            )
-            // lib.listToAttrs (
-              map (
-                nic:
-                lib.nameValuePair "40-${nic.name}" {
-                  matchConfig.Name = nic.name;
+            networks =
+              # Bridge networks
+              lib.mapAttrs' (
+                name: brCfg:
+                lib.nameValuePair "40-${name}" {
+                  matchConfig.Name = name;
                   networkConfig = networkConfig // {
-                    Address = [ nic.address ];
+                    Address = [ "${brCfg.ip}/${toString brCfg.cidr}" ];
+                  };
+                  linkConfig.RequiredForOnline = "routable";
+                }
+              ) cfg.bridges
+              # Bridge member networks
+              //
+                lib.foldl'
+                  (
+                    acc:
+                    { bridge, member }:
+                    acc
+                    // {
+                      "30-${member}" = {
+                        matchConfig.Name = member;
+                        networkConfig.Bridge = bridge;
+                        linkConfig.RequiredForOnline = "enslaved";
+                      };
+                    }
+                  )
+                  { }
+                  (
+                    lib.concatLists (
+                      lib.mapAttrsToList (
+                        bridge: brCfg: lib.mapAttrsToList (member: _: { inherit bridge member; }) brCfg.members
+                      ) cfg.bridges
+                    )
+                  )
+              # Standalone NIC networks
+              // lib.mapAttrs' (
+                name: nicCfg:
+                lib.nameValuePair "40-${name}" {
+                  matchConfig.Name = name;
+                  networkConfig = networkConfig // {
+                    Address = [ "${nicCfg.ip}/${toString nicCfg.cidr}" ];
                   };
                   linkConfig.RequiredForOnline = false;
                 }
-              ) cfg.standaloneNics
-            );
+              ) cfg.standaloneNics;
 
             links =
-              lib.listToAttrs (
-                map (
-                  nic:
-                  lib.nameValuePair "20-${nic.name}" {
-                    matchConfig.PermanentMACAddress = nic.mac;
-                    linkConfig.Name = nic.name;
+              # Bridge member links
+              lib.foldl'
+                (
+                  acc: item:
+                  acc
+                  // {
+                    "20-${item.member}" = {
+                      matchConfig.PermanentMACAddress = item.mac;
+                      linkConfig.Name = item.member;
+                    };
                   }
-                ) cfg.nics
-              )
-              // lib.listToAttrs (
-                map (
-                  nic:
-                  lib.nameValuePair "20-${nic.name}" {
-                    matchConfig.PermanentMACAddress = nic.mac;
-                    linkConfig.Name = nic.name;
-                  }
-                ) cfg.standaloneNics
-              );
+                )
+                { }
+                (
+                  lib.concatLists (
+                    lib.mapAttrsToList (
+                      _: brCfg:
+                      lib.mapAttrsToList (member: memCfg: {
+                        inherit member;
+                        inherit (memCfg) mac;
+                      }) brCfg.members
+                    ) cfg.bridges
+                  )
+                )
+              # Standalone NIC links
+              // lib.mapAttrs' (
+                name: nicCfg:
+                lib.nameValuePair "20-${name}" {
+                  matchConfig.PermanentMACAddress = nicCfg.mac;
+                  linkConfig.Name = name;
+                }
+              ) cfg.standaloneNics;
           };
 
           networking.useDHCP = false;

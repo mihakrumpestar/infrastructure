@@ -20,8 +20,8 @@ in
 
             # Don't know why connections to Consul DNS appear as they are from Nomad interface, even tho we use CoreDNS
             extraInputRules = ''
-              iifname "nomad" ip daddr ${cfg.nodeIPAddress} tcp dport 8600 accept
-              iifname "nomad" ip daddr ${cfg.nodeIPAddress} udp dport 8600 accept
+              iifname "nomad" ip daddr ${cfg.bindAddress} tcp dport 8600 accept
+              iifname "nomad" ip daddr ${cfg.bindAddress} udp dport 8600 accept
             '';
           };
 
@@ -37,8 +37,8 @@ in
 
               bootstrap_expect = 1; # Will change to 3 for 3-node cluster
               bind_addr = "0.0.0.0"; # Internal
-              client_addr = "${cfg.nodeIPAddress} 127.0.0.1"; # Connectable IP
-              advertise_addr = cfg.nodeIPAddress;
+              client_addr = "${cfg.bindAddress} 127.0.0.1"; # Connectable IP
+              advertise_addr = cfg.bindAddress;
               ports = {
                 dns = 8600;
                 http = -1; # Otherwise it stays enabled

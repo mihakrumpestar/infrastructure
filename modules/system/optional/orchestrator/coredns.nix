@@ -20,7 +20,7 @@
             # The following config makes only DNS request from localhost reach Consul DNS, others go to Blocky
             config = ''
               .:53 {
-                bind ${cfg.nodeIPAddress}
+                bind ${cfg.bindAddress}
 
                 view nomad {
                     # Match queries originating from the nomad interface subnet (they connect from nomad IP range)
@@ -35,7 +35,7 @@
               }
 
               .:53 {
-                bind ${cfg.nodeIPAddress} 127.0.0.1
+                bind ${cfg.bindAddress} 127.0.0.1
 
                 forward . 127.0.0.1:5353 9.9.9.9 1.1.1.1 {
                   force_tcp # HAProxy can't do UDP
