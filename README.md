@@ -50,7 +50,7 @@ nix-shell -p stress s-tui --command "s-tui"
 
 <!-- STATS_START -->
 
-commit hash: d602a139f72324a20fb159d0c86475acd1c112cc
+commit hash: d18b9ee072a10035bbf34898d4f0cc869d3f7bde
 
 nix (Nix) 2.34.7
 
@@ -107,12 +107,12 @@ Each host is evaluated in isolation using `nix eval --option eval-cache false` t
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 12.022s |  12.022s |    0.000s | 12.022s | 12.022s |      1 |
-|      personal-laptop | 17.667s |  17.667s |    0.000s | 17.667s | 17.667s |      1 |
-|      personal-vps-02 |  7.936s |   7.936s |    0.000s |  7.936s |  7.936s |      1 |
-| personal-workstation | 17.604s |  17.604s |    0.000s | 17.604s | 17.604s |      1 |
-|            server-01 |  9.329s |   9.329s |    0.000s |  9.329s |  9.329s |      1 |
-|            server-03 |  9.423s |   9.423s |    0.000s |  9.423s |  9.423s |      1 |
+|                kiosk | 11.524s |  11.524s |    0.000s | 11.524s | 11.524s |      1 |
+|      personal-laptop | 17.050s |  17.050s |    0.000s | 17.050s | 17.050s |      1 |
+|      personal-vps-02 |  7.777s |   7.777s |    0.000s |  7.777s |  7.777s |      1 |
+| personal-workstation | 17.170s |  17.170s |    0.000s | 17.170s | 17.170s |      1 |
+|            server-01 |  9.094s |   9.094s |    0.000s |  9.094s |  9.094s |      1 |
+|            server-03 |  9.110s |   9.110s |    0.000s |  9.110s |  9.110s |      1 |
 
 ### Simultaneous
 
@@ -122,12 +122,12 @@ All hosts are evaluated in parallel to measure the overhead of concurrent Nix ev
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 22.479s |  22.479s |    0.000s | 22.479s | 22.479s |      1 |
-|      personal-laptop | 29.344s |  29.344s |    0.000s | 29.344s | 29.344s |      1 |
-|      personal-vps-02 | 17.450s |  17.450s |    0.000s | 17.450s | 17.450s |      1 |
-| personal-workstation | 29.180s |  29.180s |    0.000s | 29.180s | 29.180s |      1 |
-|            server-01 | 19.631s |  19.631s |    0.000s | 19.631s | 19.631s |      1 |
-|            server-03 | 19.655s |  19.655s |    0.000s | 19.655s | 19.655s |      1 |
+|                kiosk | 21.887s |  21.887s |    0.000s | 21.887s | 21.887s |      1 |
+|      personal-laptop | 28.352s |  28.352s |    0.000s | 28.352s | 28.352s |      1 |
+|      personal-vps-02 | 17.149s |  17.149s |    0.000s | 17.149s | 17.149s |      1 |
+| personal-workstation | 28.361s |  28.361s |    0.000s | 28.361s | 28.361s |      1 |
+|            server-01 | 19.190s |  19.190s |    0.000s | 19.190s | 19.190s |      1 |
+|            server-03 | 19.192s |  19.192s |    0.000s | 19.192s | 19.192s |      1 |
 
 ## Closure Reuse Matrix
 

@@ -585,7 +585,7 @@ def main():
 
     # 3. Generate graphs
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    subdir = f"generated/stats_{ts}"
+    subdir = f"generated/flake-stats_{ts}"
     out = Path(subdir)
     out.mkdir(parents=True, exist_ok=True)
     make_eval_chart(
