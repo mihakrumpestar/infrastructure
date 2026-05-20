@@ -50,9 +50,15 @@ nix-shell -p stress s-tui --command "s-tui"
 
 <!-- STATS_START -->
 
-commit hash: d18b9ee072a10035bbf34898d4f0cc869d3f7bde
+commit hash: daa648027cb5870250927a0ea1e8444172bdef02
 
 nix (Nix) 2.34.7
+
+CPU: AMD Ryzen 9 5900HX with Radeon Graphics
+
+Disk: Micron Technology Inc 3400 NVMe SSD [Hendrix] (SN: MTFDKBA512TFH-1BC1AABHA)
+
+Memory: 29 GiB
 
 
 ## Lines of Code
@@ -97,7 +103,7 @@ System/Home Refs shows the total recursive dependencies for each profile.
 
 ## Eval Performance
 
-**Statistics computed over 1 run(s)**
+**Statistics computed over 5 run(s)**
 
 ### Sequential
 
@@ -107,12 +113,12 @@ Each host is evaluated in isolation using `nix eval --option eval-cache false` t
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 11.524s |  11.524s |    0.000s | 11.524s | 11.524s |      1 |
-|      personal-laptop | 17.050s |  17.050s |    0.000s | 17.050s | 17.050s |      1 |
-|      personal-vps-02 |  7.777s |   7.777s |    0.000s |  7.777s |  7.777s |      1 |
-| personal-workstation | 17.170s |  17.170s |    0.000s | 17.170s | 17.170s |      1 |
-|            server-01 |  9.094s |   9.094s |    0.000s |  9.094s |  9.094s |      1 |
-|            server-03 |  9.110s |   9.110s |    0.000s |  9.110s |  9.110s |      1 |
+|                kiosk | 11.593s |  11.565s |    0.101s | 11.500s | 11.718s |      5 |
+|      personal-laptop | 17.298s |  17.259s |    0.183s | 17.068s | 17.549s |      5 |
+|      personal-vps-02 |  7.810s |   7.775s |    0.107s |  7.708s |  7.990s |      5 |
+| personal-workstation | 17.398s |  17.382s |    0.075s | 17.329s | 17.504s |      5 |
+|            server-01 |  9.223s |   9.199s |    0.063s |  9.161s |  9.325s |      5 |
+|            server-03 |  9.156s |   9.143s |    0.028s |  9.132s |  9.194s |      5 |
 
 ### Simultaneous
 
@@ -122,12 +128,12 @@ All hosts are evaluated in parallel to measure the overhead of concurrent Nix ev
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 21.887s |  21.887s |    0.000s | 21.887s | 21.887s |      1 |
-|      personal-laptop | 28.352s |  28.352s |    0.000s | 28.352s | 28.352s |      1 |
-|      personal-vps-02 | 17.149s |  17.149s |    0.000s | 17.149s | 17.149s |      1 |
-| personal-workstation | 28.361s |  28.361s |    0.000s | 28.361s | 28.361s |      1 |
-|            server-01 | 19.190s |  19.190s |    0.000s | 19.190s | 19.190s |      1 |
-|            server-03 | 19.192s |  19.192s |    0.000s | 19.192s | 19.192s |      1 |
+|                kiosk | 21.990s |  21.847s |    0.273s | 21.698s | 22.310s |      5 |
+|      personal-laptop | 28.720s |  28.659s |    0.454s | 28.037s | 29.193s |      5 |
+|      personal-vps-02 | 17.258s |  17.240s |    0.154s | 17.076s | 17.500s |      5 |
+| personal-workstation | 28.847s |  28.830s |    0.371s | 28.347s | 29.331s |      5 |
+|            server-01 | 19.186s |  19.226s |    0.209s | 18.953s | 19.401s |      5 |
+|            server-03 | 19.199s |  19.298s |    0.247s | 18.852s | 19.412s |      5 |
 
 ## Closure Reuse Matrix
 

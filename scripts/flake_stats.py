@@ -64,6 +64,63 @@ def get_git_hash() -> str:
     return r.stdout.strip() if r.returncode == 0 else "unknown"
 
 
+def get_cpu_model() -> str:
+    try:
+        for line in Path("/proc/cpuinfo").read_text().splitlines():
+            if line.startswith("model name"):
+                return line.split(":", 1)[1].strip()
+    except Exception:
+        pass
+    return "unknown"
+
+
+def get_disk_info() -> str:
+    model = "unknown"
+    serial = ""
+    try:
+        r = subprocess.run(["lspci"], capture_output=True, text=True)
+        if r.returncode == 0:
+            for line in r.stdout.splitlines():
+                if "Non-Volatile" in line or "NVMe" in line or "SSD" in line or "SATA" in line:
+                    model = line.split(": ", 1)[1].strip()
+                    break
+    except Exception:
+        pass
+    try:
+        r = subprocess.run(["lsblk", "-d", "-o", "MODEL", "-n"],
+                           capture_output=True, text=True)
+        if r.returncode == 0:
+            for line in r.stdout.strip().splitlines():
+                s = line.strip()
+                if s:
+                    serial = s
+                    break
+    except Exception:
+        pass
+    return f"{model} (SN: {serial})" if serial else model
+
+
+def get_memory() -> str:
+    try:
+        block_size_path = Path("/sys/devices/system/memory/block_size_bytes")
+        if block_size_path.exists():
+            block_bytes = int(block_size_path.read_text().strip(), 16)
+            blocks = sum(1 for d in Path("/sys/devices/system/memory").iterdir()
+                         if d.name.startswith("memory"))
+            gib = blocks * block_bytes / (1024 ** 3)
+            return f"{gib:.0f} GiB"
+    except Exception:
+        pass
+    try:
+        for line in Path("/proc/meminfo").read_text().splitlines():
+            if line.startswith("MemTotal"):
+                gib = int(line.split()[1]) / (1024 ** 2)
+                return f"{gib:.0f} GiB"
+    except Exception:
+        pass
+    return "unknown"
+
+
 def count_loc(path: Path) -> int:
     if not path.exists():
         return 0
@@ -295,6 +352,9 @@ def build_markdown(
     hosts: list[str],
     nix_version: str,
     git_hash: str,
+    cpu_model: str,
+    disk_info: str,
+    memory: str,
     runs: int,
 ) -> str:
     parts: list[str] = []
@@ -304,6 +364,12 @@ def build_markdown(
 commit hash: {git_hash}
 
 {nix_version}
+
+CPU: {cpu_model}
+
+Disk: {disk_info}
+
+Memory: {memory}
 """)
 
     # --- LOC table ---
@@ -546,6 +612,9 @@ def main():
 
     nix_version = run(["nix", "--version"]).stdout.strip() or "unknown"
     git_hash = get_git_hash()
+    cpu_model = get_cpu_model()
+    disk_info = get_disk_info()
+    memory = get_memory()
     print(f"Fetching hosts... ({nix_version} · {git_hash})", file=sys.stderr)
 
     all_hosts = sorted(
@@ -604,7 +673,7 @@ def main():
     )
 
     # 4. Markdown output
-    md = build_markdown(host_data, seq, sim, hosts, nix_version, git_hash, args.runs)
+    md = build_markdown(host_data, seq, sim, hosts, nix_version, git_hash, cpu_model, disk_info, memory, args.runs)
     print(md, end="")
 
     # 5. Save
