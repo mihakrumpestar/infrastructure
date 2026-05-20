@@ -50,13 +50,17 @@ nix-shell -p stress s-tui --command "s-tui"
 
 <!-- STATS_START -->
 
+commit hash: d602a139f72324a20fb159d0c86475acd1c112cc
+
+nix (Nix) 2.34.7
+
+
 ## Lines of Code
 
 **Table 1:** Non-blank lines across the flake's source tree.
 
 LOC excludes blank lines but includes comments. All file types are counted
-(`.nix`, `.json`, `.jsonc`, `.sh`, `.ini`, `.css`, etc.) except Markdown (`.md`).
-`flake.nix` is counted separately as the flake entry point.
+(`.nix`, `.json`, `.jsonc`, `.sh`, `.ini`, etc.) except Markdown (`.md`).
 
 | Component        |   Lines |
 |:-----------------|--------:|
@@ -72,8 +76,6 @@ LOC excludes blank lines but includes comments. All file types are counted
 | **Total**        |    6032 |
 
 ## NixOS Configuration Sizes
-
-nix (Nix) 2.34.7 · aad8ad0
 
 **Table 2:** NixOS system configuration sizes for each host.
 
@@ -105,12 +107,12 @@ Each host is evaluated in isolation using `nix eval --option eval-cache false` t
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 12.805s |  12.805s |    0.000s | 12.805s | 12.805s |      1 |
-|      personal-laptop | 19.202s |  19.202s |    0.000s | 19.202s | 19.202s |      1 |
-|      personal-vps-02 |  8.770s |   8.770s |    0.000s |  8.770s |  8.770s |      1 |
-| personal-workstation | 19.483s |  19.483s |    0.000s | 19.483s | 19.483s |      1 |
-|            server-01 | 10.178s |  10.178s |    0.000s | 10.178s | 10.178s |      1 |
-|            server-03 | 10.322s |  10.322s |    0.000s | 10.322s | 10.322s |      1 |
+|                kiosk | 12.022s |  12.022s |    0.000s | 12.022s | 12.022s |      1 |
+|      personal-laptop | 17.667s |  17.667s |    0.000s | 17.667s | 17.667s |      1 |
+|      personal-vps-02 |  7.936s |   7.936s |    0.000s |  7.936s |  7.936s |      1 |
+| personal-workstation | 17.604s |  17.604s |    0.000s | 17.604s | 17.604s |      1 |
+|            server-01 |  9.329s |   9.329s |    0.000s |  9.329s |  9.329s |      1 |
+|            server-03 |  9.423s |   9.423s |    0.000s |  9.423s |  9.423s |      1 |
 
 ### Simultaneous
 
@@ -120,12 +122,12 @@ All hosts are evaluated in parallel to measure the overhead of concurrent Nix ev
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 24.987s |  24.987s |    0.000s | 24.987s | 24.987s |      1 |
-|      personal-laptop | 32.191s |  32.191s |    0.000s | 32.191s | 32.191s |      1 |
-|      personal-vps-02 | 19.681s |  19.681s |    0.000s | 19.681s | 19.681s |      1 |
-| personal-workstation | 32.475s |  32.475s |    0.000s | 32.475s | 32.475s |      1 |
-|            server-01 | 21.890s |  21.890s |    0.000s | 21.890s | 21.890s |      1 |
-|            server-03 | 21.842s |  21.842s |    0.000s | 21.842s | 21.842s |      1 |
+|                kiosk | 22.479s |  22.479s |    0.000s | 22.479s | 22.479s |      1 |
+|      personal-laptop | 29.344s |  29.344s |    0.000s | 29.344s | 29.344s |      1 |
+|      personal-vps-02 | 17.450s |  17.450s |    0.000s | 17.450s | 17.450s |      1 |
+| personal-workstation | 29.180s |  29.180s |    0.000s | 29.180s | 29.180s |      1 |
+|            server-01 | 19.631s |  19.631s |    0.000s | 19.631s | 19.631s |      1 |
+|            server-03 | 19.655s |  19.655s |    0.000s | 19.655s | 19.655s |      1 |
 
 ## Closure Reuse Matrix
 
@@ -374,10 +376,13 @@ flowchart LR
 
 - https://github.com/yorukot/superfile
 - https://github.com/amadejkastelic/nixos-config/tree/main/hosts/server
-- https://nixos-and-flakes.thiscute.world/nixos-with-flakes/modularize-the-configuration
 - https://docs.nixbuild.net/remote-builds/
 
 ## References
+
+Sources:
+
+- https://nixos-and-flakes.thiscute.world
 
 Configs:
 

@@ -60,7 +60,7 @@ def nix_eval(attr: str, apply: str | None = None, raw: bool = False) -> str:
 
 
 def get_git_hash() -> str:
-    r = run(["git", "rev-parse", "--short", "HEAD"])
+    r = run(["git", "rev-parse", "HEAD"])
     return r.stdout.strip() if r.returncode == 0 else "unknown"
 
 
@@ -299,6 +299,13 @@ def build_markdown(
 ) -> str:
     parts: list[str] = []
 
+    # Common header
+    parts.append(f"""
+commit hash: {git_hash}
+
+{nix_version}
+""")
+
     # --- LOC table ---
     loc_header, loc_rows = build_loc_table()
     parts.append(loc_header)
@@ -313,11 +320,8 @@ def build_markdown(
     )
 
     # --- Size table ---
-    version_line = f"{nix_version} · {git_hash}"
-    parts.append(f"""
+    parts.append("""
 ## NixOS Configuration Sizes
-
-{version_line}
 
 **Table 2:** NixOS system configuration sizes for each host.
 
