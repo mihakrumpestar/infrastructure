@@ -392,6 +392,9 @@ Sources:
 
 Configs:
 
+- https://github.com/mightyiam/infra: dendritic pattern
+- https://github.com/vic/vix: dendritic pattern
+- https://github.com/GaetanLepage/nix-config
 - https://github.com/raexera/yuki
 - https://github.com/wiedzmin/nixos-config
 - https://github.com/Zaechus/nixos-config
