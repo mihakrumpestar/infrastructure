@@ -40,6 +40,12 @@ VERSION_RE = re.compile(r"-\d+\.\d+")
 ISDIR_CACHE: dict[str, bool] = {}
 EVAL_NO_CACHE = ["--option", "eval-cache", "false"]
 
+LOC_DIRS = {
+    "modules": ["den.nix", "hosts", "system", "home", "users"],
+    "packages": None,
+    "lib": None,
+}
+
 
 def run(cmd: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, capture_output=True, text=True, cwd=cwd or REPO_ROOT)
@@ -51,6 +57,56 @@ def nix_eval(attr: str, apply: str | None = None, raw: bool = False) -> str:
         cmd += ["--apply", apply]
     r = run(cmd)
     return r.stdout.strip() if r.returncode == 0 else ""
+
+
+def get_git_hash() -> str:
+    r = run(["git", "rev-parse", "--short", "HEAD"])
+    return r.stdout.strip() if r.returncode == 0 else "unknown"
+
+
+def count_loc(path: Path) -> int:
+    if not path.exists():
+        return 0
+    if path.is_file():
+        return sum(1 for line in path.read_text().splitlines() if line.strip())
+    return sum(
+        count_loc(f)
+        for f in sorted(path.iterdir())
+        if (f.is_file() and f.suffix != ".md") or f.is_dir()
+    )
+
+
+def build_loc_table() -> tuple[str, list[list[str | int]]]:
+    header = f"""
+## Lines of Code
+
+**Table 1:** Non-blank lines across the flake's source tree.
+
+LOC excludes blank lines but includes comments. All file types are counted
+(`.nix`, `.json`, `.jsonc`, `.sh`, `.ini`, etc.) except Markdown (`.md`).
+"""
+    rows: list[list[str | int]] = []
+    grand_total = count_loc(REPO_ROOT / "flake.nix")
+    rows.append(["flake.nix", grand_total])
+
+    for top_dir, subdirs in LOC_DIRS.items():
+        top_path = REPO_ROOT / top_dir
+        if subdirs is None:
+            total = count_loc(top_path)
+            rows.append([f"{top_dir} (total)", total])
+            grand_total += total
+        else:
+            dir_total = 0
+            for sub in subdirs:
+                sub_path = top_path / sub
+                n = count_loc(sub_path)
+                rows.append([f"{top_dir}/{sub}", n])
+                dir_total += n
+            rows.append([f"{top_dir} (total)", dir_total])
+            grand_total += dir_total
+
+    rows.append(["**Total**", grand_total])
+    return header, rows
 
 
 # --- Data types ---
@@ -118,7 +174,9 @@ def count_pkgs_and_refs(paths: list[str]) -> tuple[int, int]:
 
 def requisites(drv: str) -> list[str]:
     r = run(["nix-store", "-q", "--requisites", drv])
-    return r.stdout.strip().split("\n") if r.returncode == 0 and r.stdout.strip() else []
+    return (
+        r.stdout.strip().split("\n") if r.returncode == 0 and r.stdout.strip() else []
+    )
 
 
 # --- Build & measure ---
@@ -147,7 +205,9 @@ def build_host(host: str) -> HostData:
 
         cr = run(["nix", "path-info", "--recursive", drv])
         if cr.returncode != 0:
-            return HostData(host=host, size_bytes=size_bytes, error="closure-paths failed")
+            return HostData(
+                host=host, size_bytes=size_bytes, error="closure-paths failed"
+            )
         closure_paths = set(cr.stdout.strip().split("\n"))
 
         sys_pkgs, sys_refs = count_pkgs_and_refs(requisites(drv))
@@ -234,17 +294,32 @@ def build_markdown(
     sim: dict[str, TimingStats],
     hosts: list[str],
     nix_version: str,
+    git_hash: str,
     runs: int,
 ) -> str:
     parts: list[str] = []
 
+    # --- LOC table ---
+    loc_header, loc_rows = build_loc_table()
+    parts.append(loc_header)
+    parts.append(
+        tabulate(
+            loc_rows,
+            headers=["Component", "Lines"],
+            tablefmt="pipe",
+            stralign="left",
+            numalign="right",
+        )
+    )
+
     # --- Size table ---
+    version_line = f"{nix_version} · {git_hash}"
     parts.append(f"""
 ## NixOS Configuration Sizes
 
-{nix_version}
+{version_line}
 
-**Table 1:** NixOS system configuration sizes for each host.
+**Table 2:** NixOS system configuration sizes for each host.
 
 This table presents the closure size (total disk space required for all dependencies)
 for each configured host in the infrastructure. Closure size is measured in GiB
@@ -259,11 +334,32 @@ System/Home Refs shows the total recursive dependencies for each profile.
         if d.error:
             rows.append([h, "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"])
         else:
-            rows.append([h, fmt_size(d.size_bytes), v_or_dash(d.system_pkgs),
-                         v_or_dash(d.home_pkgs), v_or_dash(d.system_refs), v_or_dash(d.home_refs)])
-    parts.append(tabulate(rows, headers=["Host", "Closure Size", "System Pkgs",
-                                          "Home Pkgs", "System Refs", "Home Refs"],
-                          tablefmt="pipe", stralign="right", numalign="right"))
+            rows.append(
+                [
+                    h,
+                    fmt_size(d.size_bytes),
+                    v_or_dash(d.system_pkgs),
+                    v_or_dash(d.home_pkgs),
+                    v_or_dash(d.system_refs),
+                    v_or_dash(d.home_refs),
+                ]
+            )
+    parts.append(
+        tabulate(
+            rows,
+            headers=[
+                "Host",
+                "Closure Size",
+                "System Pkgs",
+                "Home Pkgs",
+                "System Refs",
+                "Home Refs",
+            ],
+            tablefmt="pipe",
+            stralign="right",
+            numalign="right",
+        )
+    )
 
     # --- Eval performance ---
     parts.append(f"""
@@ -271,29 +367,54 @@ System/Home Refs shows the total recursive dependencies for each profile.
 
 **Statistics computed over {runs} run(s)**""")
 
-    for i, (mode, stats, label) in enumerate([
-        ("Sequential", seq, "Evaluation time per host with no concurrent evaluation.\n\nEach host is evaluated in isolation using `nix eval --option eval-cache false` to ensure deterministic, cache-free measurements."),
-        ("Simultaneous", sim, "Evaluation time per host with all hosts evaluated concurrently.\n\nAll hosts are evaluated in parallel to measure the overhead of concurrent Nix evaluation (CPU contention, lock contention, etc.)."),
-    ], start=2):
+    for i, (mode, stats, label) in enumerate(
+        [
+            (
+                "Sequential",
+                seq,
+                "Evaluation time per host with no concurrent evaluation.\n\nEach host is evaluated in isolation using `nix eval --option eval-cache false` to ensure deterministic, cache-free measurements.",
+            ),
+            (
+                "Simultaneous",
+                sim,
+                "Evaluation time per host with all hosts evaluated concurrently.\n\nAll hosts are evaluated in parallel to measure the overhead of concurrent Nix evaluation (CPU contention, lock contention, etc.).",
+            ),
+        ],
+        start=3,
+    ):
         parts.append(f"""
 ### {mode}
 
 **Table {i}:** {label}
 """)
         rows = [
-            [h, f"{stats[h].mean:.3f}s", f"{stats[h].median:.3f}s",
-             f"{stats[h].stdev:.3f}s", f"{stats[h].min:.3f}s",
-             f"{stats[h].max:.3f}s", len(stats[h].times)]
-            for h in hosts if stats[h].times
+            [
+                h,
+                f"{stats[h].mean:.3f}s",
+                f"{stats[h].median:.3f}s",
+                f"{stats[h].stdev:.3f}s",
+                f"{stats[h].min:.3f}s",
+                f"{stats[h].max:.3f}s",
+                len(stats[h].times),
+            ]
+            for h in hosts
+            if stats[h].times
         ]
-        parts.append(tabulate(rows, headers=["Host", "Mean", "Median", "Std Dev", "Min", "Max", "Runs"],
-                              tablefmt="pipe", stralign="right", numalign="right"))
+        parts.append(
+            tabulate(
+                rows,
+                headers=["Host", "Mean", "Median", "Std Dev", "Min", "Max", "Runs"],
+                tablefmt="pipe",
+                stralign="right",
+                numalign="right",
+            )
+        )
 
     # --- Reuse matrix ---
     parts.append("""
 ## Closure Reuse Matrix
 
-**Table 4:** Binary-level dependency sharing between host configurations.
+**Table 5:** Binary-level dependency sharing between host configurations.
 
 This matrix quantifies the degree of dependency reuse across different NixOS host
 configurations. Each cell shows the percentage of packages (derivations) from the
@@ -319,8 +440,15 @@ through shared package caches and common dependency management.
                 shared = len(d1.closure_paths & d2.closure_paths)
                 row.append(f"{int(shared * 100 / total) if total else 0}%")
         rows.append(row)
-    parts.append(tabulate(rows, headers=["Host"] + hosts,
-                          tablefmt="pipe", stralign="right", numalign="right"))
+    parts.append(
+        tabulate(
+            rows,
+            headers=["Host"] + hosts,
+            tablefmt="pipe",
+            stralign="right",
+            numalign="right",
+        )
+    )
 
     return "\n".join(parts)
 
@@ -328,16 +456,24 @@ through shared package caches and common dependency management.
 # --- Graph generation ---
 
 
-def make_eval_chart(stats: dict[str, TimingStats], hosts: list[str],
-                    title: str, color: str, path: Path):
+def make_eval_chart(
+    stats: dict[str, TimingStats], hosts: list[str], title: str, color: str, path: Path
+):
     means = [stats[h].mean for h in hosts]
     stdevs = [stats[h].stdev for h in hosts]
     x = np.arange(len(hosts))
 
     _, ax = plt.subplots(figsize=(max(10, len(hosts) * 0.8), 6))
-    bars = ax.bar(x, means, yerr=stdevs, capsize=4, color=color,
-                  edgecolor="black", linewidth=0.5,
-                  error_kw={"linewidth": 1.5, "capthick": 1.5})
+    bars = ax.bar(
+        x,
+        means,
+        yerr=stdevs,
+        capsize=4,
+        color=color,
+        edgecolor="black",
+        linewidth=0.5,
+        error_kw={"linewidth": 1.5, "capthick": 1.5},
+    )
 
     ax.set_xlabel("Host", fontsize=12, fontweight="bold")
     ax.set_ylabel("Evaluation Time (seconds)", fontsize=12, fontweight="bold")
@@ -349,10 +485,15 @@ def make_eval_chart(stats: dict[str, TimingStats], hosts: list[str],
     ax.set_ylim(0, max(m + s for m, s in zip(means, stdevs)) * 1.15 or 1)
 
     for i, (bar, mean) in enumerate(zip(bars, means)):
-        ax.annotate(f"{mean:.2f}s",
-                    xy=(bar.get_x() + bar.get_width() / 2, bar.get_height() + stdevs[i]),
-                    xytext=(0, 5), textcoords="offset points",
-                    ha="center", va="bottom", fontsize=9)
+        ax.annotate(
+            f"{mean:.2f}s",
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height() + stdevs[i]),
+            xytext=(0, 5),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+        )
 
     plt.tight_layout()
     plt.savefig(path, dpi=150, bbox_inches="tight")
@@ -388,15 +529,24 @@ def save_file(content: str, subdir: str, filename: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="NixOS Configuration Statistics Generator")
-    parser.add_argument("--runs", type=int, default=3, help="Eval runs per mode (default: 3)")
-    parser.add_argument("--hosts", nargs="+", default=None, help="Specific hosts (default: all)")
+    parser = argparse.ArgumentParser(
+        description="NixOS Configuration Statistics Generator"
+    )
+    parser.add_argument(
+        "--runs", type=int, default=3, help="Eval runs per mode (default: 3)"
+    )
+    parser.add_argument(
+        "--hosts", nargs="+", default=None, help="Specific hosts (default: all)"
+    )
     args = parser.parse_args()
 
     nix_version = run(["nix", "--version"]).stdout.strip() or "unknown"
-    print(f"Fetching hosts... ({nix_version})", file=sys.stderr)
+    git_hash = get_git_hash()
+    print(f"Fetching hosts... ({nix_version} · {git_hash})", file=sys.stderr)
 
-    all_hosts = sorted(json.loads(nix_eval("nixosConfigurations", apply="builtins.attrNames")))
+    all_hosts = sorted(
+        json.loads(nix_eval("nixosConfigurations", apply="builtins.attrNames"))
+    )
     hosts = args.hosts or all_hosts
     if args.hosts:
         invalid = set(args.hosts) - set(all_hosts)
@@ -434,13 +584,23 @@ def main():
     subdir = f"generated/stats_{ts}"
     out = Path(subdir)
     out.mkdir(parents=True, exist_ok=True)
-    make_eval_chart(seq, hosts, "NixOS Eval Time — Sequential\n(Mean ± Std Dev)",
-                    "#2196F3", out / "eval_sequential.png")
-    make_eval_chart(sim, hosts, "NixOS Eval Time — Simultaneous\n(Mean ± Std Dev)",
-                    "#4CAF50", out / "eval_simultaneous.png")
+    make_eval_chart(
+        seq,
+        hosts,
+        "NixOS Eval Time — Sequential\n(Mean ± Std Dev)",
+        "#2196F3",
+        out / "eval_sequential.png",
+    )
+    make_eval_chart(
+        sim,
+        hosts,
+        "NixOS Eval Time — Simultaneous\n(Mean ± Std Dev)",
+        "#4CAF50",
+        out / "eval_simultaneous.png",
+    )
 
     # 4. Markdown output
-    md = build_markdown(host_data, seq, sim, hosts, nix_version, args.runs)
+    md = build_markdown(host_data, seq, sim, hosts, nix_version, git_hash, args.runs)
     print(md, end="")
 
     # 5. Save

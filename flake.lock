@@ -616,11 +616,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "path": "./home-modules/mutable-file",
+        "path": "./lib/mutable-file",
         "type": "path"
       },
       "original": {
-        "path": "./home-modules/mutable-file",
+        "path": "./lib/mutable-file",
         "type": "path"
       },
       "parent": []

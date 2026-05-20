@@ -123,10 +123,10 @@ def node_id_and_label(path):
         stem = p[-1].replace(".nix", "")
         return (f"pkg_{_sid(p[1])}", p[1]) if stem == "flake" \
             else (f"pkg_{_sid(p[1])}_{_sid(stem)}", p[1])
-    if path.startswith("home-modules/"):
+    if path.startswith("lib/"):
         stem = p[-1].replace(".nix", "")
-        return (f"hmod_{_sid(p[1])}", p[1]) if stem == "flake" \
-            else (f"hmod_{_sid(p[1])}_{_sid(stem)}", p[1])
+        return (f"lib_{_sid(p[1])}", p[1]) if stem == "flake" \
+            else (f"lib_{_sid(p[1])}_{_sid(stem)}", p[1])
 
     name = p[-1].replace(".nix", "")
     if name == "default" and len(p) > 1: name = p[-2]
@@ -373,10 +373,10 @@ def generate_mermaid(deps, aspect_info, all_files):
 
     # Raw import edges
     for src_path in sorted(deps):
-        if src_path.startswith(("packages/", "home-modules/")) or src_path.endswith("namespace.nix"): continue
+        if src_path.startswith(("packages/", "lib/")) or src_path.endswith("namespace.nix"): continue
         src_id = node_id_and_label(src_path)[0]
         for tgt_path in sorted(deps[src_path]):
-            if tgt_path.startswith(("packages/", "home-modules/")) or tgt_path.endswith("namespace.nix"): continue
+            if tgt_path.startswith(("packages/", "lib/")) or tgt_path.endswith("namespace.nix"): continue
             if tgt_path in all_files: edges.add((src_id, node_id_and_label(tgt_path)[0]))
 
     L.append("")

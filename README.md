@@ -16,7 +16,7 @@ NixOS configuration repository for managing multiple hosts using flakes.
 │   │   └── type/           # Host type aspects (client, server, vm-guest)
 │   └── home/               # Home-manager aspects (git, ide, browser, scripts, …)
 ├── packages/               # Custom package flakes (consul-cni, virtualhere)
-├── home-modules/           # Custom home-manager module flakes (mutable-file)
+├── lib/                    # Standalone library/module flakes (mutable-file)
 ├── scripts/                # Utility scripts (generate_stats.py, flake_graph.py)
 └── docs/                   # Documentation
 ```
@@ -50,11 +50,32 @@ nix-shell -p stress s-tui --command "s-tui"
 
 <!-- STATS_START -->
 
+## Lines of Code
+
+**Table 1:** Non-blank lines across the flake's source tree.
+
+LOC excludes blank lines but includes comments. All file types are counted
+(`.nix`, `.json`, `.jsonc`, `.sh`, `.ini`, `.css`, etc.) except Markdown (`.md`).
+`flake.nix` is counted separately as the flake entry point.
+
+| Component        |   Lines |
+|:-----------------|--------:|
+| flake.nix        |      87 |
+| modules/den.nix  |      95 |
+| modules/hosts    |     421 |
+| modules/system   |    2336 |
+| modules/home     |    2521 |
+| modules/users    |     182 |
+| modules (total)  |    5555 |
+| packages (total) |     293 |
+| lib (total)      |      97 |
+| **Total**        |    6032 |
+
 ## NixOS Configuration Sizes
 
-nix (Nix) 2.34.7
+nix (Nix) 2.34.7 · aad8ad0
 
-**Table 1:** NixOS system configuration sizes for each host.
+**Table 2:** NixOS system configuration sizes for each host.
 
 This table presents the closure size (total disk space required for all dependencies)
 for each configured host in the infrastructure. Closure size is measured in GiB
@@ -78,37 +99,37 @@ System/Home Refs shows the total recursive dependencies for each profile.
 
 ### Sequential
 
-**Table 2:** Evaluation time per host with no concurrent evaluation.
+**Table 3:** Evaluation time per host with no concurrent evaluation.
 
 Each host is evaluated in isolation using `nix eval --option eval-cache false` to ensure deterministic, cache-free measurements.
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 13.275s |  13.275s |    0.000s | 13.275s | 13.275s |      1 |
-|      personal-laptop | 20.005s |  20.005s |    0.000s | 20.005s | 20.005s |      1 |
-|      personal-vps-02 |  8.812s |   8.812s |    0.000s |  8.812s |  8.812s |      1 |
-| personal-workstation | 19.968s |  19.968s |    0.000s | 19.968s | 19.968s |      1 |
-|            server-01 | 10.649s |  10.649s |    0.000s | 10.649s | 10.649s |      1 |
-|            server-03 | 10.422s |  10.422s |    0.000s | 10.422s | 10.422s |      1 |
+|                kiosk | 12.805s |  12.805s |    0.000s | 12.805s | 12.805s |      1 |
+|      personal-laptop | 19.202s |  19.202s |    0.000s | 19.202s | 19.202s |      1 |
+|      personal-vps-02 |  8.770s |   8.770s |    0.000s |  8.770s |  8.770s |      1 |
+| personal-workstation | 19.483s |  19.483s |    0.000s | 19.483s | 19.483s |      1 |
+|            server-01 | 10.178s |  10.178s |    0.000s | 10.178s | 10.178s |      1 |
+|            server-03 | 10.322s |  10.322s |    0.000s | 10.322s | 10.322s |      1 |
 
 ### Simultaneous
 
-**Table 3:** Evaluation time per host with all hosts evaluated concurrently.
+**Table 4:** Evaluation time per host with all hosts evaluated concurrently.
 
 All hosts are evaluated in parallel to measure the overhead of concurrent Nix evaluation (CPU contention, lock contention, etc.).
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 25.716s |  25.716s |    0.000s | 25.716s | 25.716s |      1 |
-|      personal-laptop | 33.130s |  33.130s |    0.000s | 33.130s | 33.130s |      1 |
-|      personal-vps-02 | 20.242s |  20.242s |    0.000s | 20.242s | 20.242s |      1 |
-| personal-workstation | 33.095s |  33.095s |    0.000s | 33.095s | 33.095s |      1 |
-|            server-01 | 22.782s |  22.782s |    0.000s | 22.782s | 22.782s |      1 |
-|            server-03 | 22.404s |  22.404s |    0.000s | 22.404s | 22.404s |      1 |
+|                kiosk | 24.987s |  24.987s |    0.000s | 24.987s | 24.987s |      1 |
+|      personal-laptop | 32.191s |  32.191s |    0.000s | 32.191s | 32.191s |      1 |
+|      personal-vps-02 | 19.681s |  19.681s |    0.000s | 19.681s | 19.681s |      1 |
+| personal-workstation | 32.475s |  32.475s |    0.000s | 32.475s | 32.475s |      1 |
+|            server-01 | 21.890s |  21.890s |    0.000s | 21.890s | 21.890s |      1 |
+|            server-03 | 21.842s |  21.842s |    0.000s | 21.842s | 21.842s |      1 |
 
 ## Closure Reuse Matrix
 
-**Table 4:** Binary-level dependency sharing between host configurations.
+**Table 5:** Binary-level dependency sharing between host configurations.
 
 This matrix quantifies the degree of dependency reuse across different NixOS host
 configurations. Each cell shows the percentage of packages (derivations) from the
@@ -175,7 +196,7 @@ flowchart LR
         input_stylix["stylix"]:::input
         input_tix["tix"]:::input
         local_consul_cni["packages/consul-cni"]:::local
-        local_mutable_file["home-modules/mutable-file"]:::local
+        local_mutable_file["lib/mutable-file"]:::local
         local_virtualhere["packages/virtualhere"]:::local
     end
 

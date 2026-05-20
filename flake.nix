@@ -65,7 +65,7 @@
 
     consul-cni.url = "./packages/consul-cni";
 
-    mutable-file.url = "./home-modules/mutable-file";
+    mutable-file.url = "./lib/mutable-file";
 
     virtualhere = {
       url = "./packages/virtualhere";
