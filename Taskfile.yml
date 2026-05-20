@@ -25,6 +25,12 @@ tasks:
     cmds:
       - nixos-rebuild list-generations
 
+  update-secrets:
+    desc: Update secrets
+    cmds:
+      - task update -- infrastructure-secrets
+      - task: agenix-rekey
+
   agenix-rekey:
     desc: Rekey secrets
     cmds:

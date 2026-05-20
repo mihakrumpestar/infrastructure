@@ -1,47 +1,51 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": false,
-
   // When looking to add a provider using the env, 
   // check the toml config in https://github.com/anomalyco/models.dev/tree/dev/providers for the specific env var used
-
   // Provider configuration
   // Docs: https://opencode.ai/config.json
   // Models reference: https://models.dev/api.json and use OpenRouter as provider (search for Kimi K2.5)
-  /*
   "provider": {
-    "byteplus": {
+    "CrofAI": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "byteplus",
+      "name": "CrofAI",
       "options": {
-        "baseURL": "https://ark.ap-southeast.bytepluses.com/api/coding/v3",
-        "apiKey": "{env:BYTEPLUS_API_KEY}",
+        "baseURL": "https://crof.ai/v1",
+        "apiKey": "{env:CROFAI_API_KEY}"
       },
       "models": {
-        "kimi-k2.5": {
-          "name": "Kimi K2.5",
-          "reasoning": true,
-          "tool_call": true,
-          "temperature": true,
-          "interleaved": true,
+        "mimo-v2.5-pro-precision": {
+          "name": "CrofAI: mimo-v2.5-pro (precision)",
+          "limit": {
+            "context": 1000000,
+            "output": 131072
+          }
+        },
+        "deepseek-v4-pro-precision": {
+          "name": "CrofAI: deepseek-v4-pro (precision)",
+          "limit": {
+            "context": 1000000,
+            "output": 131072
+          }
+        },
+        "kimi-k2.6-precision": {
+          "name": "CrofAI: kimi-k2.6 (precision)",
           "limit": {
             "context": 262144,
-            "output": 65000,
-          },
-          "modalities": {
-            "input": ["text", "image", "video"],
-            "output": ["text"],
-          },
-          "options": {
-            "temperature": 1.0,
-            "top_p": 0.95,
-          },
+            "output": 262144
+          }
         },
-      },
-    },
+        "glm-5.1-precision": {
+          "name": "CrofAI: glm-5.1-precision",
+          "limit": {
+            "context": 202752,
+            "output": 202752
+          }
+        },
+      }
+    }
   },
-  */
-
   // Use with: `use the <tool_name> tool`
   // Debug: opencode mcp list
   // Note: keep some disabled if not used as they add multiple 1000s tokens to context for the tool instructions
@@ -56,7 +60,11 @@
     },
     "godoc": {
       "type": "local",
-      "command": ["go", "run", "github.com/mrjoshuak/godoc-mcp@latest"],
+      "command": [
+        "go",
+        "run",
+        "github.com/mrjoshuak/godoc-mcp@latest"
+      ],
       "enabled": true,
       "environment": {
         "CGO_ENABLED": "0",
@@ -64,12 +72,15 @@
     },
     "nixos": {
       "type": "local",
-      "command": ["nix", "run", "github:utensils/mcp-nixos", "--"],
+      "command": [
+        "nix",
+        "run",
+        "github:utensils/mcp-nixos",
+        "--"
+      ],
       "enabled": true,
     },
-
     // Not needed most of the time and add a lot to context
-
     "exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa",
@@ -88,15 +99,23 @@
     },
     "chrome-devtools": {
       "type": "local",
-      "command": ["bunx", "chrome-devtools-mcp@latest", "--executable-path", "@chromium@"],
+      "command": [
+        "bunx",
+        "chrome-devtools-mcp@latest",
+        "--executable-path",
+        "@chromium@"
+      ],
       "enabled": false,
       "environment": {
         "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "true",
       }
     },
-    "pdf-reader": { 
+    "pdf-reader": {
       "type": "local",
-      "command": ["bunx", "@sylphx/pdf-reader-mcp"],
+      "command": [
+        "bunx",
+        "@sylphx/pdf-reader-mcp"
+      ],
       "enabled": false,
     },
     /*
@@ -112,7 +131,6 @@
     },
     */
   },
-
   "permission": {
     "external_directory": {
       "/tmp/**": "allow",
@@ -125,6 +143,7 @@
       "~/go/**": "deny"
     }
   },
-
-  "plugin": ["cc-safety-net"],
+  "plugin": [
+    "cc-safety-net"
+  ],
 }
