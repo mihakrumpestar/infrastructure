@@ -65,6 +65,9 @@
           # Javascript
           bun
           nodejs
+
+          # Markdown
+          mermaid-cli
         ];
 
         home.sessionVariables = {
@@ -104,6 +107,8 @@
                 tamasfe.even-better-toml
                 tumido.cron-explained
                 mathematic.vscode-pdf # VSCode does not have native PDF support for some reason
+                #allwin-antony.md-viewer
+                mermaidchart.vscode-mermaid-chart
 
                 # Latex
                 james-yu.latex-workshop
