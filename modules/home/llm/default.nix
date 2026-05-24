@@ -3,27 +3,30 @@ let
   secretsDir = inputs.infrastructure-secrets;
   mattpocockSkillsDir = inputs.mattpocock-skills;
 
-  # Discover skills from a directory: reads subdirectories that contain SKILL.md
-  # and generates an attrset suitable for xdg.configFile
-  discoverSkills =
-    dir:
+  # Recursively discover all files in a directory and map them to a config prefix
+  discoverFiles =
+    prefix: dir:
     let
-      entries = builtins.readDir dir;
-      isSkillDir = name: type: type == "directory" && builtins.pathExists (dir + "/${name}/SKILL.md");
-      skillNames = builtins.filter (name: isSkillDir name entries.${name}) (builtins.attrNames entries);
+      go =
+        path: rel:
+        let
+          entries = builtins.readDir path;
+          process =
+            name: type: acc:
+            if type == "regular" then
+              acc // { "${prefix}/${rel}${name}".source = path + "/${name}"; }
+            else if type == "directory" then
+              acc // go (path + "/${name}") "${rel}${name}/"
+            else
+              acc;
+        in
+        builtins.foldl' (acc: name: process name entries.${name} acc) { } (builtins.attrNames entries);
     in
-    builtins.listToAttrs (
-      map (name: {
-        name = "opencode/skills/${name}/SKILL.md";
-        value = {
-          source = dir + "/${name}/SKILL.md";
-        };
-      }) skillNames
-    );
+    go dir "";
 
   mattpocockSkillConfigs =
-    discoverSkills (mattpocockSkillsDir + "/skills/engineering")
-    // discoverSkills (mattpocockSkillsDir + "/skills/productivity");
+    discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/engineering")
+    // discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/productivity");
 in
 {
   home.llm = {
@@ -34,8 +37,8 @@ in
           chromium = "${pkgs.ungoogled-chromium}/bin/chromium";
         };
 
-        skillDir = ./skills;
-        localSkillConfigs = discoverSkills skillDir;
+        localSkillConfigs = discoverFiles "opencode/skills" ./skills;
+        localCommandConfigs = discoverFiles "opencode/commands" ./commands;
       in
       {
         age.secrets."llm_api_keys.env" = {
@@ -52,6 +55,7 @@ in
         xdg.configFile =
           mattpocockSkillConfigs
           // localSkillConfigs
+          // localCommandConfigs
           // {
             ".config/opencode/opencode.json".source = opencode-config;
             ".config/opencode/AGENTS.md".source = ./AGENTS.md;
@@ -132,7 +136,20 @@ in
                     };
                   };
                   splitter = {
+                    minChunkSize = 1000;
+                    preferredChunkSize = 4000;
                     maxChunkSize = 10000;
+                  };
+                  search = {
+                    overfetchFactor = 3;
+                    vectorMultiplier = 15;
+                  };
+                  assembly = {
+                    maxChunkDistance = 5;
+                    maxParentChainDepth = 10;
+                    childLimit = 5;
+                    precedingSiblingsLimit = 3;
+                    subsequentSiblingsLimit = 3;
                   };
                   embeddings = {
                     batchSize = 50;
@@ -156,6 +173,8 @@ in
             Environment = [
               # OpenAI-compatible SDK reads this; not a docs-mcp-server config key
               "OPENAI_API_BASE=https://chutes-qwen-qwen3-embedding-8b-tee.chutes.ai/v1"
+              # Disable Playwright browser — we only index local files, no web scraping
+              "PLAYWRIGHT_BROWSERS_PATH=0"
             ];
 
             Restart = "on-failure";

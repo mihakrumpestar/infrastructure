@@ -20,3 +20,4 @@ Use tools:
 - `exa` or `webset`: get search results or queary web
 - `chrome-devtools`: actually browse the web or website
 - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
+- `docs-mcp-server`: whenever user tells you to use it
