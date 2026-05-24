@@ -559,11 +559,11 @@
     "infrastructure-secrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1779304766,
-        "narHash": "sha256-ZO8ScupGbsJWQsYBp9FwO+P8mALQtZMwNdT8VczPYH8=",
+        "lastModified": 1779610025,
+        "narHash": "sha256-5g4c/Ms7bsad5LbXZPOPWAaLlO43Qlppn74qAEqXwEM=",
         "ref": "refs/heads/main",
-        "rev": "0156684a3e074f4a2e6c4add8adc3975dc4d1761",
-        "revCount": 67,
+        "rev": "a775a221949d0528f9ede8301add1083b4a198b1",
+        "revCount": 68,
         "type": "git",
         "url": "file:../infrastructure-secrets"
       },
@@ -713,11 +713,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1778443072,
-        "narHash": "sha256-zi7/fsqM/kFdNuED//4WOCUtezGtKKqRNORjMvfwjnA=",
+        "lastModified": 1778869304,
+        "narHash": "sha256-30sZNZoA1cqF5JNO9fVX+wgiQYjB7HJqqJ4ztCDeBZE=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "da5ad661ba4e5ef59ba743f0d112cbc30e474f32",
+        "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
         "type": "github"
       },
       "original": {

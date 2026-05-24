@@ -87,8 +87,84 @@ in
           "${config.home.homeDirectory}/.local/bin"
         ];
 
-        # For OpenCode statistics
-        # uv tool install git+https://github.com/Shlomob/ocmonitor-share.git
+        # Endpoints:
+        # http://localhost:6280 (MCP+server+web dashboard)
+        # http://localhost:6280/mcp (streamableHttp)
+        # http://localhost:6280/sse (SSE)
+        systemd.user.services.docs-mcp-server = {
+          Unit = {
+            Description = "Docs MCP Server - local documentation index for AI assistants";
+            After = [
+              "graphical-session.target"
+              "network-online.target"
+            ];
+            Wants = [ "network-online.target" ];
+          };
+          Service = {
+            Type = "simple";
+            TimeoutStartSec = 60;
+            ExecStart =
+              let
+                docs-mcp-server-config = (pkgs.formats.yaml { }).generate "config.yaml" {
+                  app = {
+                    telemetryEnabled = false;
+                    storePath = "~/.local/share/docs-mcp-server";
+                    embeddingModel = "openai:Qwen/Qwen3-Embedding-8B-TEE";
+                  };
+                  server = {
+                    protocol = "http";
+                    host = "127.0.0.1";
+                    ports.default = 6280;
+                  };
+                  scraper = {
+                    document.maxSize = 524288000; # 500MB for large PDFs
+                    maxPages = 5000;
+                    maxDepth = 10;
+                    security = {
+                      fileAccess = {
+                        mode = "allowedRoots";
+                        allowedRoots = [
+                          "${config.home.homeDirectory}/repos"
+                          "${config.home.homeDirectory}/Desktop"
+                          "${config.home.homeDirectory}/Downloads"
+                        ];
+                      };
+                    };
+                  };
+                  splitter = {
+                    maxChunkSize = 10000;
+                  };
+                  embeddings = {
+                    batchSize = 50;
+                    requestTimeoutMs = 60000;
+                    vectorDimension = 4096;
+                  };
+                };
+
+                # Extracts only CHUTES_API_KEY_EMBEDDINGS from the shared secrets env,
+                # maps it to OPENAI_API_KEY expected by docs-mcp-server
+                docs-mcp-server-wrapper = pkgs.writeShellScriptBin "docs-mcp-server-wrapper" ''
+                  export OPENAI_API_KEY="$(
+                    ${pkgs.gnugrep}/bin/grep -oP '^CHUTES_API_KEY_EMBEDDINGS=\K.*' "${
+                      config.age.secrets."llm_api_keys.env".path
+                    }" 2>/dev/null
+                  )"
+                  exec ${pkgs.bun}/bin/bunx @arabold/docs-mcp-server@latest --protocol http --port 6280 --config "${docs-mcp-server-config}"
+                '';
+              in
+              "${docs-mcp-server-wrapper}/bin/docs-mcp-server-wrapper";
+            Environment = [
+              # OpenAI-compatible SDK reads this; not a docs-mcp-server config key
+              "OPENAI_API_BASE=https://chutes-qwen-qwen3-embedding-8b-tee.chutes.ai/v1"
+            ];
+
+            Restart = "on-failure";
+            RestartSec = 5;
+          };
+          Install = {
+            WantedBy = [ "graphical-session.target" ];
+          };
+        };
       };
   };
 }
