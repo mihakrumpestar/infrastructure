@@ -45,37 +45,46 @@
               search = {
                 force = true;
                 engines = {
-                  "brave" = {
-                    id = "brave";
-                    urls = [ { template = "https://search.brave.com/search"; } ];
-                    params = [
+                  brave = {
+                    urls = [
                       {
-                        name = "q";
-                        value = "{searchTerms}";
+                        template = "https://search.brave.com/search";
+                        params = [
+                          {
+                            name = "q";
+                            value = "{searchTerms}";
+                          }
+                        ];
                       }
                     ];
                     definedAliases = [ "@b" ];
                     icon = "https://icons.duckduckgo.com/ip3/search.brave.com.ico";
                   };
-                  "ddg" = {
-                    id = "ddg";
-                    urls = [ { template = "https://duckduckgo.com"; } ];
-                    params = [
+                  ddg = {
+                    urls = [
                       {
-                        name = "q";
-                        value = "{searchTerms}";
+                        template = "https://duckduckgo.com/";
+                        params = [
+                          {
+                            name = "q";
+                            value = "{searchTerms}";
+                          }
+                        ];
                       }
                     ];
                     definedAliases = [ "@d" ];
                     icon = "https://icons.duckduckgo.com/ip3/duckduckgo.com.ico";
                   };
-                  "ecosia" = {
-                    id = "ecosia";
-                    urls = [ { template = "https://www.ecosia.org/search"; } ];
-                    params = [
+                  ecosia = {
+                    urls = [
                       {
-                        name = "q";
-                        value = "{searchTerms}";
+                        template = "https://www.ecosia.org/search";
+                        params = [
+                          {
+                            name = "q";
+                            value = "{searchTerms}";
+                          }
+                        ];
                       }
                     ];
                     definedAliases = [ "@e" ];
