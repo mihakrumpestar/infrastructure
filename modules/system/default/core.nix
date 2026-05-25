@@ -38,6 +38,9 @@
                 value = "unlimited";
               }
             ];
+
+            # Prevent loading kernel modules after start (should prevent nasty exploits of loading obscure modules)
+            lockKernelModules = true;
           };
 
           environment.systemPackages = with pkgs; [
