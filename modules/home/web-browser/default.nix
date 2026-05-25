@@ -1,7 +1,4 @@
-{ inputs, ... }:
-let
-  data = import "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/data.nix";
-in
+{ ... }:
 {
   home.web-browser = {
     homeManager =
@@ -48,22 +45,18 @@ in
               search = {
                 force = true;
                 engines = {
-                  "SearXNG" =
-                    let
-                      inherit (data) searxng;
-                    in
-                    {
-                      id = "searxng";
-                      urls = [ { template = "${searxng}/search?q={searchTerms}"; } ];
-                      params = [
-                        {
-                          name = "q";
-                          value = "{searchTerms}";
-                        }
-                      ];
-                      definedAliases = [ "@searxng" ];
-                      icon = "${searxng}/favicon.ico";
-                    };
+                  "brave" = {
+                    id = "brave";
+                    urls = [ { template = "https://search.brave.com/search"; } ];
+                    params = [
+                      {
+                        name = "q";
+                        value = "{searchTerms}";
+                      }
+                    ];
+                    definedAliases = [ "@b" ];
+                    icon = "https://icons.duckduckgo.com/ip3/search.brave.com.ico";
+                  };
                   "ddg" = {
                     id = "ddg";
                     urls = [ { template = "https://duckduckgo.com"; } ];
@@ -76,25 +69,25 @@ in
                     definedAliases = [ "@d" ];
                     icon = "https://icons.duckduckgo.com/ip3/duckduckgo.com.ico";
                   };
-                  "Brave" = {
-                    id = "brave";
-                    urls = [ { template = "https://search.brave.com/search"; } ];
+                  "ecosia" = {
+                    id = "ecosia";
+                    urls = [ { template = "https://www.ecosia.org/search"; } ];
                     params = [
                       {
                         name = "q";
                         value = "{searchTerms}";
                       }
                     ];
-                    definedAliases = [ "@b" ];
-                    icon = "https://icons.duckduckgo.com/ip3/search.brave.com.ico";
+                    definedAliases = [ "@e" ];
+                    icon = "https://cdn-static.ecosia.org/static/icons/favicon.ico";
                   };
                 };
                 order = [
-                  "SearXNG"
+                  "brave"
                   "ddg"
-                  "Brave"
+                  "ecosia"
                 ];
-                default = "SearXNG";
+                default = "brave";
                 privateDefault = "ddg";
               };
             };

@@ -380,6 +380,7 @@ flowchart LR
 
 ## TODO
 
+- https://saylesss88.github.io/nix/hardening_NixOS.html
 - https://github.com/yorukot/superfile
 - https://github.com/amadejkastelic/nixos-config/tree/main/hosts/server
 - https://docs.nixbuild.net/remote-builds/
