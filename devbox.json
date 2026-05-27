@@ -9,7 +9,8 @@
     "python313@latest",
     "python313Packages.tabulate@latest",
     "python313Packages.matplotlib@latest",
-    "mermaid-cli@latest"
+    "mermaid-cli@latest",
+    "hashrat@latest"
   ],
   "env": {
     "DEVBOX_NO_PROMPT": "true"

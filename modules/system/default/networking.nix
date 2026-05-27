@@ -14,7 +14,7 @@ in
 
         config = {
           age.secrets.homeWifi = lib.mkIf config.my.networking.homeWifi.enable {
-            rekeyFile = "${secretsDir}/secrets/users/homeWifi.nmconnection.age";
+            file = "${secretsDir}/secrets/users/homeWifi.nmconnection.age";
             path = "/etc/NetworkManager/system-connections/homeWifi.nmconnection";
           };
 

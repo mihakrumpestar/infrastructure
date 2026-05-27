@@ -24,7 +24,7 @@ in
       in
       {
         age.secrets.brightness-server-token = {
-          rekeyFile = "${secretsDir}/secrets/users/kiosk/brightness-server-token.age";
+          file = "${secretsDir}/secrets/users/kiosk/brightness-server-token.age";
           path = "${config.home.homeDirectory}/.agenix/secrets/brightness-server-token";
         };
 

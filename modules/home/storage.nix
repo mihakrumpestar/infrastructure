@@ -154,7 +154,7 @@ in
       in
       {
         age.secrets."rclone_config" = {
-          rekeyFile = "${secretsDir}/secrets/users/krumpy-miha/rclone.conf.age";
+          file = "${secretsDir}/secrets/users/krumpy-miha/rclone.conf.age";
           path = "${config.xdg.configHome}/rclone/rclone.conf";
         };
 

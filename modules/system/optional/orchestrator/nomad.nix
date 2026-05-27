@@ -213,18 +213,16 @@ in
           };
 
           age.secrets = {
-            "nomad-agent-ca_pem".rekeyFile = "${secretsDir}/secrets/services/nomad/nomad-agent-ca.pem.age";
-            "global-server-nomad_pem".rekeyFile =
-              "${secretsDir}/secrets/services/nomad/global-server-nomad.pem.age";
-            "global-server-nomad-key_pem".rekeyFile =
+            "nomad-agent-ca_pem".file = "${secretsDir}/secrets/services/nomad/nomad-agent-ca.pem.age";
+            "global-server-nomad_pem".file = "${secretsDir}/secrets/services/nomad/global-server-nomad.pem.age";
+            "global-server-nomad-key_pem".file =
               "${secretsDir}/secrets/services/nomad/global-server-nomad-key.pem.age";
-            "global-client-nomad_pem".rekeyFile =
-              "${secretsDir}/secrets/services/nomad/global-client-nomad.pem.age";
-            "global-client-nomad-key_pem".rekeyFile =
+            "global-client-nomad_pem".file = "${secretsDir}/secrets/services/nomad/global-client-nomad.pem.age";
+            "global-client-nomad-key_pem".file =
               "${secretsDir}/secrets/services/nomad/global-client-nomad-key.pem.age";
 
             "containers_auth_json" = {
-              rekeyFile = "${secretsDir}/secrets/users/containers_auth.json.age";
+              file = "${secretsDir}/secrets/users/containers_auth.json.age";
               path = "/etc/containers/auth.json";
             };
           };

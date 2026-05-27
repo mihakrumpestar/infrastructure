@@ -42,7 +42,7 @@ in
       in
       {
         age.secrets."llm_api_keys.env" = {
-          rekeyFile = "${secretsDir}/secrets/users/krumpy-miha/llm_api_keys.env.age";
+          file = "${secretsDir}/secrets/users/krumpy-miha/llm_api_keys.env.age";
           path = "${config.home.homeDirectory}/.agenix/secrets/llm_api_keys.env";
         };
 
@@ -77,7 +77,10 @@ in
             WorkingDirectory = "%h";
             ExecStart = "${pkgs.opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
             Environment = "OPENCODE_CONFIG=${opencode-config}";
-            EnvironmentFile = config.age.secrets."llm_api_keys.env".path;
+            EnvironmentFile = [
+              config.age.secrets."llm_api_keys.env".path
+              "-/%h/.local/share/opencode/secrets.env"
+            ];
             Restart = "on-failure";
             RestartSec = 5;
           };

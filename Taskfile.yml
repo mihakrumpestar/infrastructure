@@ -20,22 +20,25 @@ tasks:
     cmds:
       - nix flake update --flake 'path:{{.ROOT_DIR}}' {{.CLI_ARGS}}
 
+  update-secrets:
+    desc: Update secrets
+    cmds:
+      - task update -- infrastructure-secrets
+
   generations:
     desc: List generations
     cmds:
       - nixos-rebuild list-generations
 
-  update-secrets:
-    desc: Update secrets
+  check-reproducibility:
+    desc: |
+      Bitwise reproducibility check for a host toplevel.
+      Builds twice in independent stores (local + persistent temp store),
+      rsyncs build1 out of store, diffoscope compares (sole ground truth).
+      Use SOURCE=true to block binary cache (force source rebuild).
+      Options: -- HOST=personal-workstation SOURCE=true
     cmds:
-      - task update -- infrastructure-secrets
-      - task: agenix-rekey
-
-  agenix-rekey:
-    desc: Rekey secrets
-    cmds:
-      - mkdir -p /tmp/agenix-rekey
-      - nix run .#agenix-rekey.x86_64-linux.rekey --option extra-sandbox-paths /tmp/agenix-rekey
+      - bash scripts/check_reproducibility.sh --host {{.HOST | default "personal-workstation"}} {{if eq .SOURCE "true"}}--force-source-rebuild{{end}}
 
   clean:
     desc: Clean garbage older than 10d

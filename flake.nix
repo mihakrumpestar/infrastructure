@@ -25,11 +25,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    agenix-rekey = {
-      url = "github:oddlama/agenix-rekey";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     plasma-manager = {
       url = "github:nix-community/plasma-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -88,7 +83,7 @@
   };
 
   outputs =
-    { self, ... }@inputs:
+    inputs:
     let
       den =
         (inputs.nixpkgs.lib.evalModules {
@@ -98,12 +93,5 @@
     in
     {
       inherit (den.flake) nixosConfigurations;
-
-      agenix-rekey = inputs.agenix-rekey.configure {
-        userFlake = self;
-        inherit (self) nixosConfigurations;
-        darwinConfigurations = { };
-        agePackage = p: p.age;
-      };
     };
 }

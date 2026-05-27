@@ -38,7 +38,7 @@ in
           digital_identity_password_path = config.age.secrets."backups_password".path;
         };
 
-        age.secrets."backups_password".rekeyFile =
+        age.secrets."backups_password".file =
           "${secretsDir}/secrets/users/krumpy-miha/backups_password.age";
       };
   };

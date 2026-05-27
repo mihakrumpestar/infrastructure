@@ -62,7 +62,7 @@ in
         ];
 
         age.secrets."pam_u2f" = {
-          rekeyFile = "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/pam_u2f.age";
+          file = "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/pam_u2f.age";
           mode = "0444"; # KDE screensaver does not have root rights to access the config
         };
 

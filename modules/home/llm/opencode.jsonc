@@ -108,6 +108,17 @@
     //
     // Not needed most of the time and add a lot to context
     //
+    "xactions": {
+      "type": "local",
+      "command": [
+        "bunx",
+        "xactions-mcp"
+      ],
+      "enabled": false,
+      "environment": {
+        "XACTIONS_SESSION_COOKIE": "{env:XACTIONS_SESSION_COOKIE}"
+      }
+    },
     "websets": {
       "type": "remote",
       "url": "https://websetsmcp.exa.ai",

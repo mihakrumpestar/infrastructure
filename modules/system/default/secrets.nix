@@ -46,24 +46,6 @@ in
             }
             // {
               ageBin = lib.getExe age-with-tpm;
-
-              rekey = {
-                hostPubkey = secretsDir + "/secrets/hosts/${hostName}.pub";
-                masterIdentities = [
-                  {
-                    identity = "../infrastructure-secrets/secrets-plain/master-key.txt";
-                  }
-                ];
-                storageMode = "derivation";
-                agePlugins = lib.mkIf useTpm [
-                  pkgs.age-plugin-tpm
-                  # For some reason the dev decided that the signature in age is `age1tag1`, therefore age-plugin-tpm is not discovered and must be renamed to age-plugin-tag
-                  (pkgs.runCommand "age-plugin-tag" { } ''
-                    mkdir -p $out/bin
-                    ln -s ${pkgs.age-plugin-tpm}/bin/age-plugin-tpm $out/bin/age-plugin-tag
-                  '')
-                ];
-              };
             };
 
           home-manager.sharedModules = [
@@ -75,7 +57,6 @@ in
                 }
                 // {
                   package = age-with-tpm;
-                  inherit (config.age) rekey;
                 };
             }
           ];

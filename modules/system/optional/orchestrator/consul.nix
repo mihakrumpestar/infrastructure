@@ -111,27 +111,27 @@ in
 
           age.secrets = {
             "consul-agent-ca_pem" = {
-              rekeyFile = "${secretsDir}/secrets/services/consul/consul-agent-ca.pem.age";
+              file = "${secretsDir}/secrets/services/consul/consul-agent-ca.pem.age";
               owner = "consul";
               group = "consul";
             };
             "dc1-server-consul-0_pem" = {
-              rekeyFile = "${secretsDir}/secrets/services/consul/dc1-server-consul-0.pem.age";
+              file = "${secretsDir}/secrets/services/consul/dc1-server-consul-0.pem.age";
               owner = "consul";
               group = "consul";
             };
             "dc1-server-consul-0-key_pem" = {
-              rekeyFile = "${secretsDir}/secrets/services/consul/dc1-server-consul-0-key.pem.age";
+              file = "${secretsDir}/secrets/services/consul/dc1-server-consul-0-key.pem.age";
               owner = "consul";
               group = "consul";
             };
             "dc1-client-consul-0_pem" = {
-              rekeyFile = "${secretsDir}/secrets/services/consul/dc1-client-consul-0.pem.age";
+              file = "${secretsDir}/secrets/services/consul/dc1-client-consul-0.pem.age";
               owner = "consul";
               group = "consul";
             };
             "dc1-client-consul-0-key_pem" = {
-              rekeyFile = "${secretsDir}/secrets/services/consul/dc1-client-consul-0-key.pem.age";
+              file = "${secretsDir}/secrets/services/consul/dc1-client-consul-0-key.pem.age";
               owner = "consul";
               group = "consul";
             };

@@ -101,6 +101,34 @@
         }
       }
     },
+    "hashrat@latest": {
+      "last_modified": "2026-04-23T13:07:47Z",
+      "resolved": "github:NixOS/nixpkgs/01fbdeef22b76df85ea168fbfe1bfd9e63681b30#hashrat",
+      "source": "devbox-search",
+      "version": "1.25",
+      "systems": {
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/lpq7lbynhkrc19iq9xphb07cnzhmanzz-hashrat-1.25",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/lpq7lbynhkrc19iq9xphb07cnzhmanzz-hashrat-1.25"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/ln6dlll1yasi7079wxxzc84p3b1gyp29-hashrat-1.25",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/ln6dlll1yasi7079wxxzc84p3b1gyp29-hashrat-1.25"
+        }
+      }
+    },
     "mermaid-cli@latest": {
       "last_modified": "2026-03-21T07:29:51Z",
       "resolved": "github:NixOS/nixpkgs/09061f748ee21f68a089cd5d91ec1859cd93d0be#mermaid-cli",

@@ -9,7 +9,7 @@
       }:
       {
         age.secrets."admin_hashedPassword" = {
-          rekeyFile = "${inputs.infrastructure-secrets}/secrets/users/root/admin_hashedPassword.age";
+          file = "${inputs.infrastructure-secrets}/secrets/users/root/admin_hashedPassword.age";
         };
 
         users.users.admin = {

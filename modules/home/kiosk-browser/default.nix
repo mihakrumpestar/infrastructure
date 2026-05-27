@@ -55,7 +55,7 @@ in
       in
       {
         age.secrets.client-cert-p12 = {
-          rekeyFile = "${secretsDir}/secrets/users/kiosk/client-cert.p12.age";
+          file = "${secretsDir}/secrets/users/kiosk/client-cert.p12.age";
           path = "${config.home.homeDirectory}/.agenix/secrets/client-cert.p12";
         };
 

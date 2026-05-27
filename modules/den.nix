@@ -77,7 +77,6 @@
           inputs.disko.nixosModules.disko
           inputs.impermanence.nixosModules.impermanence
           inputs.agenix.nixosModules.default
-          inputs.agenix-rekey.nixosModules.default
           inputs.lanzaboote.nixosModules.lanzaboote
           inputs.stylix.nixosModules.stylix
           inputs.nix-index-database.nixosModules.default
@@ -93,7 +92,6 @@
             inputs.plasma-manager.homeModules.plasma-manager
             inputs.nix-index-database.homeModules.default
             inputs.agenix.homeManagerModules.default
-            inputs.agenix-rekey.homeManagerModules.default
             inputs.mutable-file.homeModules.default
             (
               { osConfig, ... }:
