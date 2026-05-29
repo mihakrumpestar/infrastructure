@@ -158,8 +158,8 @@
                 esbenp.prettier-vscode
                 astro-build.astro-vscode
 
-                # AI (using it as web only now)
-                #sst-dev.opencode
+                # AI
+                fedaykindev.openchamber # openchamber.apiUrl
 
                 # Rest
                 #humao.rest-client
