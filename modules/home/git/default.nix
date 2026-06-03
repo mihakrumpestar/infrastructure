@@ -69,17 +69,22 @@
                   cmd = "codium --wait --diff $LOCAL $REMOTE";
                 };
               };
+              commit = {
+                gpgsign = "true";
+              };
+              rebase = {
+                gpgsign = "true";
+              };
               merge = {
                 tool = "codium";
+                gpgSign = "true";
               };
               mergetool = {
                 codium = {
                   cmd = "codium --wait $MERGED";
                 };
               };
-              commit = {
-                gpgsign = "true";
-              };
+
               gpg = {
                 format = "ssh";
                 ssh = {
