@@ -9,7 +9,7 @@
 
         virtualisation.docker = {
           enable = true;
-          package = pkgs.docker_28; # v29 is just more broken with every single release
+          package = pkgs.docker_29; # v29 is just more broken with every single release # now this is the only wersion available, hopefully it will work
           daemon = {
             settings = {
               log-level = "warn"; # "debug"|"info"|"warn"|"error"|"fatal" (default "info")
