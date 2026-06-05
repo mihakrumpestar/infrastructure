@@ -57,8 +57,8 @@ in
           // localSkillConfigs
           // localCommandConfigs
           // {
-            ".config/opencode/opencode.json".source = opencode-config;
-            ".config/opencode/AGENTS.md".source = ./AGENTS.md;
+            "opencode/opencode.json".source = opencode-config;
+            "opencode/AGENTS.md".source = ./AGENTS.md;
           };
 
         # Attach: opencode attach http://localhost:4096
