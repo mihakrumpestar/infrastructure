@@ -53,26 +53,26 @@
           programs.ssh = {
             enable = true;
             enableDefaultConfig = false;
-            matchBlocks =
+            settings =
               let
                 hostMatchBlocks = lib.mapAttrs (
                   name: entry:
                   {
-                    inherit (entry) hostname;
-                    identityFile = "~/${identitiesDir}/${name}.pub";
-                    identitiesOnly = true;
+                    HostName = entry.hostname;
+                    IdentityFile = "~/${identitiesDir}/${name}.pub";
+                    IdentitiesOnly = true;
                   }
-                  // lib.optionalAttrs (entry.user != null) { inherit (entry) user; }
-                  // lib.optionalAttrs (entry.port != null) { inherit (entry) port; }
+                  // lib.optionalAttrs (entry.user != null) { User = entry.user; }
+                  // lib.optionalAttrs (entry.port != null) { Port = entry.port; }
                 ) cfg.hosts;
 
                 gitMatchBlocks = lib.mapAttrs' (
                   name: entry:
                   lib.nameValuePair name {
-                    hostname = entry.url;
-                    user = entry.email;
-                    identityFile = "~/${identitiesDir}/git-${name}.pub";
-                    identitiesOnly = true;
+                    HostName = entry.url;
+                    User = entry.email;
+                    IdentityFile = "~/${identitiesDir}/git-${name}.pub";
+                    IdentitiesOnly = true;
                   }
                 ) gitIdentities;
               in
@@ -80,21 +80,21 @@
               // gitMatchBlocks
               // {
                 "local" = {
-                  hostname = "localhost";
-                  user = "root";
-                  port = 22222;
+                  HostName = "localhost";
+                  User = "root";
+                  Port = 22222;
                 };
                 "*" = {
-                  forwardAgent = false;
-                  addKeysToAgent = "no";
-                  compression = false;
-                  serverAliveInterval = 0;
-                  serverAliveCountMax = 3;
-                  hashKnownHosts = false;
-                  userKnownHostsFile = "~/.ssh/known_hosts";
-                  controlMaster = "no";
-                  controlPath = "~/.ssh/master-%r@%n:%p";
-                  controlPersist = "no";
+                  ForwardAgent = false;
+                  AddKeysToAgent = "no";
+                  Compression = false;
+                  ServerAliveInterval = 0;
+                  ServerAliveCountMax = 3;
+                  HashKnownHosts = false;
+                  UserKnownHostsFile = "~/.ssh/known_hosts";
+                  ControlMaster = "no";
+                  ControlPath = "~/.ssh/master-%r@%n:%p";
+                  ControlPersist = "no";
                 };
               };
           };
