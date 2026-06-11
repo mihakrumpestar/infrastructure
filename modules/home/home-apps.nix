@@ -49,7 +49,7 @@
           #jan # Has hardcoded providers and endpoints
           #cherry-studio # AI chat app, app list https://github.com/billmei/every-chatgpt-gui
           #gpt4all # TODO: does not compile
-          chatbox
+          #chatbox # removed due to vasly end-of-life electron version
 
           # Office Suite
           libreoffice-fresh

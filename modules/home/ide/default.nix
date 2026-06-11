@@ -89,6 +89,8 @@
               with pkgs.open-vsx;
               [
                 # find them on https://open-vsx.org/ # or "vscode-marketplace"
+                # (note that all characters have to be converted to lower case if they are not already)
+                #
                 # General
                 activitywatch.aw-watcher-vscode
                 vscode-icons-team.vscode-icons
@@ -107,8 +109,8 @@
                 tamasfe.even-better-toml
                 tumido.cron-explained
                 mathematic.vscode-pdf # VSCode does not have native PDF support for some reason
-                #allwin-antony.md-viewer
                 mermaidchart.vscode-mermaid-chart
+                shd101wyy.markdown-preview-enhanced
 
                 # Latex
                 james-yu.latex-workshop
