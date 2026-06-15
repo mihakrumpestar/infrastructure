@@ -2,7 +2,7 @@
 {
   home.ide = {
     homeManager =
-      { pkgs, ... }:
+      { config, pkgs, ... }:
       let
         vscode-ltex-plus-offline = pkgs.vscode-utils.buildVscodeMarketplaceExtension rec {
           mktplcRef = {
@@ -77,6 +77,11 @@
           GH_TELEMETRY = "false";
           DO_NOT_TRACK = "true";
         };
+
+        # For uv, go, etc. installables
+        home.sessionPath = [
+          "${config.home.homeDirectory}/.local/bin"
+        ];
 
         programs.vscodium = {
           enable = true;

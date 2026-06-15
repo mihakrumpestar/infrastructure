@@ -9,44 +9,40 @@
   // check the toml config in https://github.com/anomalyco/models.dev/tree/dev/providers for the specific env var used
   // Provider configuration
   // Docs: https://opencode.ai/config.json
-  // Models reference: https://models.dev/api.json and use OpenRouter as provider (search for Kimi K2.5)
+  // Models reference: https://models.dev/api.json and use OpenRouter as provider (eg. search for Kimi K2.5)
   "provider": {
-    "CrofAI": {
+    "Plexus": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "CrofAI",
+      "name": "Plexus",
       "options": {
-        "baseURL": "https://crof.ai/v1",
-        "apiKey": "{env:CROFAI_API_KEY}"
+        "baseURL": "{env:GATEWAY_API_BASE}/v1",
+        "apiKey": "{env:GATEWAY_API_KEY}"
       },
       "models": {
-        "mimo-v2.5-pro-precision": {
-          "name": "CrofAI: mimo-v2.5-pro (precision)",
+        "default": {
+          "name": "Plexus: default",
+          "reasoning": true,
           "limit": {
             "context": 1000000,
-            "output": 131072
+            "output": 132000
           }
         },
-        "deepseek-v4-pro-precision": {
-          "name": "CrofAI: deepseek-v4-pro (precision)",
+        "testing": {
+          "name": "Plexus: testing",
+          "reasoning": true,
           "limit": {
             "context": 1000000,
-            "output": 131072
+            "output": 132000
           }
         },
-        "kimi-k2.6-precision": {
-          "name": "CrofAI: kimi-k2.6 (precision)",
+        "experimental": {
+          "name": "Plexus: experimental",
+          "reasoning": true,
           "limit": {
-            "context": 262144,
-            "output": 262144
+            "context": 1000000,
+            "output": 132000
           }
-        },
-        "glm-5.1-precision": {
-          "name": "CrofAI: glm-5.1-precision",
-          "limit": {
-            "context": 202752,
-            "output": 202752
-          }
-        },
+        }
       }
     }
   },
@@ -54,14 +50,44 @@
   // Debug: opencode mcp list
   // Note: keep some disabled if not used as they add multiple 1000s tokens to context for the tool instructions
   "mcp": {
-    "context7": {
+    //
+    // Gateway MCPs
+    //
+    "gateway-management":{
       "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
+      "url": "{env:GATEWAY_API_BASE}/mcp/plexus",
+      "enabled": false,
+      "headers": {
+        "Authorization": "Bearer {env:GATEWAY_API_KEY}"
+      }
+    },
+    "context7":{
+      "type": "remote",
+      "url": "{env:GATEWAY_API_BASE}/mcp/context7",
       "enabled": true,
       "headers": {
-        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
-      },
+        "Authorization": "Bearer {env:GATEWAY_API_KEY}"
+      }
     },
+    "exa":{
+      "type": "remote",
+      "url": "{env:GATEWAY_API_BASE}/mcp/exa",
+      "enabled": true,
+      "headers": {
+        "Authorization": "Bearer {env:GATEWAY_API_KEY}"
+      }
+    },
+    "docs-mcp-server":{
+      "type": "remote",
+      "url": "{env:GATEWAY_API_BASE}/mcp/docs-mcp-server",
+      "enabled": true,
+      "headers": {
+        "Authorization": "Bearer {env:GATEWAY_API_KEY}"
+      }
+    },
+    //
+    // Local MCPs
+    //
     "godoc": {
       "type": "local",
       "command": [
@@ -84,25 +110,12 @@
       ],
       "enabled": true,
     },
-    "exa": {
-      "type": "remote",
-      "url": "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa",
-      "enabled": true,
-      "headers": {
-        "x-api-key": "{env:EXA_API_KEY}"
-      }
-    },
     "pdf-reader": {
       "type": "local",
       "command": [
         "bunx",
         "@sylphx/pdf-reader-mcp"
       ],
-      "enabled": true,
-    },
-    "docs-mcp-server": {
-      "type": "remote",
-      "url": "http://localhost:6280/sse",
       "enabled": true,
     },
     //
@@ -117,14 +130,6 @@
       "enabled": false,
       "environment": {
         "XACTIONS_SESSION_COOKIE": "{env:XACTIONS_SESSION_COOKIE}"
-      }
-    },
-    "websets": {
-      "type": "remote",
-      "url": "https://websetsmcp.exa.ai",
-      "enabled": false, // Adds 12k tokens to context
-      "headers": {
-        "x-api-key": "{env:EXA_API_KEY}"
       }
     },
     "chrome-devtools": {
@@ -157,7 +162,8 @@
     "external_directory": {
       "/tmp/**": "allow",
       "~/repos/**": "allow",
-      "~/go/**": "allow"
+      "~/go/**": "allow",
+      "/nix/store/**": "allow"
     },
     "edit": {
       "/tmp/**": "allow",
