@@ -2,7 +2,10 @@
   description = "deployment flake";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    # DeterminateSystems/nixpkgs-weekly updates weekly with 1 week cooldown period, to mitigate supply chain attacks
+    nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1"; # github:NixOS/nixpkgs/nixos-unstable
+
     nur.url = "github:nix-community/NUR";
     den.url = "github:denful/den";
     import-tree.url = "github:denful/import-tree";
