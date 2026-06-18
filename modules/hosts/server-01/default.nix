@@ -58,6 +58,15 @@ in
             "logbsize=256k" # Larger log buffer for better throughput
           ];
         };
+
+        # Nvidia RTX 2080 Ti
+        services.xserver.videoDrivers = [ "nvidia" ];
+
+        hardware = {
+          graphics.enable = true;
+          nvidia.open = true;
+          nvidia-container-toolkit.enable = true; # Verify: podman run --rm --device nvidia.com/gpu=all nvidia/cuda:13.3.0-base-ubuntu24.04 nvidia-smi
+        };
       };
   };
 }

@@ -164,7 +164,7 @@
                                   # systemd-cryptenroll --fido2-device=list
                                   # Check current keys: systemd-cryptenroll /dev/nvme0n1p2
                                   # Set FIDO2 key: systemd-cryptenroll --fido2-device=auto --fido2-with-client-pin=no --fido2-with-user-presence=yes /dev/vda2 # --wipe-slot=0 or --wipe-slot=all
-                                  # List slots: cryptsetup luksDump /dev/nvme0n1p2
+                                  # List slots: cryptsetup luksDump --dump-json-metadata /dev/nvme0n1p2
                                   # Remove key: cryptsetup luksRemoveKey /dev/vda2 # Here you enter the password that will be deleted
                                   #
                                   # Rekey with another key: systemd-cryptenroll --unlock-fido2-device=/dev/hidraw1 --fido2-device=/dev/hidraw2 --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
@@ -236,6 +236,8 @@
 
                 # Only available on machines that return "yes" for command:
                 # /run/current-system/systemd/lib/systemd/systemd-pcrlock is-supported
+                # Generated policy is in:
+                # /var/lib/systemd/pcrlock.json
                 measuredBoot = mkIf tpm2PcrlockEnabled {
                   enable = true;
                   pcrs = [
@@ -268,6 +270,8 @@
               };
             };
 
+            # Lanzaboote's measuredBoot.pcrs enum does not include PCR 15, so we override
+            # the auto-cryptenroll service to add --tpm2-pcrs=${pcr15} alongside --tpm2-pcrlock=
             systemd.services.auto-cryptenroll = mkIf tpm2PcrlockEnabled {
               serviceConfig.ExecStart =
                 let
@@ -286,6 +290,42 @@
                   ''
                 ];
             };
+
+            # Lanzaboote does not automatically set the new EFI boot entry as first in UEFI, this code does it for us
+            system.activationScripts.lanzaboote-efi-entry =
+              let
+                inherit (pkgs)
+                  gawk
+                  coreutils
+                  gnugrep
+                  efibootmgr
+                  ;
+              in
+              mkIf lanzabooteEnabled (
+                stringAfter [ "etc" ] ''
+                  # Only run during nixos-install
+                  if [ -z "''${NIXOS_INSTALL_BOOTLOADER:-}" ]; then
+                    true
+                  else
+                    BOOT_DEV=$(${gawk}/bin/awk '$2 == "/boot" {print $1}' /proc/mounts | ${coreutils}/bin/head -1)
+                    if [ -n "$BOOT_DEV" ]; then
+                      PART_DEV=$(${coreutils}/bin/basename "$BOOT_DEV")
+                      DISK="/dev/$(${coreutils}/bin/basename $(${coreutils}/bin/readlink -f "/sys/class/block/$PART_DEV/.."))"
+                      PART_NUM=$(${coreutils}/bin/cat "/sys/class/block/$PART_DEV/partition")
+
+                      # Remove existing NixOS entries
+                      ENTRIES=$(${efibootmgr}/bin/efibootmgr 2>/dev/null | ${gnugrep}/bin/grep -oP 'Boot\K[0-9A-F]+(?=\*.*NixOS)')
+                      for entry in $ENTRIES; do
+                        ${efibootmgr}/bin/efibootmgr -b "$entry" -B 2>/dev/null || true
+                      done
+
+                      # Create new entry
+                      echo "Creating EFI boot entry on $DISK partition $PART_NUM"
+                      ${efibootmgr}/bin/efibootmgr -c -d "$DISK" -p "$PART_NUM" -L "NixOS" -l '\EFI\BOOT\BOOTX64.EFI'
+                    fi
+                  fi
+                ''
+              );
 
             # Static PCR enrollment (when pcrlock not available)
             systemd.services.tpm2-cryptenroll = mkIf (lanzabooteEnabled && tpm2PcrlockDisabled) {
@@ -308,12 +348,19 @@
                 pkgs.coreutils
               ];
               script = ''
-                systemd-cryptenroll \
+                if systemd-cryptenroll \
                   --tpm2-device=auto \
                   --tpm2-pcrs=7+14+${pcr15} \
-                  --wipe-slot=all \
-                  ${config.boot.initrd.luks.devices.crypted.device}
-                touch /var/lib/tpm2-cryptenroll/done
+                  --unlock-tpm2-device=auto \
+                  --tpm2-with-pin=no \
+                  --wipe-slot=tpm2 \
+                  ${config.boot.initrd.luks.devices.crypted.device}; then
+                  touch /var/lib/tpm2-cryptenroll/done
+                  systemctl reboot
+                else
+                  echo "TPM2 enrollment failed"
+                  exit 1
+                fi
               '';
             };
           };
