@@ -24,7 +24,9 @@
     };
 
     agenix = {
-      url = "github:ryantm/agenix";
+      # PR #353: fix agenix + userborn ordering (secrets before sysusers, chown after)
+      # https://github.com/ryantm/agenix/pull/353
+      url = "github:ryantm/agenix/pull/353/head";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -127,9 +127,9 @@
 
               # Cleanup old roots older than 30 days
               delete_subvolume_recursively() {
-                for subvol in $("${btrfs-progs}/bin/btrfs" subvolume list -o "$1" 2>/dev/null | cut -f 9- -d ' '); do
-                  delete_subvolume_recursively "/btrfs_root/$subvol"
-                done
+                while IFS=' ' read -r _ _ _ _ _ _ _ _ subvol; do
+                  [[ -n "$subvol" ]] && delete_subvolume_recursively "/btrfs_root/$subvol"
+                done < <("${btrfs-progs}/bin/btrfs" subvolume list -o "$1" 2>/dev/null)
                 "${btrfs-progs}/bin/btrfs" subvolume delete "$1" 2>/dev/null || true
               }
 
@@ -137,8 +137,12 @@
               for old_root in /btrfs_root/old_roots/*; do
                 [[ -d "$old_root" ]] || continue
                 # Extract timestamp from name (format: subvol-YYYY-MM-DD_HH:MM:SS)
-                backup_date=$(echo "$(basename "$old_root")" | sed -n 's/[^0-9-]*-\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}_[0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}\)/\1/p')
-                [[ -n "$backup_date" ]] || continue
+                name="''${old_root##*/}"
+                if [[ "$name" =~ ^[a-z]+-([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}:[0-9]{2}:[0-9]{2})$ ]]; then
+                  backup_date="''${BASH_REMATCH[1]}"
+                else
+                  continue
+                fi
                 # Replace underscore with space for date parsing
                 backup_epoch=$(date -d "$${backup_date/_/ }" +%s 2>/dev/null) || continue
                 if [[ "$backup_epoch" -lt "$cutoff_date" ]]; then
