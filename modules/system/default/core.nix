@@ -9,7 +9,30 @@
       }:
       {
         config = {
-          boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+          boot = {
+            kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+
+            # Pre-load modules for hot-pluggable devices at boot, because security.lockKernelModules
+            # prevents loading kernel modules after the system is fully initialised.
+            # Without this, USB drives, external disks, and optical drives won't be usable.
+            kernelModules = [
+              "usb_storage" # USB mass storage (BOT protocol)
+              "uas" # USB Attached SCSI (faster, modern USB storage)
+              "sd_mod" # SCSI disk driver (required by usb_storage/uas)
+              "sr_mod" # SCSI CD/DVD ROM (optical drives via USB)
+              "exfat" # exFAT filesystem (common on USB drives > 32GB and SD cards)
+              "ntfs3" # NTFS filesystem (Windows drives, in-kernel driver)
+              "udf" # UDF filesystem (optical media, some USB drives)
+              "iso9660" # ISO 9660 filesystem (CD/DVD)
+            ];
+
+            supportedFilesystems = [
+              "exfat"
+              "ntfs"
+              "udf"
+              "iso9660"
+            ];
+          };
 
           security = {
             sudo.extraConfig = ''
@@ -40,6 +63,7 @@
             ];
 
             # Prevent loading kernel modules after start (should prevent nasty exploits of loading obscure modules)
+            # Note that we have to load all needed ones therefore in config
             lockKernelModules = true;
           };
 

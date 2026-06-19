@@ -65,6 +65,7 @@ in
         hardware = {
           graphics.enable = true;
           nvidia.open = true;
+          #nvidia.nvidiaPersistenced = true; # Keep GPU awake in headless mode
           nvidia-container-toolkit.enable = true; # Verify: podman run --rm --device nvidia.com/gpu=all nvidia/cuda:13.3.0-base-ubuntu24.04 nvidia-smi
         };
       };
