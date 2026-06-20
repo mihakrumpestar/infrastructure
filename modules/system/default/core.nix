@@ -74,6 +74,9 @@
             nvme-cli # Has: nvme
             dmidecode
             pciutils # Has: lspci
+
+            # System info
+            cpu-x # CPU, GPU and motherboard info
           ];
 
           services = {

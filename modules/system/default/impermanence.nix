@@ -87,6 +87,7 @@
               ".cache"
               ".config"
               ".local/share/" # Program data and Steam games are saved here
+              ".local/state" # Wireplumber, VSCodium, ...
               ".pki"
               ".librewolf"
               ".steam"
