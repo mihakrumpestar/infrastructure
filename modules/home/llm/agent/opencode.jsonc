@@ -22,6 +22,10 @@
         "default": {
           "name": "Plexus: default",
           "reasoning": true,
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          },
           "limit": {
             "context": 1000000,
             "output": 132000
@@ -30,6 +34,10 @@
         "testing": {
           "name": "Plexus: testing",
           "reasoning": true,
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          },
           "limit": {
             "context": 1000000,
             "output": 132000
@@ -38,6 +46,10 @@
         "experimental": {
           "name": "Plexus: experimental",
           "reasoning": true,
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          },
           "limit": {
             "context": 1000000,
             "output": 132000

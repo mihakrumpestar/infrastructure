@@ -27,7 +27,8 @@ in
             bootDisk = "/dev/sda";
             swapSize = "16G";
             encryptRoot = "tpm2";
-            pcrlockSupport = false; # "systemd-pcrlock is-supported" returns "obsolete"
+            bootLoader = "systemd-boot"; # BIOS v1.5 broke third-party Secure Boot (even enabled BIOS, reports as being disabled in system)
+            #pcrlockSupport = false; # "systemd-pcrlock is-supported" returns "obsolete"
           };
 
           server.networking = {

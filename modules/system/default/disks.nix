@@ -233,6 +233,8 @@
                   allowBrickingMyMachine = true;
                   autoReboot = true;
                 };
+                # To delete them manually (in case Secure Boot is broken and can't be enabled):
+                # sudo rm -rf /boot/loader/keys/auto/
 
                 # Only available on machines that return "yes" for command:
                 # /run/current-system/systemd/lib/systemd/systemd-pcrlock is-supported
@@ -272,7 +274,7 @@
 
             # Lanzaboote's measuredBoot.pcrs enum does not include PCR 15, so we override
             # the auto-cryptenroll service to add --tpm2-pcrs=${pcr15} alongside --tpm2-pcrlock=
-            systemd.services.auto-cryptenroll = mkIf tpm2PcrlockEnabled {
+            systemd.services.auto-cryptenroll = mkIf (lanzabooteEnabled && tpm2PcrlockEnabled) {
               serviceConfig.ExecStart =
                 let
                   cfg = config.boot.lanzaboote.measuredBoot;
