@@ -90,7 +90,7 @@ in
                     ${pkgs.gnugrep}/bin/grep -oP '^GATEWAY_API_BASE=\K.*' "${
                       config.age.secrets."llm_agent.env".path
                     }" 2>/dev/null
-                  )"
+                  )/v1"
                   exec ${pkgs.bun}/bin/bunx @arabold/docs-mcp-server@latest --protocol http --port 6280 --config "${docs-mcp-server-config}"
                 '';
               in
