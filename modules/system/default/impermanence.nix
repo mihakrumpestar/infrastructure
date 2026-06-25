@@ -87,8 +87,9 @@
               ".cache"
               ".config"
               ".local/share/" # Program data and Steam games are saved here
-              ".local/state" # Wireplumber, VSCodium, ...
+              ".local/state" # Wireplumber, ...
               ".pki"
+              ".vscode-oss-shared" # VSCodium
               ".librewolf"
               ".steam"
               ".ssh" # SSH has isses having just ".ssh/known_hosts" file
