@@ -160,4 +160,4 @@ task generate-deps
 
 - Updates `README.md` between `<!-- DEPS_START -->` and `<!-- DEPS_END -->` markers
 - Saves Mermaid diagram to `generated/flake-graph_TIMESTAMP/infrastructure-flake-graph.md`
-- Exports PNG to `generated/flake-graph_TIMESTAMP/infrastructure-flake-graph.png`
+- Exports PDF to `generated/flake-graph_TIMESTAMP/infrastructure-flake-graph.pdf`

@@ -92,7 +92,7 @@
               ".vscode-oss-shared" # VSCodium
               ".librewolf"
               ".steam"
-              ".ssh" # SSH has isses having just ".ssh/known_hosts" file
+              ".ssh" # SSH has issues having just ".ssh/known_hosts" file
               "go" # Golang cache
               "Desktop"
               "Documents"

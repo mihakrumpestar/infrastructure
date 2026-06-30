@@ -154,6 +154,9 @@ def find_aspect_file(name, all_files):
         for cat in ("default", "optional", "type"):
             candidates += [f"modules/system/{cat}/{parent}/{name}.nix",
                            f"modules/system/{cat}/{parent}/{child}.nix"]
+        # Home aspects may use hyphen as path separator (e.g. llm-agent -> llm/agent)
+        candidates += [f"modules/home/{parent}/{child}.nix",
+                       f"modules/home/{parent}/{child}/default.nix"]
     for c in candidates:
         if c in all_files: return c
     for f in sorted(all_files):
@@ -396,23 +399,25 @@ def update_readme(content):
     print("✓ Updated README.md", file=sys.stderr)
 
 
-def export_png(mermaid, output):
+def export_diagram(mermaid, output):
+    """Export mermaid diagram to file. Format determined by output extension (pdf, png, svg)."""
     mmdc = shutil.which("mmdc")
     if not mmdc:
         for p in (REPO_ROOT / ".devbox/nix/profile/default/bin/mmdc",
                   Path.home() / ".devbox/nix/profile/default/bin/mmdc"):
             if p.exists(): mmdc = str(p); break
     if not mmdc:
-        print("⚠ mmdc not found, skipping PNG", file=sys.stderr); return
+        print(f"⚠ mmdc not found, skipping {output.suffix.lstrip('.')} export", file=sys.stderr); return
 
     content = mermaid.removeprefix("```mermaid\n").removesuffix("\n```\n").removesuffix("```")
     with tempfile.NamedTemporaryFile(mode="w", suffix=".mmd", delete=False) as f:
         f.write(content)
         tmp = f.name
     try:
-        r = subprocess.run([mmdc, "-i", tmp, "-o", str(output), "-b", "white", "-s", "4", "-w", "4096"],
-                          capture_output=True, text=True)
-        if r.returncode != 0: print(f"⚠ PNG export failed: {r.stderr}", file=sys.stderr)
+        cmd = [mmdc, "-i", tmp, "-o", str(output), "-b", "white", "-s", "4", "-w", "4096"]
+        if output.suffix == ".pdf": cmd.append("-f")
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        if r.returncode != 0: print(f"⚠ {output.suffix.lstrip('.').upper()} export failed: {r.stderr}", file=sys.stderr)
         else: print(f"✓ Exported {output}", file=sys.stderr)
     finally:
         Path(tmp).unlink(missing_ok=True)
@@ -431,7 +436,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     (out / "infrastructure-flake-graph.md").write_text(mermaid)
     print(f"✓ Saved {out / 'infrastructure-flake-graph.md'}", file=sys.stderr)
-    export_png(mermaid, out / "infrastructure-flake-graph.png")
+    export_diagram(mermaid, out / "infrastructure-flake-graph.pdf")
 
 
 if __name__ == "__main__":

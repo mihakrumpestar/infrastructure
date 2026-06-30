@@ -178,7 +178,6 @@ flowchart LR
 
     subgraph Inputs[Inputs]
         input_agenix["agenix"]:::input
-        input_agenix_rekey["agenix-rekey"]:::input
         input_den["den"]:::input
         input_disko["disko"]:::input
         input_home_manager["home-manager"]:::input
@@ -244,7 +243,10 @@ flowchart LR
         home_ide["ide"]:::aspect
         home_kiosk_brightness["kiosk-brightness"]:::aspect
         home_kiosk_browser["kiosk-browser"]:::aspect
+        home_llm_agent["llm/agent"]:::aspect
         home_llm["llm"]:::aspect
+        home_llm_gateway["llm/gateway"]:::aspect
+        home_llm_mcp["llm/mcp"]:::aspect
         home_password_manager["password-manager"]:::aspect
         home_scripts["scripts"]:::aspect
         home_ssh["ssh"]:::aspect
@@ -295,6 +297,9 @@ flowchart LR
     den --> user_krumpy_miha
     flake --> den
     home_kiosk_browser --> home_web_browser_policies
+    home_llm --> home_llm_agent
+    home_llm --> home_llm_gateway
+    home_llm --> home_llm_mcp
     home_web_browser --> home_web_browser_policies
     host_kiosk --> host_kiosk_hardware
     host_kiosk --> type_client
@@ -318,7 +323,6 @@ flowchart LR
     host_server_03 --> opt_orchestrator
     host_server_03 --> type_server
     input_agenix --> flake
-    input_agenix_rekey --> flake
     input_den --> flake
     input_disko --> flake
     input_home_manager --> flake
