@@ -1,5 +1,20 @@
 # Orchestrator
 
+Decommissioning for the following reasons:
+
+- multiregion deployments are Enterprise only [link](https://developer.hashicorp.com/nomad/docs/job-declare/multiregion)
+- when updating with Docker task driver (updating Nomad, Consul, Docker), all containers lose connectivity and have to be fully restarted or rebooted
+- transparent_proxy still does not support exposing multiple ports [issue](https://github.com/hashicorp/nomad/issues/23271)
+- Consul GRPC can't have mTLS due to Envoy not supporting it, therefore you literally have to enable ACLs, even if you don't need or want them [link](https://developer.hashicorp.com/nomad/docs/configuration/consul#grpc_ca_file)
+- Git-Ops seems limited and slowly getting depricated, there is no native support for it, so this leaves us with push-only approach
+
+Good things about it:
+
+- good support for variable interpolation (tho some things do not interpolate like you would expect) [link](https://developer.hashicorp.com/nomad/docs/reference/runtime-variable-interpolation)
+- Consul templating: probably the best feature that separates Nomad+Consul setup from everything else, that is that you can template whole service catalog, customized to an app as config, without any extra dependency and fully transparent; and it works well, the docs for this are relatively bad, especially since it shares similar naming with Nomad catalog, which is a lot more limited [link](https://github.com/hashicorp/consul-template/blob/main/docs/templating-language.md) [the full docs are in source code](https://pkg.go.dev/github.com/hashicorp/consul/api#CatalogService)
+- [nomad-pack](https://github.com/hashicorp/nomad-pack) gives templating over the standard templating, making it similar in terms of Helm, but was still rough around the edges in 2025 [examples](https://github.com/hashicorp/nomad-pack-community-registry)
+- the Web UI: it is good and built in
+
 ## Certs
 
 ### Nomad
