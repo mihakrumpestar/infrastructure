@@ -7,7 +7,7 @@ in
   den.aspects.server-01 = {
     includes = [
       den.aspects.server
-      den.aspects.orchestrator
+      #den.aspects.orchestrator
     ];
     nixos =
       { ... }:

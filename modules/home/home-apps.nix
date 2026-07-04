@@ -28,7 +28,7 @@
           obs-studio
           # No color picker currently works properly on KDE6 (use the self created script command `color-picker`)
           gimp # Alternative is: https://github.com/PintaProject/Pinta
-          inkscape
+          #inkscape # TODO: always builds from source for unknown reason
           upscayl # Image upscaler
           kdePackages.gwenview # Image viewer
           kdePackages.kdenlive

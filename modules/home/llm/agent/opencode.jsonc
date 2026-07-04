@@ -184,8 +184,8 @@
     }
   },
   "tool_output": {
-    "max_lines": 50000,
-    "max_bytes": 10485760
+    "max_lines": 5000,
+    "max_bytes": 1024000
   },
   "plugin": [
     "cc-safety-net",
