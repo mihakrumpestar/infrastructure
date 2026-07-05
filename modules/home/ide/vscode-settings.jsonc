@@ -65,8 +65,7 @@
   },
   // LanguageTool
   "ltex": {
-    "language": "auto",
-    "additionalRules.motherTongue": "en-US",
+    "language": "en-US",
     "additionalRules.enablePickyRules": true,
     "statusBarItem": true,
     "enabled": [
