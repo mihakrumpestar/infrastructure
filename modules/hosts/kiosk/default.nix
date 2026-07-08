@@ -27,6 +27,14 @@
           de.plasma.kiosk = true;
 
           impermanence.fullyImpermanent = true;
+
+          # Lanzaboote + measured boot require several state files to survive
+          impermanence.directories = [
+            "/var/lib/sbctl"
+            "/var/lib/pcrlock.d"
+            "/var/lib/auto-cryptenroll"
+            "/var/lib/systemd" # pcrlock.json lives here, can't mount as file as it is overwritten
+          ];
         };
       };
   };

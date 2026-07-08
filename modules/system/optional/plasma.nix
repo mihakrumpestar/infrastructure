@@ -83,7 +83,11 @@
                 };
 
                 # In minutes
-                kscreenlocker.timeout = if config.my.de.plasma.kiosk then 0 else 30;
+                kscreenlocker = {
+                  timeout = if config.my.de.plasma.kiosk then 0 else 30;
+                  autoLock = lib.mkIf config.my.de.plasma.kiosk false;
+                  lockOnResume = lib.mkIf config.my.de.plasma.kiosk false;
+                };
 
                 kwin = {
                   effects = {

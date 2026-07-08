@@ -102,9 +102,13 @@
               "repos"
             ];
 
-            filesToPersist = if cfg.fullyImpermanent then minimumFiles else defaultFiles ++ cfg.files;
+            filesToPersist =
+              if cfg.fullyImpermanent then minimumFiles ++ cfg.files else defaultFiles ++ cfg.files;
             directoriesToPersist =
-              if cfg.fullyImpermanent then minimumDirectories else defaultDirectories ++ cfg.directories;
+              if cfg.fullyImpermanent then
+                minimumDirectories ++ cfg.directories
+              else
+                defaultDirectories ++ cfg.directories;
             userFilesToPersist = if cfg.fullyImpermanent then [ ] else defaultUserFiles ++ cfg.userFiles;
             userDirectoriesToPersist =
               if cfg.fullyImpermanent then [ ] else defaultUserDirectories ++ cfg.userDirectories;

@@ -36,7 +36,7 @@
 
     kiosk = {
       includes = [ den.aspects.kiosk ];
-      users.kiosk.classes = [ "homeManager" ];
+      users.public-user.classes = [ "homeManager" ];
     };
   };
 

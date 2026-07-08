@@ -3,7 +3,7 @@ let
   data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
 in
 {
-  den.aspects.kiosk-user = {
+  den.aspects.public-user = {
     includes = [
       home.common
       home.kiosk-browser
@@ -15,7 +15,7 @@ in
         ...
       }:
       {
-        users.users."kiosk" = {
+        users.users."public-user" = {
           uid = 1002;
           group = "users";
           openssh.authorizedKeys.keys = [
@@ -24,6 +24,7 @@ in
           extraGroups = [
             "video"
             "networkmanager"
+            "tss" # TPM device access for age-plugin-tpm
           ];
         };
 
@@ -43,8 +44,9 @@ in
         services.displayManager = {
           autoLogin = {
             enable = true;
-            user = "kiosk";
+            user = "public-user";
           };
+          sddm.autoLogin.relogin = true;
         };
       };
   };

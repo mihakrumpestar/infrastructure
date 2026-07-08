@@ -38,7 +38,7 @@ class BrightnessHandler(http.server.BaseHTTPRequestHandler):
     @override
     def log_message(self, format: str, *args: object) -> None:
         if any(keyword in str(format) for keyword in ["error", "Error", "ERROR"]) or (
-            len(args) > 0 and isinstance(args[0], (int, str)) and int(args[0]) >= 400
+            len(args) > 0 and isinstance(args[0], int) and args[0] >= 400
         ):
             super().log_message(format, *args)
 
