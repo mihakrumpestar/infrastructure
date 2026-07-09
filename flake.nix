@@ -6,9 +6,13 @@
     # DeterminateSystems/nixpkgs-weekly updates weekly with 1 week cooldown period, to mitigate supply chain attacks
     nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1"; # github:NixOS/nixpkgs/nixos-unstable
 
-    nur.url = "github:nix-community/NUR";
-    den.url = "github:denful/den";
-    import-tree.url = "github:denful/import-tree";
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    den.url = "github:denful/den"; # Does not have nixpkgs
+    import-tree.url = "github:denful/import-tree"; # Does not have nixpkgs
 
     disko = {
       url = "github:nix-community/disko";
@@ -16,10 +20,10 @@
     };
 
     impermanence = {
-      url = "github:mihakrumpestar/impermanence/fix-initrd-user-permissions";
+      url = "github:mihakrumpestar/impermanence/fix-initrd-user-permissions"; # github:nix-community/impermanence
       inputs = {
-        nixpkgs.follows = "";
-        home-manager.follows = "";
+        nixpkgs.follows = ""; # Only used for dev
+        home-manager.follows = ""; # Only used for dev
       };
     };
 
@@ -56,10 +60,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
+    nix-vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Experimental
-    tix.url = "github:JRMurr/tix";
+    tix = {
+      url = "github:JRMurr/tix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Local
 
