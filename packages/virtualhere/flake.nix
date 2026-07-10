@@ -50,7 +50,7 @@
         in
         {
           options.services.virtualhere = {
-            enable = mkEnableOption "VirtualHere USB Client, user has to be in 'virtualhere' group, to not require sudo password";
+            enable = mkEnableOption "VirtualHere USB Client, user has to be in 'virtualhere' group";
 
             enableGui = mkOption {
               type = types.bool;
@@ -71,101 +71,92 @@
             };
           };
 
-          config = mkIf cfg.enable {
-            users.groups.virtualhere = { };
+          config = mkIf cfg.enable (mkMerge [
+            {
+              users.groups.virtualhere = { };
 
-            security.sudo.extraRules = [
-              {
-                groups = [ "virtualhere" ];
-                commands = [
-                  {
-                    command = "${virtualhere-client-gui}/bin/virtualhere-client-gui";
-                    options = [
-                      "NOPASSWD"
-                      "SETENV"
-                    ];
-                  }
-                  {
-                    command = "${virtualhere-client-cli}/bin/virtualhere-client-cli";
-                    options = [
-                      "NOPASSWD"
-                      "SETENV"
-                    ];
-                  }
-                  {
-                    command = "/run/current-system/sw/bin/virtualhere-client-gui";
-                    options = [
-                      "NOPASSWD"
-                      "SETENV"
-                    ];
-                  }
-                  {
-                    command = "/run/current-system/sw/bin/virtualhere-client-cli";
-                    options = [
-                      "NOPASSWD"
-                      "SETENV"
-                    ];
-                  }
-                ];
-              }
-            ];
-
-            environment.systemPackages = [
-              virtualhere-client-gui
-              virtualhere-client-cli
-            ];
-
-            systemd = {
-              user.services = {
-                virtualhere-gui = {
-                  description = "VirtualHere GUI Client";
-                  wantedBy = [ "default.target" ];
-                  after = [
-                    "graphical-session.target"
+              # The VirtualHere binary checks for UID 0 at startup and refuses to run otherwise.
+              # sudo -E sets all UIDs to 0 (passing the check) while preserving the environment.
+              security.sudo.extraRules = [
+                {
+                  groups = [ "virtualhere" ];
+                  commands = [
+                    {
+                      command = "${virtualhere-client-gui}/bin/virtualhere-client-gui";
+                      options = [
+                        "NOPASSWD"
+                        "SETENV"
+                      ];
+                    }
+                    {
+                      command = "${virtualhere-client-cli}/bin/virtualhere-client-cli";
+                      options = [
+                        "NOPASSWD"
+                        "SETENV"
+                      ];
+                    }
                   ];
-                  serviceConfig = {
-                    Type = "simple";
-                    ExecStartPre = "${pkgs.bash}/bin/bash -c 'for i in $(seq 1 180); do [ -n \"$DISPLAY\" ] || [ -n \"$WAYLAND_DISPLAY\" ] && break; sleep 1; done'";
-                    ExecStart = "/run/wrappers/bin/sudo -E ${virtualhere-client-gui}/bin/virtualhere-client-gui --start-minimized";
-                    Restart = "on-failure";
-                  };
-                  unitConfig = {
-                    ConditionGroup = "virtualhere";
-                  };
-                  enable = cfg.enableGui;
-                };
+                }
+              ];
 
-                virtualhere-cli = {
-                  description = "VirtualHere CLI Client";
-                  wantedBy = [ "default.target" ];
-                  after = [ "graphical-session.target" ];
-                  serviceConfig = {
-                    ExecStart = "/run/wrappers/bin/sudo -E ${virtualhere-client-cli}/bin/virtualhere-client-cli";
-                    Restart = "on-failure";
-                  };
-                  unitConfig = {
-                    ConditionGroup = "virtualhere";
-                  };
-                  enable = cfg.enableCli && cfg.runCliAsUser;
-                };
-              };
+              environment.systemPackages = [
+                virtualhere-client-gui
+                virtualhere-client-cli
+                pkgs.kmod
+              ];
 
-              services.virtualhere-cli = {
-                description = "VirtualHere CLI Client (System Service)";
-                after = [ "network.target" ];
-                wantedBy = [ "multi-user.target" ];
+              boot.extraModulePackages = with config.boot.kernelPackages; [ usbip ];
+              boot.kernelModules = [
+                "vhci_hcd"
+                "usbip_core"
+              ];
+            }
+
+            (mkIf cfg.enableGui {
+              systemd.user.services.virtualhere-gui = {
+                description = "VirtualHere GUI Client";
+                wantedBy = [ "graphical-session.target" ];
+                after = [ "graphical-session.target" ];
+                partOf = [ "graphical-session.target" ];
                 serviceConfig = {
-                  ExecStart = "${virtualhere-client-cli}/bin/virtualhere-client-cli";
+                  Type = "simple";
+                  ExecStart = "${config.security.wrapperDir}/sudo -E ${virtualhere-client-gui}/bin/virtualhere-client-gui --start-minimized";
                   Restart = "on-failure";
                 };
-                enable = cfg.enableCli && !cfg.runCliAsUser;
+                unitConfig = {
+                  ConditionGroup = "virtualhere";
+                };
               };
-            };
+            })
 
-            programs.nix-ld.enable = true;
-
-            boot.extraModulePackages = with config.boot.kernelPackages; [ usbip ];
-          };
+            (mkIf cfg.enableCli (mkMerge [
+              (mkIf cfg.runCliAsUser {
+                systemd.user.services.virtualhere-cli = {
+                  description = "VirtualHere CLI Client";
+                  wantedBy = [ "default.target" ];
+                  after = [ "network.target" ];
+                  serviceConfig = {
+                    ExecStart = "${config.security.wrapperDir}/sudo -E ${virtualhere-client-cli}/bin/virtualhere-client-cli";
+                    Restart = "on-failure";
+                  };
+                  unitConfig = {
+                    ConditionGroup = "virtualhere";
+                  };
+                };
+              })
+              (mkIf (!cfg.runCliAsUser) {
+                systemd.services.virtualhere-cli = {
+                  description = "VirtualHere CLI Client (System Service)";
+                  after = [ "network.target" ];
+                  wantedBy = [ "multi-user.target" ];
+                  serviceConfig = {
+                    ExecStart = "${virtualhere-client-cli}/bin/virtualhere-client-cli";
+                    Restart = "on-failure";
+                  };
+                };
+              })
+            ]))
+          ]);
         };
     };
 }

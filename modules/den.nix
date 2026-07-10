@@ -44,6 +44,7 @@
     includes = [
       den.batteries.hostname
       den.batteries.define-user
+      den.batteries.host-aspects
 
       den.aspects.core
       den.aspects.shell

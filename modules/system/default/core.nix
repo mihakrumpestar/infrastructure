@@ -79,6 +79,9 @@
             cpu-x # CPU, GPU and motherboard info
           ];
 
+          # Make some of the dynamically linked binaries work, that are not part of nix (eg. VSCode extensions, etc.)
+          programs.nix-ld.enable = true;
+
           services = {
             # SSH
             sshd.enable = true;
