@@ -117,7 +117,10 @@ in
           Unit = {
             Description = "rclone: Remote FUSE filesystem for cloud storage config %i";
             Documentation = "man:rclone(1)";
-            After = [ "network-online.target" ];
+            After = [
+              "network-online.target"
+              "agenix.service"
+            ];
             Wants = [ "network-online.target" ];
           };
           Service = {

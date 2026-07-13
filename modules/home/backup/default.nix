@@ -18,11 +18,13 @@ in
         systemd.user.services.backrest = {
           Unit = {
             Description = "Backrest";
-            After = [ "network.target" ];
+            After = [
+              "network.target"
+              "graphical-session.target"
+            ];
           };
           Service = {
             Type = "simple";
-            ExecStartPre = "${pkgs.coreutils}/bin/sleep 60";
             ExecStart = "${pkgs.backrest}/bin/backrest";
             Restart = "on-failure";
             RestartSec = "10s";

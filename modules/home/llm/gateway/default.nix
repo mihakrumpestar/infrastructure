@@ -25,7 +25,9 @@ in
           Service = {
             Type = "simple";
             TimeoutStartSec = 120;
-            ExecStartPre = "${pkgs.docker}/bin/docker pull ghcr.io/mcowger/plexus:latest";
+            # Only pull if the image doesn't exist locally; periodic updates
+            # are handled by plexus-image-update.timer
+            ExecStartPre = "${pkgs.bash}/bin/bash -c '${pkgs.docker}/bin/docker image inspect ghcr.io/mcowger/plexus:latest > /dev/null 2>&1 || ${pkgs.docker}/bin/docker pull ghcr.io/mcowger/plexus:latest'";
             ExecStart =
               let
                 envFile = config.age.secrets."llm_gateway.env".path;
@@ -49,6 +51,32 @@ in
           };
           Install = {
             WantedBy = [ "graphical-session.target" ];
+          };
+        };
+
+        # Periodically check for plexus image updates without blocking startup
+        systemd.user.services.plexus-image-update = {
+          Unit = {
+            Description = "Pull latest Plexus container image";
+            After = [ "network-online.target" ];
+            Wants = [ "network-online.target" ];
+          };
+          Service = {
+            Type = "oneshot";
+            ExecStart = "${pkgs.docker}/bin/docker pull ghcr.io/mcowger/plexus:latest";
+          };
+        };
+
+        systemd.user.timers.plexus-image-update = {
+          Unit = {
+            Description = "Timer: Pull latest Plexus container image";
+          };
+          Timer = {
+            OnStartupSec = "5min";
+            OnUnitActiveSec = "24h";
+          };
+          Install = {
+            WantedBy = [ "timers.target" ];
           };
         };
       };

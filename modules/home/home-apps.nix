@@ -141,12 +141,15 @@
         systemd.user.services.awatcher = {
           Unit = {
             Description = "AWatcher";
-            After = [ "graphical-session.target" ];
+            After = [
+              "graphical-session.target"
+              "activitywatch.service"
+            ];
           };
           Service = {
             Type = "simple";
             TimeoutStartSec = 120;
-            ExecStartPre = "${pkgs.coreutils}/bin/sleep 10"; # The important part
+            ExecStartPre = "${pkgs.coreutils}/bin/sleep 10"; # Delay, so activitywatch is fully initialized
             ExecStart = "${pkgs.awatcher}/bin/awatcher";
             Restart = "always";
             RestartSec = 5;

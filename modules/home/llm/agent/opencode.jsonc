@@ -122,6 +122,19 @@
       ],
       "enabled": true,
     },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "bunx",
+        "chrome-devtools-mcp@latest",
+        "--executable-path",
+        "@chromium@"
+      ],
+      "enabled": true,
+      "environment": {
+        "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "true",
+      }
+    },
     //
     // Not needed most of the time and/or add a lot to context
     //
@@ -142,19 +155,6 @@
       "enabled": false,
       "environment": {
         "XACTIONS_SESSION_COOKIE": "{env:XACTIONS_SESSION_COOKIE}"
-      }
-    },
-    "chrome-devtools": {
-      "type": "local",
-      "command": [
-        "bunx",
-        "chrome-devtools-mcp@latest",
-        "--executable-path",
-        "@chromium@"
-      ],
-      "enabled": false,
-      "environment": {
-        "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "true",
       }
     },
     /*
