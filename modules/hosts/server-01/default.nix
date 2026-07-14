@@ -40,10 +40,12 @@ in
             };
           };
 
-          orchestrator = {
-            publicDns = true;
-            bindAddress = host.nics.default.ip;
-          };
+          /*
+            orchestrator = {
+              publicDns = true;
+              bindAddress = host.nics.default.ip;
+            };
+          */
         };
 
         # mkfs.xfs -L data-01 /dev/nvme0n1p1

@@ -21,21 +21,16 @@ NixOS configuration repository for managing multiple hosts using flakes.
 └── docs/                   # Documentation
 ```
 
-## Hardware-config
+## Hosts
 
-Generate using (on remote):
-
-```sh
-nixos-generate-config --show-hardware-config
-```
-
-## TPM2 encryption key
-
-Generate per machine TPM2 age key:
-
-```sh
-nix-shell -p age-plugin-tpm --command "sudo age-plugin-tpm -g"
-```
+| **Host** | **Type** | **Boot** | **Disk enc.** | **Secrets enc.** | **Impermanence** | **Home Manager** |
+|---|---|---|---|---|---|---|
+| personal-workstation | Client | Lanzaboote | FIDO2 | TPM | Default | Full |
+| personal-laptop | Client | Lanzaboote | FIDO2 | TPM | Default | Full |
+| server-01 | Server | Lanzaboote | TPM2 | TPM | Default | None |
+| server-03 | Server | systemd-boot | TPM2 | TPM | Default | None |
+| personal-vps-02 | Server+VM guest | GRUB | None | SSH key | Default | None |
+| kiosk | Client (kiosk) | Lanzaboote | TPM2 | TPM | Maximum | Kiosk-only |
 
 ## Build Statistics
 

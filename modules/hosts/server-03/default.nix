@@ -38,10 +38,12 @@ in
             };
           };
 
-          orchestrator = {
-            publicDns = true;
-            bindAddress = host.nics.default.ip;
-          };
+          /*
+            orchestrator = {
+              publicDns = true;
+              bindAddress = host.nics.default.ip;
+            };
+          */
         };
       };
   };
