@@ -434,11 +434,11 @@
     "infrastructure-secrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1783503061,
-        "narHash": "sha256-C1kWlqMH/AUtjTLbNmMDr2XnkDORTIg/nfVuFc8i+pU=",
+        "lastModified": 1784035255,
+        "narHash": "sha256-I50GhXRx9dGdbjrqWY461v8oQl+IXL1A6b5xvKxAiMQ=",
         "ref": "refs/heads/main",
-        "rev": "e9157f50629f792ee6947946683551a035495a2a",
-        "revCount": 76,
+        "rev": "f5972189ecb0ad932620681b3303a460c18a2976",
+        "revCount": 77,
         "type": "git",
         "url": "file:../infrastructure-secrets"
       },

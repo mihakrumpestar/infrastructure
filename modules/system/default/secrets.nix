@@ -68,6 +68,12 @@ in
 
           services.userborn.enable = true; # For agenix
 
+          # agenix-install-secrets.service has Before=systemd-sysusers.service,
+          # but userborn replaces systemd-sysusers — without this, userborn can
+          # race ahead of agenix and fail to read hashedPasswordFile for users.
+          # Seems like https://github.com/ryantm/agenix/issues/345 does nto work in this particular case
+          systemd.services.userborn.after = [ "agenix-install-secrets.service" ];
+
           security.tpm2 = lib.mkIf useTpm {
             enable = true;
             pkcs11.enable = true; # expose /run/current-system/sw/lib/libtpm2_pkcs11.so

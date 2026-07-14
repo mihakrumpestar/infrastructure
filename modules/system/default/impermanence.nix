@@ -6,6 +6,7 @@
         config,
         lib,
         pkgs,
+        utils,
         ...
       }:
       with lib;
@@ -56,6 +57,9 @@
             btrfsDevice = config.fileSystems."/".device;
             inherit (pkgs) btrfs-progs;
             systemdInitrd = config.boot.initrd.systemd.enable;
+            # Device unit name for the btrfs root device, so the wipe service
+            # waits for the device to be available before trying to mount it.
+            btrfsDeviceUnit = "${utils.escapeSystemdPath btrfsDevice}.device";
 
             minimumFiles = [
               "/etc/machine-id"
@@ -171,7 +175,11 @@
                 services.impermanence-wipe = {
                   description = "Wipe root and home btrfs subvolumes for impermanence";
                   wantedBy = [ "initrd.target" ];
-                  after = [ "cryptsetup.target" ];
+                  after = [
+                    "cryptsetup.target"
+                    btrfsDeviceUnit # btrfsDeviceUnit is required to make sure block device was available before service starts
+                  ];
+                  wants = [ btrfsDeviceUnit ];
                   before = [ "sysroot.mount" ];
                   unitConfig.DefaultDependencies = false;
                   serviceConfig.Type = "oneshot";

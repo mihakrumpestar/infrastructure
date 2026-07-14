@@ -36,7 +36,7 @@ NixOS configuration repository for managing multiple hosts using flakes.
 
 <!-- STATS_START -->
 
-commit hash: daa648027cb5870250927a0ea1e8444172bdef02
+commit hash: a53d0c24519276f207f60e7c551ff78ce8eb3f44
 
 nix (Nix) 2.34.7
 
@@ -56,16 +56,16 @@ LOC excludes blank lines but includes comments. All file types are counted
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |      87 |
-| modules/den.nix  |      95 |
-| modules/hosts    |     421 |
-| modules/system   |    2336 |
-| modules/home     |    2521 |
-| modules/users    |     182 |
-| modules (total)  |    5555 |
-| packages (total) |     293 |
+| flake.nix        |      89 |
+| modules/den.nix  |      94 |
+| modules/hosts    |     451 |
+| modules/system   |    1929 |
+| modules/home     |    2831 |
+| modules/users    |     184 |
+| modules (total)  |    5489 |
+| packages (total) |     279 |
 | lib (total)      |      97 |
-| **Total**        |    6032 |
+| **Total**        |    5954 |
 
 ## NixOS Configuration Sizes
 
@@ -80,16 +80,16 @@ System/Home Refs shows the total recursive dependencies for each profile.
 
 |                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |
 |---------------------:|---------------:|--------------:|------------:|--------------:|------------:|
-|                kiosk |       9.78 GiB |          1422 |         461 |          2135 |         510 |
-|      personal-laptop |      35.96 GiB |          6251 |        5541 |          8293 |        6886 |
-|      personal-vps-02 |       3.25 GiB |           663 |           - |          1168 |           - |
-| personal-workstation |      36.92 GiB |          6301 |        5541 |          8366 |        6887 |
-|            server-01 |       5.02 GiB |           697 |           - |          1236 |           - |
-|            server-03 |       5.03 GiB |           697 |           - |          1231 |           - |
+|                kiosk |      10.39 GiB |          1434 |         521 |          2179 |         576 |
+|      personal-laptop |      36.60 GiB |          6241 |        5527 |          8299 |        6869 |
+|      personal-vps-02 |       3.60 GiB |           676 |           - |          1190 |           - |
+| personal-workstation |      37.62 GiB |          6293 |        5530 |          8379 |        6875 |
+|            server-01 |       6.12 GiB |           705 |           - |          1244 |           - |
+|            server-03 |       4.38 GiB |           683 |           - |          1197 |           - |
 
 ## Eval Performance
 
-**Statistics computed over 5 run(s)**
+**Statistics computed over 3 run(s)**
 
 ### Sequential
 
@@ -99,12 +99,12 @@ Each host is evaluated in isolation using `nix eval --option eval-cache false` t
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 11.593s |  11.565s |    0.101s | 11.500s | 11.718s |      5 |
-|      personal-laptop | 17.298s |  17.259s |    0.183s | 17.068s | 17.549s |      5 |
-|      personal-vps-02 |  7.810s |   7.775s |    0.107s |  7.708s |  7.990s |      5 |
-| personal-workstation | 17.398s |  17.382s |    0.075s | 17.329s | 17.504s |      5 |
-|            server-01 |  9.223s |   9.199s |    0.063s |  9.161s |  9.325s |      5 |
-|            server-03 |  9.156s |   9.143s |    0.028s |  9.132s |  9.194s |      5 |
+|                kiosk | 12.350s |  12.343s |    0.064s | 12.290s | 12.417s |      3 |
+|      personal-laptop | 16.707s |  16.731s |    0.152s | 16.545s | 16.846s |      3 |
+|      personal-vps-02 |  8.350s |   8.336s |    0.049s |  8.310s |  8.405s |      3 |
+| personal-workstation | 16.724s |  16.683s |    0.129s | 16.620s | 16.869s |      3 |
+|            server-01 |  9.465s |   9.471s |    0.019s |  9.444s |  9.481s |      3 |
+|            server-03 |  8.359s |   8.338s |    0.041s |  8.334s |  8.406s |      3 |
 
 ### Simultaneous
 
@@ -114,12 +114,12 @@ All hosts are evaluated in parallel to measure the overhead of concurrent Nix ev
 
 |                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
 |---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 21.990s |  21.847s |    0.273s | 21.698s | 22.310s |      5 |
-|      personal-laptop | 28.720s |  28.659s |    0.454s | 28.037s | 29.193s |      5 |
-|      personal-vps-02 | 17.258s |  17.240s |    0.154s | 17.076s | 17.500s |      5 |
-| personal-workstation | 28.847s |  28.830s |    0.371s | 28.347s | 29.331s |      5 |
-|            server-01 | 19.186s |  19.226s |    0.209s | 18.953s | 19.401s |      5 |
-|            server-03 | 19.199s |  19.298s |    0.247s | 18.852s | 19.412s |      5 |
+|                kiosk | 24.310s |  24.315s |    0.034s | 24.274s | 24.341s |      3 |
+|      personal-laptop | 29.228s |  29.255s |    0.098s | 29.119s | 29.310s |      3 |
+|      personal-vps-02 | 19.725s |  19.755s |    0.081s | 19.633s | 19.786s |      3 |
+| personal-workstation | 29.285s |  29.262s |    0.059s | 29.240s | 29.352s |      3 |
+|            server-01 | 20.963s |  20.962s |    0.097s | 20.866s | 21.060s |      3 |
+|            server-03 | 19.602s |  19.578s |    0.138s | 19.478s | 19.750s |      3 |
 
 ## Closure Reuse Matrix
 
@@ -134,12 +134,12 @@ through shared package caches and common dependency management.
 
 |                 Host |   kiosk |   personal-laptop |   personal-vps-02 |   personal-workstation |   server-01 |   server-03 |
 |---------------------:|--------:|------------------:|------------------:|-----------------------:|------------:|------------:|
-|                kiosk |       - |               94% |               47% |                    94% |         49% |         49% |
-|      personal-laptop |     24% |                 - |               12% |                    99% |         12% |         13% |
-|      personal-vps-02 |     86% |               86% |                 - |                    86% |         92% |         92% |
+|                kiosk |       - |               94% |               47% |                    93% |         49% |         48% |
+|      personal-laptop |     24% |                 - |               12% |                    99% |         12% |         12% |
+|      personal-vps-02 |     86% |               86% |                 - |                    86% |         92% |         93% |
 | personal-workstation |     24% |               98% |               12% |                      - |         12% |         12% |
-|            server-01 |     85% |               86% |               87% |                    86% |           - |         95% |
-|            server-03 |     85% |               87% |               87% |                    87% |         95% |           - |<!-- STATS_END -->
+|            server-01 |     86% |               85% |               88% |                    85% |           - |         91% |
+|            server-03 |     88% |               88% |               92% |                    88% |         95% |           - |<!-- STATS_END -->
 
 ## Dependency Graph
 
@@ -214,11 +214,6 @@ flowchart LR
         sys_style["style"]:::aspect
         opt_containers["containers"]:::aspect
         opt_nvidia["nvidia"]:::aspect
-        opt_orchestrator_caddy["orchestrator/caddy"]:::aspect
-        opt_orchestrator_consul["orchestrator/consul"]:::aspect
-        opt_orchestrator_coredns["orchestrator/coredns"]:::aspect
-        opt_orchestrator_nomad["orchestrator/nomad"]:::aspect
-        opt_orchestrator["orchestrator"]:::aspect
         opt_peripherals["peripherals"]:::aspect
         opt_plasma["plasma"]:::aspect
         opt_virtualization["virtualization"]:::aspect
@@ -312,10 +307,10 @@ flowchart LR
     host_personal_workstation --> opt_virtualization
     host_personal_workstation --> type_client
     host_server_01 --> host_server_01_hardware
-    host_server_01 --> opt_orchestrator
+    host_server_01 --> orchestrator
     host_server_01 --> type_server
     host_server_03 --> host_server_03_hardware
-    host_server_03 --> opt_orchestrator
+    host_server_03 --> orchestrator
     host_server_03 --> type_server
     input_agenix --> flake
     input_den --> flake
@@ -336,11 +331,7 @@ flowchart LR
     local_consul_cni --> flake
     local_mutable_file --> flake
     local_virtualhere --> flake
-    opt_orchestrator --> opt_containers
-    opt_orchestrator --> opt_orchestrator_caddy
-    opt_orchestrator --> opt_orchestrator_consul
-    opt_orchestrator --> opt_orchestrator_coredns
-    opt_orchestrator --> opt_orchestrator_nomad
+    orchestrator --> opt_containers
     sys_shell --> sys_shell_fonts
     sys_shell --> sys_shell_packages
     sys_shell --> sys_shell_starship

@@ -29,7 +29,18 @@ in
           };
         };
 
-        networking.interfaces.eth0.useDHCP = true;
+        # For systemd-networkd-wait-online to work properly
+        systemd.network = {
+          links."10-wan0" = {
+            matchConfig.Type = "ether";
+            linkConfig.Name = "wan0";
+          };
+          networks."40-wan0" = {
+            matchConfig.Name = "wan0";
+            networkConfig.DHCP = "yes";
+            linkConfig.RequiredForOnline = "routable";
+          };
+        };
 
         users.users.root.openssh.authorizedKeys.keys = lib.mkForce [
           data.ssh_authorized_keys.vps
