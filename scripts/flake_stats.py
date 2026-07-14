@@ -139,8 +139,7 @@ def build_loc_table() -> tuple[str, list[list[str | int]]]:
 
 **Table 1:** Non-blank lines across the flake's source tree.
 
-LOC excludes blank lines but includes comments. All file types are counted
-(`.nix`, `.json`, `.jsonc`, `.sh`, `.ini`, etc.) except Markdown (`.md`).
+LOC excludes blank lines but includes comments. All file types are counted (`.nix`, `.json`, `.jsonc`, `.sh`, `.ini`, etc.) except Markdown (`.md`).
 """
     rows: list[list[str | int]] = []
     grand_total = count_loc(REPO_ROOT / "flake.nix")
@@ -391,12 +390,7 @@ Memory: {memory}
 
 **Table 2:** NixOS system configuration sizes for each host.
 
-This table presents the closure size (total disk space required for all dependencies)
-for each configured host in the infrastructure. Closure size is measured in GiB
-(gibibytes, 2³⁰ bytes) and represents the complete set of packages, libraries,
-and system components required for each configuration. System/Home Pkgs shows
-the count of packages in each profile (excluding -doc, -man, -info, -dev, -bin outputs).
-System/Home Refs shows the total recursive dependencies for each profile.
+This table presents the closure size (total disk space required for all dependencies) for each configured host in the infrastructure. Closure size is measured in GiB (gibibytes, 2³⁰ bytes) and represents the complete set of packages, libraries, and system components required for each configuration. System/Home Pkgs shows the count of packages in each profile (excluding -doc, -man, -info, -dev, -bin outputs). System/Home Refs shows the total recursive dependencies for each profile.
 """)
     rows = []
     for h in hosts:
@@ -442,12 +436,12 @@ System/Home Refs shows the total recursive dependencies for each profile.
             (
                 "Sequential",
                 seq,
-                "Evaluation time per host with no concurrent evaluation.\n\nEach host is evaluated in isolation using `nix eval --option eval-cache false` to ensure deterministic, cache-free measurements.",
+                "Evaluation time per host with no concurrent evaluation. Each host is evaluated in isolation using `nix eval --option eval-cache false` to ensure deterministic, cache-free measurements.",
             ),
             (
                 "Simultaneous",
                 sim,
-                "Evaluation time per host with all hosts evaluated concurrently.\n\nAll hosts are evaluated in parallel to measure the overhead of concurrent Nix evaluation (CPU contention, lock contention, etc.).",
+                "Evaluation time per host with all hosts evaluated concurrently. All hosts are evaluated in parallel to measure the overhead of concurrent Nix evaluation (CPU contention, lock contention, etc.).",
             ),
         ],
         start=3,
@@ -486,12 +480,7 @@ System/Home Refs shows the total recursive dependencies for each profile.
 
 **Table 5:** Binary-level dependency sharing between host configurations.
 
-This matrix quantifies the degree of dependency reuse across different NixOS host
-configurations. Each cell shows the percentage of packages (derivations) from the
-row host's closure that also appear in the column host's closure. A value of 100%
-would indicate complete subsumption. The diagonal shows dashes (-) as self-comparison
-is omitted. Higher percentages indicate greater infrastructure consolidation potential
-through shared package caches and common dependency management.
+This matrix quantifies the degree of dependency reuse across different NixOS host configurations. Each cell shows the percentage of packages (derivations) from the row host's closure that also appear in the column host's closure. A value of 100% would indicate complete subsumption. The diagonal shows dashes (-) as self-comparison is omitted. Higher percentages indicate greater infrastructure consolidation potential through shared package caches and common dependency management.
 """)
     rows = []
     for h1 in hosts:
