@@ -121,6 +121,13 @@ def get_memory() -> str:
     return "unknown"
 
 
+def get_kernel_version() -> str:
+    try:
+        return Path("/proc/sys/kernel/osrelease").read_text().strip()
+    except Exception:
+        return "unknown"
+
+
 def count_loc(path: Path) -> int:
     if not path.exists():
         return 0
@@ -354,6 +361,7 @@ def build_markdown(
     cpu_model: str,
     disk_info: str,
     memory: str,
+    kernel_version: str,
     runs: int,
 ) -> str:
     parts: list[str] = []
@@ -363,6 +371,8 @@ def build_markdown(
 commit hash: {git_hash}
 
 {nix_version}
+
+Kernel: {kernel_version}
 
 CPU: {cpu_model}
 
@@ -604,6 +614,7 @@ def main():
     cpu_model = get_cpu_model()
     disk_info = get_disk_info()
     memory = get_memory()
+    kernel_version = get_kernel_version()
     print(f"Fetching hosts... ({nix_version} · {git_hash})", file=sys.stderr)
 
     all_hosts = sorted(
@@ -662,7 +673,7 @@ def main():
     )
 
     # 4. Markdown output
-    md = build_markdown(host_data, seq, sim, hosts, nix_version, git_hash, cpu_model, disk_info, memory, args.runs)
+    md = build_markdown(host_data, seq, sim, hosts, nix_version, git_hash, cpu_model, disk_info, memory, kernel_version, args.runs)
     print(md, end="")
 
     # 5. Save
