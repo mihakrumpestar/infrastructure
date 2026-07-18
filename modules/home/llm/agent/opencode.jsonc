@@ -138,6 +138,12 @@
     //
     // Not needed most of the time and/or add a lot to context
     //
+    // https://github.com/KeithCu/writeragent, maybe there are better ones?
+    "writeragent": {
+      "type": "remote",
+      "url": "http://localhost:8765/mcp",
+      "enabled": false,
+    },
     "pdf-reader": {
       "type": "local",
       "command": [

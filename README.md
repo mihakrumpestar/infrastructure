@@ -23,14 +23,14 @@ NixOS configuration repository for managing multiple hosts using flakes.
 
 ## Hosts
 
-| **Host** | **Type** | **Boot** | **Disk enc.** | **Secrets enc.** | **Impermanence** | **Home Manager** |
-|---|---|---|---|---|---|---|
-| personal-workstation | Client | Lanzaboote | FIDO2 | TPM | Default | Full |
-| personal-laptop | Client | Lanzaboote | FIDO2 | TPM | Default | Full |
-| server-01 | Server | Lanzaboote | TPM2 | TPM | Default | None |
-| server-03 | Server | systemd-boot | TPM2 | TPM | Default | None |
-| personal-vps-02 | Server+VM guest | GRUB | None | SSH key | Default | None |
-| kiosk | Client (kiosk) | Lanzaboote | TPM2 | TPM | Maximum | Kiosk-only |
+| **Host** | **Type** | **Boot** | **Disk enc.** | **Local login** | **Secrets enc.** | **Impermanence** | **Home Manager** |
+|---|---|---|---|---|---|---|---|
+| personal-workstation | Client | Lanzaboote | FIDO2 | FIDO2 | TPM | Default | Full |
+| personal-laptop | Client | Lanzaboote | FIDO2 | FIDO2 | TPM | Default | Full |
+| server-01 | Server | Lanzaboote | TPM2 | Password | TPM | Default | None |
+| server-03 | Server | systemd-boot | TPM2 | Password | TPM | Default | None |
+| personal-vps-02 | Server+VM guest | GRUB | None | Password | SSH key | Default | None |
+| kiosk | Client (kiosk) | Lanzaboote | TPM2 | Auto | TPM | Maximum | Kiosk-only |
 
 ## Build Statistics
 
