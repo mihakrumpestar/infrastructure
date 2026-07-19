@@ -85,9 +85,6 @@
 
         programs.vscodium = {
           enable = true;
-          package = pkgs.vscodium.override {
-            commandLineArgs = "--password-store=gnome-libsecret";
-          };
           mutableExtensionsDir = false;
           profiles.default = {
             extensions =
@@ -191,6 +188,7 @@
         home.mutableFile = {
           # code --diff users/krumpy-miha/home/ide/settings.json ~/.config/VSCodium/User/settings.json
           ".config/VSCodium/User/settings.json".source = ./vscode-settings.jsonc;
+          ".vscode-oss/argv.json".source = ./vscode-argv.jsonc;
         };
 
         # Switch GitHub CLI authentication profile via secret-service
