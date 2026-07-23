@@ -30,7 +30,7 @@
 
           # Latex
           tex-fmt
-          texlive.combined.scheme-full # Containes pdflatex and Tex packages required by xournalpp (full is the minimum req to run)
+          texliveFull # Containes pdflatex and Tex packages required by xournalpp (full is the minimum req to run)
           python313Packages.pygments # For Latex code snippets
 
           # Typst

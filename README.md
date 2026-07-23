@@ -358,6 +358,8 @@ flowchart LR
 Sources:
 
 - https://nixos-and-flakes.thiscute.world
+- https://teu5us.github.io/nix-lib.html
+- https://nixsearch.thekoppe.com (better Nix packages and options search)
 
 Configs:
 

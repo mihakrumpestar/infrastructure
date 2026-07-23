@@ -23,8 +23,8 @@
           # Video/Audio and photo
           audacity # Sound
           mpv # Media Player (better than VLC)
-          handbrake
-          ffmpeg-full
+          #handbrake
+          #ffmpeg-full
           obs-studio
           # No color picker currently works properly on KDE6 (use the self created script command `color-picker`)
           gimp # Alternative is: https://github.com/PintaProject/Pinta
@@ -43,7 +43,7 @@
           freetube # Youtube client
           #drawio # Drawing tool # UNFREE license
           kdePackages.kcalc # Calculator
-          freecad-wayland # 3D design tool
+          #freecad-wayland # 3D design tool
 
           # AI
           #jan # Has hardcoded providers and endpoints

@@ -10,6 +10,19 @@
       }:
       let
         source = inputs.openchamber.packages.${pkgs.stdenv.hostPlatform.system};
+
+        # Wrap openchamber-desktop so it connects to the existing opencode
+        # service instead of starting its own (which lacks GATEWAY_API_BASE).
+        openchamber-desktop = pkgs.symlinkJoin {
+          name = "openchamber-desktop-wrapped";
+          paths = [ source.openchamber-desktop ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/openchamber-desktop \
+              --set OPENCODE_SKIP_START true \
+              --set OPENCODE_HOST http://127.0.0.1:4096
+          '';
+        };
       in
       {
         services.openchamber = {
@@ -21,9 +34,9 @@
           host = "127.0.0.1";
 
           # Point to the existing opencode serve instance managed by llm-agent
+          # OPENCODE_HOST includes the port and takes precedence over OPENCODE_PORT
           opencode = {
             host = "http://127.0.0.1:4096";
-            port = 4096;
             skipStart = true;
           };
 
@@ -55,6 +68,7 @@
             notifyOnSubtasks = true;
             notifyOnError = true;
             notifyOnQuestion = true;
+            showOpenCodeUpdateNotifications = false;
 
             # Behavior
             inputSpellcheckEnabled = true;
@@ -73,7 +87,7 @@
         # Electron desktop client (alongside opencode-desktop from nixpkgs)
         home.packages = [
           source.openchamber
-          source.openchamber-desktop
+          openchamber-desktop
         ];
 
         # Ensure openchamber starts after the opencode service
@@ -96,16 +110,15 @@
                 "OPENCHAMBER_HOST=${cfg.host}"
               ]
               ++ lib.optional (cfg.opencode.host != null) "OPENCODE_HOST=${cfg.opencode.host}"
-              ++ lib.optional (cfg.opencode.port != null) "OPENCODE_PORT=${toString cfg.opencode.port}"
               ++ lib.optional cfg.opencode.skipStart "OPENCODE_SKIP_START=true";
             };
 
             Unit = {
               After = [
-                "opencode.service"
+                "opencode-web.service"
                 "network.target"
               ];
-              Wants = [ "opencode.service" ];
+              Wants = [ "opencode-web.service" ];
             };
           };
       };

@@ -26,7 +26,8 @@
         # Enable virtualization
 
         environment.systemPackages = with pkgs; [
-          qemu_full
+          qemu_kvm
+          #qemu_full this one uses RBD, which pulls ceph as dep
           cdrkit # For genisoimage and other tools
         ];
 
