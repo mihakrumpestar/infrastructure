@@ -65,6 +65,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    openchamber = {
+      url = "github:zms-dev/openchamber-flake/dev";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Experimental
     tix = {
       url = "github:JRMurr/tix";
