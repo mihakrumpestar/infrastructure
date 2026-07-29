@@ -1,3 +1,7 @@
+/*
+  # Alternatives:
+  - https://github.com/getpaseo/paseo
+*/
 { inputs, ... }:
 {
   home.llm-ui = {
@@ -50,13 +54,13 @@
 
             # Defaults
             defaultModel = "Plexus/default";
-            defaultAgent = "plan";
+            defaultAgent = "orchestrator";
             defaultFileViewerPreview = false;
 
             # Chat UI
             chatRenderMode = "live";
             stickyUserHeader = false;
-            collapsibleThinkingBlocks = false;
+            collapsibleThinkingBlocks = true;
             wideChatLayoutEnabled = true;
             showSplitAssistantMessageActions = false;
             showReasoningTraces = true;

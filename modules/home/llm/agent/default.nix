@@ -1,4 +1,69 @@
 # Opencode Agent
+#
+# Multi-Agent Setup Guide
+# =======================
+#
+# This module configures a multi-agent opencode setup with:
+#   - oh-my-opencode-slim: 7-agent orchestration suite (orchestrator, council, etc.)
+#   - opencode-goal-plugin: autonomous goal-driven auto-continuation
+#   - Custom agents: advisor (quiet reviewer), checker (verification)
+#   - Mattpocock skills: code-review, evaluate, grill-me, tdd, spec, etc.
+#
+# Agents available (use @name in chat or switch via agent dropdown):
+#
+#   Primary agents (selectable as default):
+#     plan          - Read-only planning and analysis (default)
+#     build         - Full tool access for implementation
+#     orchestrator  - Multi-agent orchestrator, delegates to specialists
+#     goal          - Goal-driven autonomous execution
+#
+#   Subagents (invoke with @name):
+#     @council      - Run multiple reviewers in parallel, synthesize one answer
+#     @oracle       - Architecture review, debugging, code review
+#     @explorer     - Fast codebase search and discovery
+#     @librarian    - External docs and library research
+#     @designer     - UI/UX design and implementation
+#     @fixer        - Bounded implementation tasks
+#     @advisor      - Quiet decision-point reviewer (custom)
+#     @checker      - Verify implementation, run tests, check edge cases (custom)
+#
+# Skills (invoke with /name):
+#   /evaluate      - Unbiased critical evaluation of anything
+#   /code-review   - Review changes along Standards and Spec axes
+#   /grill-me      - Relentless interview to sharpen a plan
+#   /tdd           - Test-driven development workflow
+#   /spec          - Write a detailed specification of code
+#
+# Commands:
+#   /goal <objective> [--max-turns N] [--max-minutes N]
+#       Set a session-scoped goal and auto-continue until complete.
+#       Example: /goal fix the failing tests --max-turns 20
+#       Pause: /goal pause | Resume: /goal resume | Clear: /goal clear
+#
+# Typical workflows:
+#
+#   1. Planning a feature:
+#      - Use plan agent (default) to analyze and plan
+#      - Switch to orchestrator or build to implement
+#
+#   2. Multi-agent implementation:
+#      - Switch to orchestrator agent
+#      - Describe the task; orchestrator delegates to specialists automatically
+#
+#   3. High-stakes review:
+#      - @council review this architecture for correctness, security, and operability
+#
+#   4. Quick second opinion:
+#      - @advisor review this approach
+#
+#   5. Verification:
+#      - @checker verify the auth module against the spec
+#
+#   6. Autonomous goal:
+#      - /goal implement the user profile page --max-turns 30
+#      - The agent works autonomously, auto-continuing on idle until done
+#
+# A super simplified approach of https://github.com/monotykamary/pi-fabric
 { inputs, ... }:
 let
   secretsDir = inputs.infrastructure-secrets;
@@ -32,11 +97,7 @@ in
 {
   home.llm-agent = {
     homeManager =
-      {
-        config,
-        pkgs,
-        ...
-      }:
+      { config, pkgs, ... }:
       {
         age.secrets."llm_agent.env" = {
           file = "${secretsDir}/secrets/users/krumpy-miha/llm_agent.env.age";
@@ -181,20 +242,20 @@ in
                   CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS = "true";
                 };
               };
-
-              # Not needed most of the time and/or add a lot to context
-              # https://github.com/KeithCu/writeragent, maybe there are better ones?
-              writeragent = {
-                type = "remote";
-                url = "http://localhost:8765/mcp";
-                enabled = false;
-              };
               "pdf-reader" = {
                 type = "local";
                 command = [
                   "bunx"
                   "@sylphx/pdf-reader-mcp"
                 ];
+                enabled = true;
+              };
+
+              # Not needed most of the time and/or add a lot to context
+              # https://github.com/KeithCu/writeragent, maybe there are better ones?
+              writeragent = {
+                type = "remote";
+                url = "http://localhost:8765/mcp";
                 enabled = false;
               };
               xactions = {
@@ -240,13 +301,104 @@ in
               max_bytes = 1024000;
             };
 
+            command = {
+              goal = {
+                description = "Set a session-scoped goal and auto-continue until complete.";
+                template = "$ARGUMENTS";
+                agent = "build";
+              };
+            };
+
             plugin = [
               "cc-safety-net"
 
               # /magic-compact — summarize all old assistant turns
               # /magic-compact 3 — keep the 3 most recent assistant turns, summarize the rest
               "magic-compact"
+              "oh-my-opencode-slim"
+              [
+                "opencode-goal-plugin"
+                {
+                  maxTurns = 20;
+                  maxDurationMs = 1800000;
+                  maxTokens = 200000;
+                  persistState = true;
+                }
+              ]
             ];
+          };
+
+          agents = {
+            advisor = ''
+              ---
+              description: >
+                Decision-point peer reviewer that prefers silence unless there's a real
+                concern. Use when you want a second opinion on a design decision,
+                approach, or plan.
+              mode: subagent
+              model: Plexus/default
+              permission:
+                edit: deny
+                bash: deny
+              ---
+
+              You are a quiet advisor. Your job is to review decisions, plans, and
+              approaches and only speak up when there is a genuine issue.
+
+              ## Principles
+
+              - **Silence is preferred.** If there are no real concerns, say "No
+                concerns." and nothing else.
+              - **No sugarcoating.** If something is wrong, say so plainly.
+              - **Be specific.** Cite exact decisions, lines, or patterns.
+              - **Prioritize by impact.** Lead with issues that cause real problems.
+              - **Acknowledge tradeoffs explicitly.** Lay them out honestly.
+
+              ## Output Format
+
+              If no concerns: "No concerns."
+
+              If concerns:
+              1. **Critical** — Things that must be addressed before proceeding.
+              2. **Concerns** — Things that are likely problematic but debatable.
+              3. **Tradeoffs** — Real tradeoffs that should be explicitly acknowledged.
+            '';
+
+            checker = ''
+              ---
+              description: >
+                Verify implementation against spec, run tests, check edge cases. Use
+                when you want to verify that work is complete and correct.
+              mode: subagent
+              model: Plexus/default
+              permission:
+                edit: deny
+                bash:
+                  "*": allow
+              ---
+
+              You are a verification checker. Your job is to verify that an
+              implementation is complete and correct.
+
+              ## What You Do
+
+              1. **Read the spec or requirements** — understand what was supposed to be
+                 built.
+              2. **Read the implementation** — examine the actual code.
+              3. **Run tests** — execute the test suite and report results.
+              4. **Check edge cases** — look for unhandled inputs, error paths, and
+                 boundary conditions.
+              5. **Verify integration** — check that the change fits with surrounding
+                 code.
+
+              ## Output Format
+
+              1. **Verdict** — PASS, FAIL, or PARTIAL.
+              2. **Test results** — what passed, what failed, with output.
+              3. **Edge cases** — any unhandled cases found.
+              4. **Missing** — anything from the spec that wasn't implemented.
+              5. **Recommendations** — concrete fixes, in priority order.
+            '';
           };
 
           # ~/.config/opencode/AGENTS.md
@@ -275,6 +427,29 @@ in
             - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
             - `docs-mcp-server`: whenever user tells you to use it
             - `writeragent`: MCP for LibreOffice suite
+
+            ## Multi-Agent Patterns
+
+            Use these agents and skills for structured review and verification:
+
+            - `@council` — Run multiple reviewers in parallel and synthesize. Use for
+              high-stakes decisions: `@council review this architecture for correctness,
+              security, and operability.`
+            - `@advisor` — Quiet decision-point reviewer. Use when you want a second
+              opinion: `@advisor review this approach.`
+            - `@checker` — Verify implementation against spec, run tests, check edge
+              cases: `@checker verify the auth module against the spec.`
+            - `@oracle` — Architecture and debugging specialist from oh-my-opencode-slim.
+            - `@orchestrator` — Multi-agent orchestrator that delegates to specialists.
+            - `/goal` — Set a session-scoped goal and auto-continue until complete:
+              `/goal fix the failing tests --max-turns 20`
+
+            Existing skills also available:
+            - `/evaluate` — Unbiased critical evaluation of anything.
+            - `/code-review` — Review changes along Standards and Spec axes.
+            - `/grill-me` — Relentless interview to sharpen a plan.
+            - `/tdd` — Test-driven development workflow.
+            - `/spec` — Write a detailed specification of code.
           '';
 
           # Web service (creates opencode-web.service)
@@ -296,6 +471,78 @@ in
         # Skills: mattpocock (remote) + local (inline)
         # Local skills override remote skills on name collision
         xdg.configFile = mattpocockSkillConfigs // {
+          "opencode/oh-my-opencode-slim.jsonc".text = ''
+            {
+              "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
+              "preset": "plexus",
+              "autoUpdate": false,
+              "disabled_tools": [],
+              "disabled_mcps": [],
+              "multiplexer": {
+                "type": "none"
+              },
+              "presets": {
+                "plexus": {
+                  "orchestrator": {
+                    "model": "Plexus/default",
+                    "variant": "medium",
+                    "skills": ["*"],
+                    "mcps": ["*", "!context7"]
+                  },
+                  "explorer": {
+                    "model": "Plexus/default",
+                    "variant": "low",
+                    "mcps": []
+                  },
+                  "oracle": {
+                    "model": "Plexus/default",
+                    "variant": "high",
+                    "skills": ["simplify"],
+                    "mcps": []
+                  },
+                  "council": {
+                    "model": "Plexus/default",
+                    "variant": "high"
+                  },
+                  "librarian": {
+                    "model": "Plexus/default",
+                    "variant": "low",
+                    "mcps": ["websearch", "context7", "gh_grep"]
+                  },
+                  "designer": {
+                    "model": "Plexus/default",
+                    "variant": "medium",
+                    "mcps": []
+                  },
+                  "fixer": {
+                    "model": "Plexus/default",
+                    "variant": "medium",
+                    "mcps": []
+                  }
+                }
+              },
+              "council": {
+                "default_preset": "default",
+                "presets": {
+                  "default": {
+                    "alpha": {
+                      "model": "Plexus/default",
+                      "prompt": "Focus on correctness, bugs, and edge cases."
+                    },
+                    "beta": {
+                      "model": "Plexus/default",
+                      "prompt": "Focus on security, input validation, and data exposure."
+                    },
+                    "gamma": {
+                      "model": "Plexus/testing",
+                      "prompt": "Focus on performance, maintainability, and design."
+                    }
+                  }
+                }
+              }
+            }
+          '';
+
           "opencode/skills/continue/SKILL.md".text = ''
             ---
             name: continue

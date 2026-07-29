@@ -10,7 +10,7 @@
       home.dead-mens-switch
     ];
     nixos =
-      { lib, pkgs, ... }:
+      { pkgs, ... }:
       {
         /*
           Hardware:
@@ -31,8 +31,6 @@
 
           networking.homeWifi.enable = true;
         };
-
-        nix.gc.automatic = lib.mkForce false; # Disable, since this is our builder
 
         home-manager.users."krumpy-miha" = {
           my.home.fullAutostart.enable = true;

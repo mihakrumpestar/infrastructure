@@ -102,7 +102,7 @@
                 waderyan.gitblame
                 github.github-vscode-theme
                 hediet.vscode-drawio
-                #jeanp413.open-remote-ssh
+                jeanp413.open-remote-ssh
                 matthewpi.caddyfile-support
                 pomdtr.excalidraw-editor
                 redhat.vscode-yaml
@@ -112,7 +112,7 @@
                 tumido.cron-explained
                 mathematic.vscode-pdf # VSCode does not have native PDF support for some reason
                 mermaidchart.vscode-mermaid-chart
-                shd101wyy.markdown-preview-enhanced
+                yurierherrera.todo4vcode
 
                 # Latex
                 james-yu.latex-workshop
@@ -135,10 +135,9 @@
                 #kamadorueda.alejandra
 
                 # MD
+                shd101wyy.markdown-preview-enhanced
                 yzhang.markdown-all-in-one
                 davidanson.vscode-markdownlint
-                # tanishq-chaudhary.its-markdown-studio # Breaks my normal file workflow, eg. HTML and diff
-                # shd101wyy.markdown-preview-enhanced # Does not support Alerts: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
 
                 # MDX
                 unifiedjs.vscode-mdx
