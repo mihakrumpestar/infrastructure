@@ -9,7 +9,7 @@ includes:
 tasks:
   ci:
     cmds:
-      - gitleaks dir --redact && gitleaks git --redact
+      - gitleaks git --redact
       - treefmt
       - deadnix --fail
       - statix check

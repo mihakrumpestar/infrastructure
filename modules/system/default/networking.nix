@@ -40,7 +40,7 @@ in
             "net.ipv4.conf.all.route_localnet" = true;
 
             # Optimistic memory allocation (eg. for Redis, Valkey)
-            "vm.overcommit_memory" = 1;
+            "vm.overcommit_memory" = lib.mkDefault 1;
 
             # Caddy quic: https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
             "net.core.rmem_max" = 7500000;

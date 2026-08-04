@@ -7,6 +7,8 @@ Decommissioning for the following reasons:
 - transparent_proxy still does not support exposing multiple ports [issue](https://github.com/hashicorp/nomad/issues/23271)
 - Consul GRPC can't have mTLS due to Envoy not supporting it, therefore you literally have to enable ACLs, even if you don't need or want them [link](https://developer.hashicorp.com/nomad/docs/configuration/consul#grpc_ca_file)
 - Git-Ops seems limited and slowly getting depricated, there is no native support for it, so this leaves us with push-only approach
+- `transparent_proxy` is encapsulating whole traffic entering the container, so you can expose only 1 port when using it. It also makes any communication within container (separate UI calling an HTTP API; eg. single container running 2 services) not possible, at least with Yugabyte.
+- `updatecli` has Nomad autodiscovery, but it works so badly that it is not really usable (detects changes even if there aren't any, misses some files altogether with no apparent reason).
 
 Good things about it:
 

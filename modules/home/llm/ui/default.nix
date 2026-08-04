@@ -69,8 +69,8 @@
             # Notifications
             nativeNotificationsEnabled = true;
             notifyOnCompletion = true;
-            notifyOnSubtasks = true;
-            notifyOnError = true;
+            notifyOnSubtasks = false;
+            notifyOnError = false;
             notifyOnQuestion = true;
             showOpenCodeUpdateNotifications = false;
 
