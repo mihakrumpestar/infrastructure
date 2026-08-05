@@ -46,7 +46,18 @@
 
                 configFile = {
                   baloofilerc."Basic Settings".Indexing-Enabled = false;
-                  kwalletrc.Wallet.Enabled = false; # We are using KeepassXC as secret-service provider
+                  kwalletrc = {
+                    # We are using KeePassXC as secret-service provider.
+                    # Wallet.Enabled disables the KWallet wallet subsystem (UI, wallet files),
+                    # but does NOT stop ksecretd from registering the org.freedesktop.secrets
+                    # D-Bus name. Without KSecretD.Enabled=false and apiEnabled=false, ksecretd
+                    # claims the name at boot before KeePassXC starts, causing KeePassXC to
+                    # silently disable FdoSecrets. ksecretd then crashes (because Wallet is
+                    # disabled), but KeePassXC doesn't retry, so the checkbox stays unchecked.
+                    Wallet.Enabled = false;
+                    "KSecretD".Enabled = false;
+                    "org.freedesktop.secrets".apiEnabled = false;
+                  };
 
                   spectaclerc.General.clipboardGroup = "PostScreenshotCopyImage";
                   yakuakerc = {
