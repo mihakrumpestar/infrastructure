@@ -4,7 +4,7 @@ Decommissioning for the following reasons:
 
 - multiregion deployments are Enterprise only [link](https://developer.hashicorp.com/nomad/docs/job-declare/multiregion)
 - when updating with Docker task driver (updating Nomad, Consul, Docker), all containers lose connectivity and have to be fully restarted or rebooted
-- transparent_proxy still does not support exposing multiple ports [issue](https://github.com/hashicorp/nomad/issues/23271)
+- transparent_proxy still does not support exposing multiple ports [issue](https://github.com/hashicorp/nomad/issues/23271), but Consul did gain support for this
 - Consul GRPC can't have mTLS due to Envoy not supporting it, therefore you literally have to enable ACLs, even if you don't need or want them [link](https://developer.hashicorp.com/nomad/docs/configuration/consul#grpc_ca_file)
 - Git-Ops seems limited and slowly getting depricated, there is no native support for it, so this leaves us with push-only approach
 - `transparent_proxy` is encapsulating whole traffic entering the container, so you can expose only 1 port when using it. It also makes any communication within container (separate UI calling an HTTP API; eg. single container running 2 services) not possible, at least with Yugabyte.

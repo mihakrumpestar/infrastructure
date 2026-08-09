@@ -26,8 +26,9 @@
               description = "The device path of the boot disk";
             };
             swapSize = mkOption {
-              type = types.str;
-              description = "The swap size (e.g., 8G)";
+              type = types.nullOr types.str;
+              default = null;
+              description = "The swap size (e.g., 8G). Set to null to disable swap.";
             };
             encryptRoot = mkOption {
               type = types.enum [
@@ -114,6 +115,8 @@
                                   "noatime"
                                 ];
                               };
+                            }
+                            // optionalAttrs (config.my.disks.swapSize != null) {
                               "/swap" = {
                                 mountpoint = "/.swapvol";
                                 swap = {
