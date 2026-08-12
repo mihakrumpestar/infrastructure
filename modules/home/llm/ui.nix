@@ -53,7 +53,7 @@
             darkThemeId = "vesper-dark";
 
             # Defaults
-            defaultModel = "Plexus/default";
+            defaultModel = "gateway/default";
             defaultAgent = "orchestrator";
             defaultFileViewerPreview = false;
 

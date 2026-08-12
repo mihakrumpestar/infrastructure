@@ -110,7 +110,7 @@ in
           # ~/.config/opencode/opencode.json
           settings = {
             autoupdate = false;
-            default_agent = "plan";
+            default_agent = "orchestrator";
             compaction.auto = false;
 
             # Provider configuration
@@ -119,16 +119,16 @@ in
             # When looking to add a provider using the env, check the toml config in
             # https://github.com/anomalyco/models.dev/tree/dev/providers for the specific env var used
             provider = {
-              Plexus = {
+              gateway = {
                 npm = "@ai-sdk/openai-compatible";
-                name = "Plexus";
+                name = "Gateway";
                 options = {
                   baseURL = "{env:GATEWAY_API_BASE}/v1";
                   apiKey = "{env:GATEWAY_API_KEY}";
                 };
                 models = {
                   default = {
-                    name = "Plexus: default";
+                    name = "Gateway: default";
                     reasoning = true;
                     modalities = {
                       input = [
@@ -142,8 +142,8 @@ in
                       output = 132000;
                     };
                   };
-                  testing = {
-                    name = "Plexus: testing";
+                  smart = {
+                    name = "Gateway: smart";
                     reasoning = true;
                     modalities = {
                       input = [
@@ -157,8 +157,8 @@ in
                       output = 132000;
                     };
                   };
-                  experimental = {
-                    name = "Plexus: experimental";
+                  fast = {
+                    name = "Gateway: fast";
                     reasoning = true;
                     modalities = {
                       input = [
@@ -199,12 +199,6 @@ in
                 enabled = true;
                 headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
               };
-              "docs-mcp-server" = {
-                type = "remote";
-                url = "{env:GATEWAY_API_BASE}/mcp/docs-mcp-server";
-                enabled = true;
-                headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
-              };
 
               # Local MCPs
               godoc = {
@@ -215,9 +209,7 @@ in
                   "github.com/mrjoshuak/godoc-mcp@latest"
                 ];
                 enabled = true;
-                environment = {
-                  CGO_ENABLED = "0";
-                };
+                environment.CGO_ENABLED = "0";
               };
               nixos = {
                 type = "local";
@@ -238,9 +230,7 @@ in
                   "${pkgs.ungoogled-chromium}/bin/chromium"
                 ];
                 enabled = true;
-                environment = {
-                  CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS = "true";
-                };
+                environment.CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS = "true";
               };
               "pdf-reader" = {
                 type = "local";
@@ -252,6 +242,12 @@ in
               };
 
               # Not needed most of the time and/or add a lot to context
+              "docs-mcp-server" = {
+                type = "remote";
+                url = "http://127.0.0.1:6280/mcp";
+                enabled = false;
+              };
+
               # https://github.com/KeithCu/writeragent, maybe there are better ones?
               writeragent = {
                 type = "remote";
@@ -265,9 +261,7 @@ in
                   "xactions-mcp"
                 ];
                 enabled = false;
-                environment = {
-                  XACTIONS_SESSION_COOKIE = "{env:XACTIONS_SESSION_COOKIE}";
-                };
+                environment.XACTIONS_SESSION_COOKIE = "{env:XACTIONS_SESSION_COOKIE}";
               };
 
               # Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
@@ -405,6 +399,7 @@ in
           context = ''
             # General guidelines
 
+            - NO em dashes or other standalone dashes in text.
             - Follow best coding practices: DRY, KISS, YAGNI principles.
             - Before making a change, scan landscape to indentify all places that need changes, and inform yourself with all the documentation we could possibly need.
             - Performance, readability, and maintainability are important.
@@ -474,49 +469,49 @@ in
           "opencode/oh-my-opencode-slim.jsonc".text = ''
             {
               "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
-              "preset": "plexus",
+              "preset": "gateway",
               "autoUpdate": false,
               "disabled_tools": [],
-              "disabled_mcps": [],
+              "disabled_mcps": ["websearch", "gh_grep"],
               "multiplexer": {
                 "type": "none"
               },
               "presets": {
-                "plexus": {
+                "gateway": {
                   "orchestrator": {
-                    "model": "Plexus/default",
-                    "variant": "medium",
+                    "model": "gateway/smart",
+                    "variant": "default",
                     "skills": ["*"],
-                    "mcps": ["*", "!context7"]
+                    "mcps": ["*", "!gateway-mcp"]
                   },
                   "explorer": {
-                    "model": "Plexus/default",
-                    "variant": "low",
+                    "model": "gateway/fast",
+                    "variant": "default",
                     "mcps": []
                   },
                   "oracle": {
-                    "model": "Plexus/default",
-                    "variant": "high",
+                    "model": "gateway/default",
+                    "variant": "default",
                     "skills": ["simplify"],
                     "mcps": []
                   },
                   "council": {
-                    "model": "Plexus/default",
-                    "variant": "high"
+                    "model": "gateway/default",
+                    "variant": "default"
                   },
                   "librarian": {
-                    "model": "Plexus/default",
-                    "variant": "low",
-                    "mcps": ["websearch", "context7", "gh_grep"]
+                    "model": "gateway/default",
+                    "variant": "default",
+                    "mcps": ["gateway-mcp"]
                   },
                   "designer": {
-                    "model": "Plexus/default",
-                    "variant": "medium",
+                    "model": "gateway/smart",
+                    "variant": "default",
                     "mcps": []
                   },
                   "fixer": {
-                    "model": "Plexus/default",
-                    "variant": "medium",
+                    "model": "gateway/fast",
+                    "variant": "default",
                     "mcps": []
                   }
                 }
@@ -526,15 +521,15 @@ in
                 "presets": {
                   "default": {
                     "alpha": {
-                      "model": "Plexus/default",
+                      "model": "gateway/default",
                       "prompt": "Focus on correctness, bugs, and edge cases."
                     },
                     "beta": {
-                      "model": "Plexus/default",
+                      "model": "gateway/default",
                       "prompt": "Focus on security, input validation, and data exposure."
                     },
                     "gamma": {
-                      "model": "Plexus/testing",
+                      "model": "gateway/default",
                       "prompt": "Focus on performance, maintainability, and design."
                     }
                   }

@@ -66,7 +66,7 @@
     };
 
     openchamber = {
-      url = "github:zms-dev/openchamber-flake/dev";
+      url = "github:icebluerabbit/openchamber-flake"; # Was zms-dev/openchamber-flake before
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -97,7 +97,7 @@
     # Secrets
 
     infrastructure-secrets = {
-      url = "git+file:../infrastructure-secrets";
+      url = "git+ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git?ref=main";
       flake = false;
     };
   };

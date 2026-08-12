@@ -267,11 +267,11 @@
         "nixpkgs-lib": "nixpkgs-lib"
       },
       "locked": {
-        "lastModified": 1782949081,
-        "narHash": "sha256-vp6Y/Grm98ESt6ceOkWiHWyZRDV3J1RID4w+6NWK9yA=",
+        "lastModified": 1785627969,
+        "narHash": "sha256-4dtXQk/NMePegK/nWp5NSeuZKLATItOq61lpEvmXqGw=",
         "owner": "hercules-ci",
         "repo": "flake-parts",
-        "rev": "17c9d6cdfc60c64f4ee8d306f9bc0b4ccb51481e",
+        "rev": "427bf4bd9435fdf21321c8cc628c24efc14c0f7a",
         "type": "github"
       },
       "original": {
@@ -456,15 +456,16 @@
       "locked": {
         "lastModified": 1785324767,
         "narHash": "sha256-OH07KGiHYpT8QFx3lG3Y7lF+mczoV117US7xRGpEDRY=",
-        "ref": "refs/heads/main",
+        "ref": "main",
         "rev": "5f40e5e28f0fa0057b9f2d3e928069b1f3123452",
         "revCount": 78,
         "type": "git",
-        "url": "file:../infrastructure-secrets"
+        "url": "ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git"
       },
       "original": {
+        "ref": "main",
         "type": "git",
-        "url": "file:../infrastructure-secrets"
+        "url": "ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git"
       }
     },
     "lanzaboote": {
@@ -578,11 +579,11 @@
     },
     "nixpkgs-lib": {
       "locked": {
-        "lastModified": 1782614948,
-        "narHash": "sha256-ePjCwr1sNm9NYUqywL7QfK3JnlS015msC+eBu2zKlp8=",
+        "lastModified": 1785031560,
+        "narHash": "sha256-OmshNvn2vupOFpYinLUu+1Dnpu4n7Q5N3ggGVNHpkUI=",
         "owner": "nix-community",
         "repo": "nixpkgs.lib",
-        "rev": "db3f255737b94216eb71cce308e2912cf6bc2d7c",
+        "rev": "0e79af5e3d4dcfcd676ab5ba3f95d2e3352e078c",
         "type": "github"
       },
       "original": {
@@ -676,16 +677,15 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1785039215,
-        "narHash": "sha256-O43xvMN6hfrGZam8xzoqQbu2Wrcv/J0i39+CDdrbxKk=",
-        "owner": "zms-dev",
+        "lastModified": 1786256785,
+        "narHash": "sha256-zFZGM8uS/B9bDg3nqe8oAhlwMeEfK6Eye7S4UdQUz68=",
+        "owner": "icebluerabbit",
         "repo": "openchamber-flake",
-        "rev": "f4be455985f127e51e4e807ff38f589d90564740",
+        "rev": "cd3d5c710cd80b868afac847057c9e97091ff0f1",
         "type": "github"
       },
       "original": {
-        "owner": "zms-dev",
-        "ref": "dev",
+        "owner": "icebluerabbit",
         "repo": "openchamber-flake",
         "type": "github"
       }

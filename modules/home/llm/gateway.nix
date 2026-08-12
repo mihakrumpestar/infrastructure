@@ -1,4 +1,3 @@
-# Plexus LLM API Gateway
 { inputs, ... }:
 let
   secretsDir = inputs.infrastructure-secrets;
@@ -13,6 +12,10 @@ in
           path = "${config.home.homeDirectory}/.agenix/secrets/llm_gateway.env";
         };
 
+        # Tried also:
+        # - https://github.com/diegosouzapw/OmniRoute: not as MCP server, bloated
+        # - https://github.com/agentgateway/agentgateway: works fine, fully declarative with config, no request in-flight visibility, no TTFT logging, too basic
+
         systemd.user.services.plexus = {
           Unit = {
             Description = "Plexus LLM API Gateway";
@@ -25,9 +28,6 @@ in
           Service = {
             Type = "simple";
             TimeoutStartSec = 120;
-            # Only pull if the image doesn't exist locally; periodic updates
-            # are handled by plexus-image-update.timer
-            ExecStartPre = "${pkgs.bash}/bin/bash -c '${pkgs.docker}/bin/docker image inspect ghcr.io/mcowger/plexus:latest > /dev/null 2>&1 || ${pkgs.docker}/bin/docker pull ghcr.io/mcowger/plexus:latest'";
             ExecStart =
               let
                 envFile = config.age.secrets."llm_gateway.env".path;
