@@ -303,7 +303,25 @@
     },
     "flake-utils": {
       "inputs": {
-        "systems": "systems_4"
+        "systems": "systems_3"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
+      "inputs": {
+        "systems": "systems_5"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -622,6 +640,22 @@
         "url": "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1"
       }
     },
+    "nixpkgs_4": {
+      "locked": {
+        "lastModified": 1775036866,
+        "narHash": "sha256-ZojAnPuCdy657PbTq5V0Y+AHKhZAIwSIT2cb8UgAz/U=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "6201e203d09599479a3b3450ed24fa81537ebc4e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nur": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -713,6 +747,41 @@
         "type": "github"
       }
     },
+    "playwright": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs_4"
+      },
+      "locked": {
+        "lastModified": 1785479252,
+        "narHash": "sha256-Gk9mYAcx9tPFXjIZneqBmMaBRX5XxDFBXSpjOYc+CF4=",
+        "owner": "halfwhey",
+        "repo": "nix-playwright-nightly",
+        "rev": "1e27bf72b6f22649a8484a35416eb7c576dbfcfb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "halfwhey",
+        "repo": "nix-playwright-nightly",
+        "type": "github"
+      }
+    },
+    "playwright-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786126713,
+        "narHash": "sha256-p7uIprVBIdUMK82OlaZJcmbjRt14MiylyGOTF5r8nFw=",
+        "owner": "microsoft",
+        "repo": "playwright-cli",
+        "rev": "e2d8f311f38a4828fc44a1026481481442ed962b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "microsoft",
+        "repo": "playwright-cli",
+        "type": "github"
+      }
+    },
     "pre-commit": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -754,6 +823,8 @@
         "nur": "nur",
         "openchamber": "openchamber",
         "plasma-manager": "plasma-manager",
+        "playwright": "playwright",
+        "playwright-skills": "playwright-skills",
         "stylix": "stylix",
         "tix": "tix",
         "virtualhere": "virtualhere"
@@ -814,7 +885,7 @@
           "nixpkgs"
         ],
         "nur": "nur_2",
-        "systems": "systems_3",
+        "systems": "systems_4",
         "tinted-kitty": "tinted-kitty",
         "tinted-schemes": "tinted-schemes",
         "tinted-tmux": "tinted-tmux",
@@ -880,6 +951,21 @@
       }
     },
     "systems_4": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_5": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
@@ -962,7 +1048,7 @@
       "inputs": {
         "crane": "crane_2",
         "flake-compat": "flake-compat_2",
-        "flake-utils": "flake-utils",
+        "flake-utils": "flake-utils_2",
         "home-manager": "home-manager_3",
         "nixpkgs": [
           "nixpkgs"

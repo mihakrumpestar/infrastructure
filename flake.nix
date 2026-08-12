@@ -87,10 +87,21 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Playwright CLI with revision-matched browsers
+    playwright = {
+      url = "github:halfwhey/nix-playwright-nightly";
+    };
+
     # Skills
 
     mattpocock-skills = {
       url = "github:mattpocock/skills";
+      flake = false;
+    };
+
+    # playwright-cli skills (SKILL.md + reference docs for coding agents)
+    playwright-skills = {
+      url = "github:microsoft/playwright-cli";
       flake = false;
     };
 
@@ -100,6 +111,17 @@
       url = "git+ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git?ref=main";
       flake = false;
     };
+  };
+
+  # Binary caches
+  nixConfig = {
+    # playwright-cli browser closures (halfwhey/nix-playwright-nightly)
+    extra-substituters = [
+      "https://halfwhey.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "halfwhey.cachix.org-1:6PtY2HXdJg8gVVe/uyWGqeWXg1cjfQEIi514Gsk4EeI="
+    ];
   };
 
   outputs =

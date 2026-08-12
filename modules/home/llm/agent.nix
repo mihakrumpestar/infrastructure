@@ -93,6 +93,9 @@ let
   mattpocockSkillConfigs =
     discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/engineering")
     // discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/productivity");
+
+  # playwright-cli skill (SKILL.md + references/) from the upstream repo
+  playwrightCliSkillConfigs = discoverFiles "opencode/skills" (inputs.playwright-skills + "/skills");
 in
 {
   home.llm-agent = {
@@ -112,6 +115,9 @@ in
             autoupdate = false;
             default_agent = "orchestrator";
             compaction.auto = false;
+
+            # Hide built-in free model providers; only our gateway models are selectable
+            enabled_providers = [ "gateway" ];
 
             # Provider configuration
             # Docs: https://opencode.ai/config.json
@@ -220,17 +226,6 @@ in
                   "--"
                 ];
                 enabled = true;
-              };
-              "chrome-devtools" = {
-                type = "local";
-                command = [
-                  "bunx"
-                  "chrome-devtools-mcp@latest"
-                  "--executable-path"
-                  "${pkgs.ungoogled-chromium}/bin/chromium"
-                ];
-                enabled = true;
-                environment.CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS = "true";
               };
               "pdf-reader" = {
                 type = "local";
@@ -399,7 +394,7 @@ in
           context = ''
             # General guidelines
 
-            - NO em dashes or other standalone dashes in text.
+            - DO NOT use em dashes or other standalone dashes.
             - Follow best coding practices: DRY, KISS, YAGNI principles.
             - Before making a change, scan landscape to indentify all places that need changes, and inform yourself with all the documentation we could possibly need.
             - Performance, readability, and maintainability are important.
@@ -418,7 +413,7 @@ in
             - `nixos`: Nix/NixOS docs
             - `context7`: any other docs
             - `exa` or `webset`: get search results or queary web
-            - `chrome-devtools`: actually browse the web or website
+            - `playwright-cli`: browser automation via CLI (use /playwright-cli skill).
             - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
             - `docs-mcp-server`: whenever user tells you to use it
             - `writeragent`: MCP for LibreOffice suite
@@ -461,142 +456,149 @@ in
         };
 
         # Electron desktop client (CLI is installed by the HM module)
-        home.packages = [ pkgs.opencode-desktop ];
+        # playwright-cli: browser automation CLI for coding agents (bundled with matching browsers)
+        home.packages = [
+          pkgs.opencode-desktop
+          inputs.playwright.packages.${pkgs.stdenv.hostPlatform.system}.playwright-cli
+        ];
 
         # Skills: mattpocock (remote) + local (inline)
         # Local skills override remote skills on name collision
-        xdg.configFile = mattpocockSkillConfigs // {
-          "opencode/oh-my-opencode-slim.jsonc".text = ''
-            {
-              "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
-              "preset": "gateway",
-              "autoUpdate": false,
-              "disabled_tools": [],
-              "disabled_mcps": ["websearch", "gh_grep"],
-              "multiplexer": {
-                "type": "none"
-              },
-              "presets": {
-                "gateway": {
-                  "orchestrator": {
-                    "model": "gateway/smart",
-                    "variant": "default",
-                    "skills": ["*"],
-                    "mcps": ["*", "!gateway-mcp"]
-                  },
-                  "explorer": {
-                    "model": "gateway/fast",
-                    "variant": "default",
-                    "mcps": []
-                  },
-                  "oracle": {
-                    "model": "gateway/default",
-                    "variant": "default",
-                    "skills": ["simplify"],
-                    "mcps": []
-                  },
-                  "council": {
-                    "model": "gateway/default",
-                    "variant": "default"
-                  },
-                  "librarian": {
-                    "model": "gateway/default",
-                    "variant": "default",
-                    "mcps": ["gateway-mcp"]
-                  },
-                  "designer": {
-                    "model": "gateway/smart",
-                    "variant": "default",
-                    "mcps": []
-                  },
-                  "fixer": {
-                    "model": "gateway/fast",
-                    "variant": "default",
-                    "mcps": []
-                  }
-                }
-              },
-              "council": {
-                "default_preset": "default",
+        xdg.configFile =
+          mattpocockSkillConfigs
+          // playwrightCliSkillConfigs
+          // {
+            "opencode/oh-my-opencode-slim.jsonc".text = ''
+              {
+                "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
+                "preset": "gateway",
+                "autoUpdate": false,
+                "disabled_tools": [],
+                "disabled_mcps": ["websearch", "gh_grep"],
+                "multiplexer": {
+                  "type": "none"
+                },
                 "presets": {
-                  "default": {
-                    "alpha": {
-                      "model": "gateway/default",
-                      "prompt": "Focus on correctness, bugs, and edge cases."
+                  "gateway": {
+                    "orchestrator": {
+                      "model": "gateway/smart",
+                      "variant": "default",
+                      "skills": ["*"],
+                      "mcps": ["*", "!gateway-mcp"]
                     },
-                    "beta": {
-                      "model": "gateway/default",
-                      "prompt": "Focus on security, input validation, and data exposure."
+                    "explorer": {
+                      "model": "gateway/fast",
+                      "variant": "default",
+                      "mcps": []
                     },
-                    "gamma": {
+                    "oracle": {
                       "model": "gateway/default",
-                      "prompt": "Focus on performance, maintainability, and design."
+                      "variant": "default",
+                      "skills": ["simplify"],
+                      "mcps": []
+                    },
+                    "council": {
+                      "model": "gateway/default",
+                      "variant": "default"
+                    },
+                    "librarian": {
+                      "model": "gateway/default",
+                      "variant": "default",
+                      "mcps": ["gateway-mcp"]
+                    },
+                    "designer": {
+                      "model": "gateway/smart",
+                      "variant": "default",
+                      "mcps": []
+                    },
+                    "fixer": {
+                      "model": "gateway/fast",
+                      "variant": "default",
+                      "mcps": []
+                    }
+                  }
+                },
+                "council": {
+                  "default_preset": "default",
+                  "presets": {
+                    "default": {
+                      "alpha": {
+                        "model": "gateway/default",
+                        "prompt": "Focus on correctness, bugs, and edge cases."
+                      },
+                      "beta": {
+                        "model": "gateway/default",
+                        "prompt": "Focus on security, input validation, and data exposure."
+                      },
+                      "gamma": {
+                        "model": "gateway/default",
+                        "prompt": "Focus on performance, maintainability, and design."
+                      }
                     }
                   }
                 }
               }
-            }
-          '';
+            '';
 
-          "opencode/skills/continue/SKILL.md".text = ''
-            ---
-            name: continue
-            description: >
-              Resume work after an interruption. Use when the conversation was cut off,
-              the model stopped mid-response, or the user says "continue", "go on",
-              "keep going", or invokes /continue.
-            ---
+            "opencode/skills/continue/SKILL.md".text = ''
+              ---
+              name: continue
+              description: >
+                Resume work after an interruption. Use when the conversation was cut off,
+                the model stopped mid-response, or the user says "continue", "go on",
+                "keep going", or invokes /continue.
+              ---
 
-            You were interrupted, please continue.
-          '';
+              You were interrupted, please continue.
+            '';
 
-          "opencode/skills/evaluate/SKILL.md".text = ''
-            ---
-            name: evaluate
-            description: >
-              Give me an unbiased and unfiltered, and critical evaluation of the _.
-              Use when user says "review", "evaluate", "critique", "roast", "critic",
-              or invokes /review. Evaluates anything — code, ideas, architecture,
-              documents, proposals, designs, tradeoffs.
-            ---
+            "opencode/skills/evaluate/SKILL.md".text = ''
+              ---
+              name: evaluate
+              description: >
+                Give me an unbiased and unfiltered, and critical evaluation of the _.
+                Use when user says "review", "evaluate", "critique", "roast", "critic",
+                or invokes /review. Evaluates anything — code, ideas, architecture,
+                documents, proposals, designs, tradeoffs.
+              ---
 
-            You are a ruthless, impartial critic. Your job is to give an **unbiased, unfiltered, and critical evaluation** of whatever the user provides.
+              You are a ruthless, impartial critic. Your job is to give an **unbiased, unfiltered, and critical evaluation** of whatever the user provides.
 
-            ## Principles
+              ## Principles
 
-            - **No sugarcoating.** If something is bad, say so plainly.
-            - **No false balance.** Don't invent positives just to soften the blow. Real positives only.
-            - **No hedging.** Avoid "it depends" unless it genuinely depends on something the user should consider.
-            - **No politeness filler.** Skip "great job!", "nice work!", "interesting approach". Get to the substance.
-            - **Be specific.** Don't say "this could be improved". Say exactly what is wrong and why.
-            - **Be concrete.** Cite specific lines, patterns, or decisions. No vague hand-waving.
-            - **Prioritize by impact.** Lead with issues that cause real problems — bugs, security holes, perf hits, maintainability nightmares. Style nits go last or get omitted.
-            - **Acknowledge tradeoffs explicitly.** If a design choice has real tradeoffs, lay them out honestly. Don't pretend one side is obviously right.
-            - **Consider context.** A prototype and a production system deserve different levels of scrutiny. Adjust accordingly, but don't lower the bar — be clear about the gap.
+              - **No sugarcoating.** If something is bad, say so plainly.
+              - **No false balance.** Don't invent positives just to soften the blow. Real positives only.
+              - **No hedging.** Avoid "it depends" unless it genuinely depends on something the user should consider.
+              - **No politeness filler.** Skip "great job!", "nice work!", "interesting approach". Get to the substance.
+              - **Be specific.** Don't say "this could be improved". Say exactly what is wrong and why.
+              - **Be concrete.** Cite specific lines, patterns, or decisions. No vague hand-waving.
+              - **Prioritize by impact.** Lead with issues that cause real problems — bugs, security holes, perf hits, maintainability nightmares. Style nits go last or get omitted.
+              - **Acknowledge tradeoffs explicitly.** If a design choice has real tradeoffs, lay them out honestly. Don't pretend one side is obviously right.
+              - **Consider context.** A prototype and a production system deserve different levels of scrutiny. Adjust accordingly, but don't lower the bar — be clear about the gap.
 
-            ## Output Format
+              ## Output Format
 
-            1. **Verdict** — One sentence: genuinely good, mixed, or bad. No hedging.
-            2. **Critical issues** — Things that must be fixed. Ordered by severity.
-            3. **Concerns** — Things that are likely problematic but debatable.
-            4. **Strengths** — Real strengths only, if any exist. Omit this section if there are none.
-            5. **Recommendations** — Concrete changes, in priority order. Not "consider X" — say "do X because Y".
+              1. **Verdict** — One sentence: genuinely good, mixed, or bad. No hedging.
+              2. **Critical issues** — Things that must be fixed. Ordered by severity.
+              3. **Concerns** — Things that are likely problematic but debatable.
+              4. **Strengths** — Real strengths only, if any exist. Omit this section if there are none.
+              5. **Recommendations** — Concrete changes, in priority order. Not "consider X" — say "do X because Y".
 
-            If the subject is good, say so in the verdict honestly — but still identify weaknesses, if there are any.
-          '';
+              If the subject is good, say so in the verdict honestly — but still identify weaknesses, if there are any.
+            '';
 
-          "opencode/skills/spec/SKILL.md".text = ''
-            ---
-            name: spec
-            description: >
-              Write a detailed and comprehensive specification of the code that can be used
-              to rewrite the module from scratch. Use when user says "spec", "specify",
-              "specification", "spec it out", or invokes /spec.
-            ---
+            "opencode/skills/spec/SKILL.md".text = ''
+              ---
+              name: spec
+              description: >
+                Write a detailed and comprehensive specification of the code that can be used
+                to rewrite the module from scratch. Use when user says "spec", "specify",
+                "specification", "spec it out", or invokes /spec.
+              ---
 
-            You are a specification writer. Analyze the given code thoroughly and produce a precise, exhaustive specification that captures every observable behavior — inputs, outputs, side effects, error handling, edge cases, dependencies, data structures, and configuration. The spec must be detailed enough that a competent developer could rewrite the module from scratch using only this document, with no access to the original source. Do not redesign or improve; spec what *is*. When something is genuinely ambiguous after careful reading, flag it explicitly.
-          '';
-        };
+              You are a specification writer. Analyze the given code thoroughly and produce a precise, exhaustive specification that captures every observable behavior — inputs, outputs, side effects, error handling, edge cases, dependencies, data structures, and configuration. The spec must be detailed enough that a competent developer could rewrite the module from scratch using only this document, with no access to the original source. Do not redesign or improve; spec what *is*. When something is genuinely ambiguous after careful reading, flag it explicitly.
+            '';
+          };
 
         # Service overrides for opencode-web
         systemd.user.services.opencode-web = {
