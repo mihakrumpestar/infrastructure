@@ -67,7 +67,6 @@
 
     openchamber = {
       url = "github:icebluerabbit/openchamber-flake"; # Was zms-dev/openchamber-flake before
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # Experimental

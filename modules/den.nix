@@ -94,7 +94,6 @@
             inputs.nix-index-database.homeModules.default
             inputs.agenix.homeManagerModules.default
             inputs.mutable-file.homeModules.default
-            inputs.openchamber.homeManagerModules.openchamber
             (
               { osConfig, ... }:
               {

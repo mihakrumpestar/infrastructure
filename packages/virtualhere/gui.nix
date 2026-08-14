@@ -12,7 +12,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://www.virtualhere.com/sites/default/files/usbclient/vhuit64";
-    hash = "sha256-i1XkR1ERBf/gDHRG8hhkaG759tkkBVYpkh0Zn3ZF8DA=";
+    hash = "sha256-sFQBcgKMUPebTi8lVQ8RyOn05NLmPUj59+D1XP+J7tU=";
   };
 
   nativeBuildInputs = [

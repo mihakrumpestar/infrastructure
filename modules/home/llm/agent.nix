@@ -5,7 +5,7 @@
 #
 # This module configures a multi-agent opencode setup with:
 #   - oh-my-opencode-slim: 7-agent orchestration suite (orchestrator, council, etc.)
-#   - opencode-goal-plugin: autonomous goal-driven auto-continuation
+#   - opencode-auto-resume: automatic stall/failure recovery for LLM sessions
 #   - Custom agents: advisor (quiet reviewer), checker (verification)
 #   - Mattpocock skills: code-review, evaluate, grill-me, tdd, spec, etc.
 #
@@ -15,7 +15,6 @@
 #     plan          - Read-only planning and analysis (default)
 #     build         - Full tool access for implementation
 #     orchestrator  - Multi-agent orchestrator, delegates to specialists
-#     goal          - Goal-driven autonomous execution
 #
 #   Subagents (invoke with @name):
 #     @council      - Run multiple reviewers in parallel, synthesize one answer
@@ -33,12 +32,6 @@
 #   /grill-me      - Relentless interview to sharpen a plan
 #   /tdd           - Test-driven development workflow
 #   /spec          - Write a detailed specification of code
-#
-# Commands:
-#   /goal <objective> [--max-turns N] [--max-minutes N]
-#       Set a session-scoped goal and auto-continue until complete.
-#       Example: /goal fix the failing tests --max-turns 20
-#       Pause: /goal pause | Resume: /goal resume | Clear: /goal clear
 #
 # Typical workflows:
 #
@@ -59,9 +52,6 @@
 #   5. Verification:
 #      - @checker verify the auth module against the spec
 #
-#   6. Autonomous goal:
-#      - /goal implement the user profile page --max-turns 30
-#      - The agent works autonomously, auto-continuing on idle until done
 #
 # A super simplified approach of https://github.com/monotykamary/pi-fabric
 { inputs, ... }:
@@ -290,14 +280,6 @@ in
               max_bytes = 1024000;
             };
 
-            command = {
-              goal = {
-                description = "Set a session-scoped goal and auto-continue until complete.";
-                template = "$ARGUMENTS";
-                agent = "build";
-              };
-            };
-
             plugin = [
               "cc-safety-net"
 
@@ -305,13 +287,16 @@ in
               # /magic-compact 3 — keep the 3 most recent assistant turns, summarize the rest
               "magic-compact"
               "oh-my-opencode-slim"
+
+              # Automatic stall/failure recovery for LLM sessions
               [
-                "opencode-goal-plugin"
+                "opencode-auto-resume"
                 {
-                  maxTurns = 20;
-                  maxDurationMs = 1800000;
-                  maxTokens = 200000;
-                  persistState = true;
+                  # Total stall detection: chunkTimeoutMs + gracePeriodMs = 30s
+                  chunkTimeoutMs = 27000;
+                  gracePeriodMs = 3000;
+                  # Slightly more conservative for multi-agent orchestration
+                  subagentWaitMs = 20000;
                 }
               ]
             ];
@@ -325,7 +310,7 @@ in
                 concern. Use when you want a second opinion on a design decision,
                 approach, or plan.
               mode: subagent
-              model: Plexus/default
+              model: gateway/default
               permission:
                 edit: deny
                 bash: deny
@@ -359,7 +344,7 @@ in
                 Verify implementation against spec, run tests, check edge cases. Use
                 when you want to verify that work is complete and correct.
               mode: subagent
-              model: Plexus/default
+              model: gateway/default
               permission:
                 edit: deny
                 bash:
@@ -431,8 +416,6 @@ in
               cases: `@checker verify the auth module against the spec.`
             - `@oracle` — Architecture and debugging specialist from oh-my-opencode-slim.
             - `@orchestrator` — Multi-agent orchestrator that delegates to specialists.
-            - `/goal` — Set a session-scoped goal and auto-continue until complete:
-              `/goal fix the failing tests --max-turns 20`
 
             Existing skills also available:
             - `/evaluate` — Unbiased critical evaluation of anything.
@@ -473,7 +456,6 @@ in
                 "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
                 "preset": "gateway",
                 "autoUpdate": false,
-                "disabled_tools": [],
                 "disabled_mcps": ["websearch", "gh_grep"],
                 "multiplexer": {
                   "type": "none"
