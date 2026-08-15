@@ -31,6 +31,7 @@
                 echo "Starting full user apps"
                 bash -c "sleep 13 && codium" &
                 bash -c "sleep 13 && librewolf" &
+                bash -c "sleep 13 && openchamber-desktop" &
                 echo "Started full user apps"
               '';
             };

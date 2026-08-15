@@ -86,6 +86,28 @@ let
 
   # playwright-cli skill (SKILL.md + references/) from the upstream repo
   playwrightCliSkillConfigs = discoverFiles "opencode/skills" (inputs.playwright-skills + "/skills");
+
+  # opencode auto-generates reasoning-effort variants, we just want the defualt (which is the only one that stays enabled)
+  reasoningVariants = {
+    none = {
+      disabled = true;
+    };
+    minimal = {
+      disabled = true;
+    };
+    low = {
+      disabled = true;
+    };
+    medium = {
+      disabled = true;
+    };
+    high = {
+      disabled = true;
+    };
+    xhigh = {
+      disabled = true;
+    };
+  };
 in
 {
   home.llm-agent = {
@@ -126,6 +148,7 @@ in
                   default = {
                     name = "Gateway: default";
                     reasoning = true;
+                    variants = reasoningVariants;
                     modalities = {
                       input = [
                         "text"
@@ -141,6 +164,7 @@ in
                   smart = {
                     name = "Gateway: smart";
                     reasoning = true;
+                    variants = reasoningVariants;
                     modalities = {
                       input = [
                         "text"
@@ -156,6 +180,7 @@ in
                   fast = {
                     name = "Gateway: fast";
                     reasoning = true;
+                    variants = reasoningVariants;
                     modalities = {
                       input = [
                         "text"

@@ -12,8 +12,8 @@
 
         # Wrap openchamber-desktop so it connects to the existing opencode
         # service instead of starting its own (which lacks GATEWAY_API_BASE).
-        openchamber-desktop = pkgs.symlinkJoin {
-          name = "openchamber-desktop-wrapped";
+        openchamber-desktop-local = pkgs.symlinkJoin {
+          name = "openchamber-desktop-local-wrapped";
           paths = [ source.openchamber-desktop ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
@@ -74,7 +74,7 @@
         # Electron desktop client (alongside opencode-desktop from nixpkgs)
         home.packages = [
           source.openchamber
-          openchamber-desktop
+          openchamber-desktop-local
         ];
       };
   };

@@ -47,7 +47,7 @@
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
+      #inputs.nixpkgs.follows = "nixpkgs"; # Using different nixpkgs broke home-manager, so we should not override it with our own
     };
 
     lanzaboote = {

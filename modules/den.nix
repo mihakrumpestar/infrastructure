@@ -89,6 +89,7 @@
           useGlobalPkgs = true;
           useUserPackages = true;
           backupFileExtension = "backup";
+          overwriteBackup = true;
           sharedModules = [
             inputs.plasma-manager.homeModules.plasma-manager
             inputs.nix-index-database.homeModules.default

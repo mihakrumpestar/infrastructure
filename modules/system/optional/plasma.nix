@@ -27,8 +27,6 @@
 
           home-manager.sharedModules = [
             {
-              gtk.gtk2.force = true; # Always gets cluttered
-
               # Run command below to get current config, options are at: https://nix-community.github.io/plasma-manager/options.xhtml
               # nix run github:nix-community/plasma-manager
               programs.plasma = {

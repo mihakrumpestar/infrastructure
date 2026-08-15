@@ -19,8 +19,6 @@
               "x-scheme-handler/unknown" = webBrowser;
             };
         };
-
-        xdg.configFile."mimeapps.list".force = true;
       };
   };
 }
