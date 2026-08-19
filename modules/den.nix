@@ -63,6 +63,10 @@
         # For nixd to work properly
         nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
 
+        # In regular setups this would be a hardcoded version string (e.g. "26.11"), but in my case, it is whatever the latest version is.
+        # This is ment to gatekeep applications such as DBs, that don't have automatic migrations on major version updates, from being automatically
+        # updated on nixpkgs input updates; since this will silently keep old versions forever, you should use discrete packages, that have version in package name.
+        # Hopefully this will be replaced/removed in the future.
         system.stateVersion = config.system.nixos.release;
 
         nixpkgs.overlays = [
@@ -98,7 +102,7 @@
             (
               { osConfig, ... }:
               {
-                home.stateVersion = osConfig.system.nixos.release;
+                home.stateVersion = osConfig.system.nixos.release; # Dangerous, see system.stateVersion comment
               }
             )
           ];
