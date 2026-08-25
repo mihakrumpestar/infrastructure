@@ -1,113 +1,86 @@
-# Opencode Agent
-#
-# Multi-Agent Setup Guide
-# =======================
-#
-# This module configures a multi-agent opencode setup with:
-#   - oh-my-opencode-slim: 7-agent orchestration suite (orchestrator, council, etc.)
-#   - opencode-auto-resume: automatic stall/failure recovery for LLM sessions
-#   - Custom agents: advisor (quiet reviewer), checker (verification)
-#   - Mattpocock skills: code-review, evaluate, grill-me, tdd, spec, etc.
-#
-# Agents available (use @name in chat or switch via agent dropdown):
-#
-#   Primary agents (selectable as default):
-#     plan          - Read-only planning and analysis (default)
-#     build         - Full tool access for implementation
-#     orchestrator  - Multi-agent orchestrator, delegates to specialists
-#
-#   Subagents (invoke with @name):
-#     @council      - Run multiple reviewers in parallel, synthesize one answer
-#     @oracle       - Architecture review, debugging, code review
-#     @explorer     - Fast codebase search and discovery
-#     @librarian    - External docs and library research
-#     @designer     - UI/UX design and implementation
-#     @fixer        - Bounded implementation tasks
-#     @advisor      - Quiet decision-point reviewer (custom)
-#     @checker      - Verify implementation, run tests, check edge cases (custom)
-#
-# Skills (invoke with /name):
-#   /evaluate      - Unbiased critical evaluation of anything
-#   /code-review   - Review changes along Standards and Spec axes
-#   /grill-me      - Relentless interview to sharpen a plan
-#   /tdd           - Test-driven development workflow
-#   /spec          - Write a detailed specification of code
-#
-# Typical workflows:
-#
-#   1. Planning a feature:
-#      - Use plan agent (default) to analyze and plan
-#      - Switch to orchestrator or build to implement
-#
-#   2. Multi-agent implementation:
-#      - Switch to orchestrator agent
-#      - Describe the task; orchestrator delegates to specialists automatically
-#
-#   3. High-stakes review:
-#      - @council review this architecture for correctness, security, and operability
-#
-#   4. Quick second opinion:
-#      - @advisor review this approach
-#
-#   5. Verification:
-#      - @checker verify the auth module against the spec
-#
-#
-# A super simplified approach of https://github.com/monotykamary/pi-fabric
 { inputs, ... }:
 let
-  secretsDir = inputs.infrastructure-secrets;
-  mattpocockSkillsDir = inputs.mattpocock-skills;
+  # ~/.dsh/AGENTS.md
+  dshAgentsMd = ''
+    # General guidelines
 
-  # Recursively discover all files in a directory and map them to a config prefix
-  discoverFiles =
-    prefix: dir:
-    let
-      go =
-        path: rel:
-        let
-          entries = builtins.readDir path;
-          process =
-            name: type: acc:
-            if type == "regular" then
-              acc // { "${prefix}/${rel}${name}".source = path + "/${name}"; }
-            else if type == "directory" then
-              acc // go (path + "/${name}") "${rel}${name}/"
-            else
-              acc;
-        in
-        builtins.foldl' (acc: name: process name entries.${name} acc) { } (builtins.attrNames entries);
-    in
-    go dir "";
+    - DO NOT use em dashes or other standalone dashes.
+    - Follow best coding practices: DRY, KISS, YAGNI principles.
+    - Before making a change, scan landscape to indentify all places that need changes, and inform yourself with all the documentation we could possibly need.
+    - Performance, readability, and maintainability are important.
+    - If you do not understand something or something is strange, ask me or raise concern.
+    - Never delete code comments, only if user explicitly requests it, and add them where needed/reasonable.
+    - Do not do things blindly (assumptions kill): get the documentation, test the behaviour.
+    - Take you time, quality over quantity.
+    - Understand the problem as some things may not even be relevant and others might be missing.
+    - Triple check your work.
 
-  mattpocockSkillConfigs =
-    discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/engineering")
-    // discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/productivity");
+    ## MCP tools
 
-  # playwright-cli skill (SKILL.md + references/) from the upstream repo
-  playwrightCliSkillConfigs = discoverFiles "opencode/skills" (inputs.playwright-skills + "/skills");
+    Use tools (MCP tools are named `mcp__<server>__<tool>`):
 
-  # opencode auto-generates reasoning-effort variants, we just want the defualt (which is the only one that stays enabled)
-  reasoningVariants = {
-    none = {
-      disabled = true;
-    };
-    minimal = {
-      disabled = true;
-    };
-    low = {
-      disabled = true;
-    };
-    medium = {
-      disabled = true;
-    };
-    high = {
-      disabled = true;
-    };
-    xhigh = {
-      disabled = true;
-    };
-  };
+    - `godoc`: for Go/Golang docs
+    - `nixos`: Nix/NixOS docs
+    - `context7`: any other docs
+    - `exa` or `webset`: get search results or queary web
+    - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
+    - `docs-mcp-server`: whenever user tells you to use it
+    - `writeragent`: MCP for LibreOffice suite
+
+    Browser automation: use the `cdp` skill (`browser-harness-js` CLI on PATH
+    drives the user's Chrome via CDP; the REPL server auto-starts on first
+    call and keeps one persistent session). User should start it with 
+    `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
+  '';
+
+  # ~/.dsh/skills/continue/SKILL.md
+  continueSkill = ''
+    ---
+    name: continue
+    description: >
+      Resume work after an interruption. Use when the conversation was cut off,
+      the model stopped mid-response, or the user says "continue", "go on",
+      "keep going", or invokes /continue.
+    ---
+
+    You were interrupted, please continue.
+  '';
+
+  # ~/.dsh/skills/evaluate/SKILL.md
+  evaluateSkill = ''
+    ---
+    name: evaluate
+    description: >
+      Give me an unbiased and unfiltered, and critical evaluation of the _.
+      Use when user says "review", "evaluate", "critique", "roast", "critic",
+      or invokes /review. Evaluates anything — code, ideas, architecture,
+      documents, proposals, designs, tradeoffs.
+    ---
+
+    You are a ruthless, impartial critic. Your job is to give an **unbiased, unfiltered, and critical evaluation** of whatever the user provides.
+
+    ## Principles
+
+    - **No sugarcoating.** If something is bad, say so plainly.
+    - **No false balance.** Don't invent positives just to soften the blow. Real positives only.
+    - **No hedging.** Avoid "it depends" unless it genuinely depends on something the user should consider.
+    - **No politeness filler.** Skip "great job!", "nice work!", "interesting approach". Get to the substance.
+    - **Be specific.** Don't say "this could be improved". Say exactly what is wrong and why.
+    - **Be concrete.** Cite specific lines, patterns, or decisions. No vague hand-waving.
+    - **Prioritize by impact.** Lead with issues that cause real problems — bugs, security holes, perf hits, maintainability nightmares. Style nits go last or get omitted.
+    - **Acknowledge tradeoffs explicitly.** If a design choice has real tradeoffs, lay them out honestly. Don't pretend one side is obviously right.
+    - **Consider context.** A prototype and a production system deserve different levels of scrutiny. Adjust accordingly, but don't lower the bar — be clear about the gap.
+
+    ## Output Format
+
+    1. **Verdict** — One sentence: genuinely good, mixed, or bad. No hedging.
+    2. **Critical issues** — Things that must be fixed. Ordered by severity.
+    3. **Concerns** — Things that are likely problematic but debatable.
+    4. **Strengths** — Real strengths only, if any exist. Omit this section if there are none.
+    5. **Recommendations** — Concrete changes, in priority order. Not "consider X" — say "do X because Y".
+
+    If the subject is good, say so in the verdict honestly — but still identify weaknesses, if there are any.
+  '';
 in
 {
   home.llm-agent = {
@@ -115,501 +88,50 @@ in
       { config, pkgs, ... }:
       {
         age.secrets."llm_agent.env" = {
-          file = "${secretsDir}/secrets/users/krumpy-miha/llm_agent.env.age";
+          file = "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/llm_agent.env.age";
           path = "${config.home.homeDirectory}/.agenix/secrets/llm_agent.env";
         };
 
-        programs.opencode = {
-          enable = true;
-
-          # ~/.config/opencode/opencode.json
-          settings = {
-            autoupdate = false;
-            default_agent = "orchestrator";
-            compaction.auto = false;
-
-            # Hide built-in free model providers; only our gateway models are selectable
-            enabled_providers = [ "gateway" ];
-
-            # Provider configuration
-            # Docs: https://opencode.ai/config.json
-            # Models reference: https://models.dev/api.json
-            # When looking to add a provider using the env, check the toml config in
-            # https://github.com/anomalyco/models.dev/tree/dev/providers for the specific env var used
-            provider = {
-              gateway = {
-                npm = "@ai-sdk/openai-compatible";
-                name = "Gateway";
-                options = {
-                  baseURL = "{env:GATEWAY_API_BASE}/v1";
-                  apiKey = "{env:GATEWAY_API_KEY}";
-                };
-                models = {
-                  default = {
-                    name = "Gateway: default";
-                    reasoning = true;
-                    variants = reasoningVariants;
-                    modalities = {
-                      input = [
-                        "text"
-                        "image"
-                      ];
-                      output = [ "text" ];
-                    };
-                    limit = {
-                      context = 1000000;
-                      output = 132000;
-                    };
-                  };
-                  smart = {
-                    name = "Gateway: smart";
-                    reasoning = true;
-                    variants = reasoningVariants;
-                    modalities = {
-                      input = [
-                        "text"
-                        "image"
-                      ];
-                      output = [ "text" ];
-                    };
-                    limit = {
-                      context = 1000000;
-                      output = 132000;
-                    };
-                  };
-                  fast = {
-                    name = "Gateway: fast";
-                    reasoning = true;
-                    variants = reasoningVariants;
-                    modalities = {
-                      input = [
-                        "text"
-                        "image"
-                      ];
-                      output = [ "text" ];
-                    };
-                    limit = {
-                      context = 1000000;
-                      output = 132000;
-                    };
-                  };
-                };
-              };
-            };
-
-            # Use with: `use the <tool_name> tool`
-            # Debug: opencode mcp list
-            # Note: keep some disabled if not used as they add multiple 1000s tokens to context
-            mcp = {
-              # Gateway MCPs
-              gateway-management = {
-                type = "remote";
-                url = "{env:GATEWAY_API_BASE}/mcp/plexus";
-                enabled = false;
-                headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
-              };
-              context7 = {
-                type = "remote";
-                url = "{env:GATEWAY_API_BASE}/mcp/context7";
-                enabled = true;
-                headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
-              };
-              exa = {
-                type = "remote";
-                url = "{env:GATEWAY_API_BASE}/mcp/exa";
-                enabled = true;
-                headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
-              };
-
-              # Local MCPs
-              godoc = {
-                type = "local";
-                command = [
-                  "go"
-                  "run"
-                  "github.com/mrjoshuak/godoc-mcp@latest"
-                ];
-                enabled = true;
-                environment.CGO_ENABLED = "0";
-              };
-              nixos = {
-                type = "local";
-                command = [
-                  "nix"
-                  "run"
-                  "github:utensils/mcp-nixos"
-                  "--"
-                ];
-                enabled = true;
-              };
-              "pdf-reader" = {
-                type = "local";
-                command = [
-                  "bunx"
-                  "@sylphx/pdf-reader-mcp"
-                ];
-                enabled = true;
-              };
-
-              # Not needed most of the time and/or add a lot to context
-              "docs-mcp-server" = {
-                type = "remote";
-                url = "http://127.0.0.1:6280/mcp";
-                enabled = false;
-              };
-
-              # https://github.com/KeithCu/writeragent, maybe there are better ones?
-              writeragent = {
-                type = "remote";
-                url = "http://localhost:8765/mcp";
-                enabled = false;
-              };
-              xactions = {
-                type = "local";
-                command = [
-                  "bunx"
-                  "xactions-mcp"
-                ];
-                enabled = false;
-                environment.XACTIONS_SESSION_COOKIE = "{env:XACTIONS_SESSION_COOKIE}";
-              };
-
-              # Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
-              # openrag = {
-              #   type = "local";
-              #   command = [ "uvx" "openrag-mcp" ];
-              #   enabled = true;
-              #   environment = {
-              #     OPENRAG_URL = "https://your-openrag-instance.com";
-              #     OPENRAG_API_KEY = "orag_your_api_key_here";
-              #   };
-              # };
-            };
-
-            permission = {
-              external_directory = {
-                "/tmp/**" = "allow";
-                "~/repos/**" = "allow";
-                "~/go/**" = "allow";
-                "/nix/store/**" = "allow";
-              };
-              edit = {
-                "/tmp/**" = "allow";
-                "~/repos/**" = "ask";
-                "~/go/**" = "deny";
-              };
-            };
-
-            tool_output = {
-              max_lines = 5000;
-              max_bytes = 1024000;
-            };
-
-            plugin = [
-              "cc-safety-net"
-
-              # /magic-compact — summarize all old assistant turns
-              # /magic-compact 3 — keep the 3 most recent assistant turns, summarize the rest
-              "magic-compact"
-              "oh-my-opencode-slim"
-
-              # Automatic stall/failure recovery for LLM sessions
-              [
-                "opencode-auto-resume"
-                {
-                  # Total stall detection: chunkTimeoutMs + gracePeriodMs = 30s
-                  chunkTimeoutMs = 27000;
-                  gracePeriodMs = 3000;
-                  # Slightly more conservative for multi-agent orchestration
-                  subagentWaitMs = 20000;
-                }
-              ]
-            ];
-          };
-
-          agents = {
-            advisor = ''
-              ---
-              description: >
-                Decision-point peer reviewer that prefers silence unless there's a real
-                concern. Use when you want a second opinion on a design decision,
-                approach, or plan.
-              mode: subagent
-              model: gateway/default
-              permission:
-                edit: deny
-                bash: deny
-              ---
-
-              You are a quiet advisor. Your job is to review decisions, plans, and
-              approaches and only speak up when there is a genuine issue.
-
-              ## Principles
-
-              - **Silence is preferred.** If there are no real concerns, say "No
-                concerns." and nothing else.
-              - **No sugarcoating.** If something is wrong, say so plainly.
-              - **Be specific.** Cite exact decisions, lines, or patterns.
-              - **Prioritize by impact.** Lead with issues that cause real problems.
-              - **Acknowledge tradeoffs explicitly.** Lay them out honestly.
-
-              ## Output Format
-
-              If no concerns: "No concerns."
-
-              If concerns:
-              1. **Critical** — Things that must be addressed before proceeding.
-              2. **Concerns** — Things that are likely problematic but debatable.
-              3. **Tradeoffs** — Real tradeoffs that should be explicitly acknowledged.
-            '';
-
-            checker = ''
-              ---
-              description: >
-                Verify implementation against spec, run tests, check edge cases. Use
-                when you want to verify that work is complete and correct.
-              mode: subagent
-              model: gateway/default
-              permission:
-                edit: deny
-                bash:
-                  "*": allow
-              ---
-
-              You are a verification checker. Your job is to verify that an
-              implementation is complete and correct.
-
-              ## What You Do
-
-              1. **Read the spec or requirements** — understand what was supposed to be
-                 built.
-              2. **Read the implementation** — examine the actual code.
-              3. **Run tests** — execute the test suite and report results.
-              4. **Check edge cases** — look for unhandled inputs, error paths, and
-                 boundary conditions.
-              5. **Verify integration** — check that the change fits with surrounding
-                 code.
-
-              ## Output Format
-
-              1. **Verdict** — PASS, FAIL, or PARTIAL.
-              2. **Test results** — what passed, what failed, with output.
-              3. **Edge cases** — any unhandled cases found.
-              4. **Missing** — anything from the spec that wasn't implemented.
-              5. **Recommendations** — concrete fixes, in priority order.
-            '';
-          };
-
-          # ~/.config/opencode/AGENTS.md
-          context = ''
-            # General guidelines
-
-            - DO NOT use em dashes or other standalone dashes.
-            - Follow best coding practices: DRY, KISS, YAGNI principles.
-            - Before making a change, scan landscape to indentify all places that need changes, and inform yourself with all the documentation we could possibly need.
-            - Performance, readability, and maintainability are important.
-            - If you do not understand something or something is strange, ask me or raise concern.
-            - Never delete code comments, only if user explicitly requests it, and add them where needed/reasonable.
-            - Do not do things blindly (assumptions kill): get the documentation, test the behaviour.
-            - Take you time, quality over quantity.
-            - Understand the problem as some things may not even be relevant and others might be missing.
-            - Triple check your work.
-
-            ## MCP tools
-
-            Use tools:
-
-            - `godoc`: for Go/Golang docs
-            - `nixos`: Nix/NixOS docs
-            - `context7`: any other docs
-            - `exa` or `webset`: get search results or queary web
-            - `playwright-cli`: browser automation via CLI (use /playwright-cli skill).
-            - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
-            - `docs-mcp-server`: whenever user tells you to use it
-            - `writeragent`: MCP for LibreOffice suite
-
-            ## Multi-Agent Patterns
-
-            Use these agents and skills for structured review and verification:
-
-            - `@council` — Run multiple reviewers in parallel and synthesize. Use for
-              high-stakes decisions: `@council review this architecture for correctness,
-              security, and operability.`
-            - `@advisor` — Quiet decision-point reviewer. Use when you want a second
-              opinion: `@advisor review this approach.`
-            - `@checker` — Verify implementation against spec, run tests, check edge
-              cases: `@checker verify the auth module against the spec.`
-            - `@oracle` — Architecture and debugging specialist from oh-my-opencode-slim.
-            - `@orchestrator` — Multi-agent orchestrator that delegates to specialists.
-
-            Existing skills also available:
-            - `/evaluate` — Unbiased critical evaluation of anything.
-            - `/code-review` — Review changes along Standards and Spec axes.
-            - `/grill-me` — Relentless interview to sharpen a plan.
-            - `/tdd` — Test-driven development workflow.
-            - `/spec` — Write a detailed specification of code.
-          '';
-
-          # Web service (creates opencode-web.service)
-          # Attach: opencode attach http://localhost:4096
-          web = {
-            enable = true;
-            extraArgs = [
-              "--hostname"
-              "127.0.0.1"
-              "--port"
-              "4096"
-            ];
-          };
+        home.file = {
+          ".dsh/AGENTS.md".text = dshAgentsMd;
+          ".dsh/skills/continue/SKILL.md".text = continueSkill;
+          ".dsh/skills/evaluate/SKILL.md".text = evaluateSkill;
+          ".dsh/cordis.patch.yml".source = ./cordis.patch.yml;
+          ".dsh/skills/cdp".source = inputs.browser-harness-js;
         };
 
-        # Electron desktop client (CLI is installed by the HM module)
-        # playwright-cli: browser automation CLI for coding agents (bundled with matching browsers)
+        home.mutableFile.".dsh/settings.yaml".source = ./settings.yaml;
+
+        # browser-harness-js CLI: thin wrapper so bun + curl resolve inside
+        # the dsh service env; the script resolves its Bun REPL (repl.ts)
+        # next to itself in the skill directory and auto-starts it on first
+        # use. bun comes from nixpkgs, so the upstream bun self-installer
+        # never triggers.
         home.packages = [
-          pkgs.opencode-desktop
-          inputs.playwright.packages.${pkgs.stdenv.hostPlatform.system}.playwright-cli
+          (pkgs.writeShellApplication {
+            name = "browser-harness-js";
+            runtimeInputs = [
+              pkgs.bun
+              pkgs.curl
+            ];
+            text = ''
+              exec "${inputs.browser-harness-js}/sdk/browser-harness-js" "$@"
+            '';
+            /*
+              Usage:
+                browser-harness-js --status    # health: uptime, connected, sessionId
+                browser-harness-js --logs      # tail -f the REPL log
+                browser-harness-js --restart   # drop session state, fresh start
+                browser-harness-js --stop      # shut the REPL down
+            */
+          })
         ];
 
-        # Skills: mattpocock (remote) + local (inline)
-        # Local skills override remote skills on name collision
-        xdg.configFile =
-          mattpocockSkillConfigs
-          // playwrightCliSkillConfigs
-          // {
-            "opencode/oh-my-opencode-slim.jsonc".text = ''
-              {
-                "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
-                "preset": "gateway",
-                "autoUpdate": false,
-                "disabled_mcps": ["websearch", "gh_grep"],
-                "multiplexer": {
-                  "type": "none"
-                },
-                "presets": {
-                  "gateway": {
-                    "orchestrator": {
-                      "model": "gateway/smart",
-                      "variant": "default",
-                      "skills": ["*"],
-                      "mcps": ["*", "!gateway-mcp"]
-                    },
-                    "explorer": {
-                      "model": "gateway/fast",
-                      "variant": "default",
-                      "mcps": []
-                    },
-                    "oracle": {
-                      "model": "gateway/default",
-                      "variant": "default",
-                      "skills": ["simplify"],
-                      "mcps": []
-                    },
-                    "council": {
-                      "model": "gateway/default",
-                      "variant": "default"
-                    },
-                    "librarian": {
-                      "model": "gateway/default",
-                      "variant": "default",
-                      "mcps": ["gateway-mcp"]
-                    },
-                    "designer": {
-                      "model": "gateway/smart",
-                      "variant": "default",
-                      "mcps": []
-                    },
-                    "fixer": {
-                      "model": "gateway/fast",
-                      "variant": "default",
-                      "mcps": []
-                    }
-                  }
-                },
-                "council": {
-                  "default_preset": "default",
-                  "presets": {
-                    "default": {
-                      "alpha": {
-                        "model": "gateway/default",
-                        "prompt": "Focus on correctness, bugs, and edge cases."
-                      },
-                      "beta": {
-                        "model": "gateway/default",
-                        "prompt": "Focus on security, input validation, and data exposure."
-                      },
-                      "gamma": {
-                        "model": "gateway/default",
-                        "prompt": "Focus on performance, maintainability, and design."
-                      }
-                    }
-                  }
-                }
-              }
-            '';
-
-            "opencode/skills/continue/SKILL.md".text = ''
-              ---
-              name: continue
-              description: >
-                Resume work after an interruption. Use when the conversation was cut off,
-                the model stopped mid-response, or the user says "continue", "go on",
-                "keep going", or invokes /continue.
-              ---
-
-              You were interrupted, please continue.
-            '';
-
-            "opencode/skills/evaluate/SKILL.md".text = ''
-              ---
-              name: evaluate
-              description: >
-                Give me an unbiased and unfiltered, and critical evaluation of the _.
-                Use when user says "review", "evaluate", "critique", "roast", "critic",
-                or invokes /review. Evaluates anything — code, ideas, architecture,
-                documents, proposals, designs, tradeoffs.
-              ---
-
-              You are a ruthless, impartial critic. Your job is to give an **unbiased, unfiltered, and critical evaluation** of whatever the user provides.
-
-              ## Principles
-
-              - **No sugarcoating.** If something is bad, say so plainly.
-              - **No false balance.** Don't invent positives just to soften the blow. Real positives only.
-              - **No hedging.** Avoid "it depends" unless it genuinely depends on something the user should consider.
-              - **No politeness filler.** Skip "great job!", "nice work!", "interesting approach". Get to the substance.
-              - **Be specific.** Don't say "this could be improved". Say exactly what is wrong and why.
-              - **Be concrete.** Cite specific lines, patterns, or decisions. No vague hand-waving.
-              - **Prioritize by impact.** Lead with issues that cause real problems — bugs, security holes, perf hits, maintainability nightmares. Style nits go last or get omitted.
-              - **Acknowledge tradeoffs explicitly.** If a design choice has real tradeoffs, lay them out honestly. Don't pretend one side is obviously right.
-              - **Consider context.** A prototype and a production system deserve different levels of scrutiny. Adjust accordingly, but don't lower the bar — be clear about the gap.
-
-              ## Output Format
-
-              1. **Verdict** — One sentence: genuinely good, mixed, or bad. No hedging.
-              2. **Critical issues** — Things that must be fixed. Ordered by severity.
-              3. **Concerns** — Things that are likely problematic but debatable.
-              4. **Strengths** — Real strengths only, if any exist. Omit this section if there are none.
-              5. **Recommendations** — Concrete changes, in priority order. Not "consider X" — say "do X because Y".
-
-              If the subject is good, say so in the verdict honestly — but still identify weaknesses, if there are any.
-            '';
-
-            "opencode/skills/spec/SKILL.md".text = ''
-              ---
-              name: spec
-              description: >
-                Write a detailed and comprehensive specification of the code that can be used
-                to rewrite the module from scratch. Use when user says "spec", "specify",
-                "specification", "spec it out", or invokes /spec.
-              ---
-
-              You are a specification writer. Analyze the given code thoroughly and produce a precise, exhaustive specification that captures every observable behavior — inputs, outputs, side effects, error handling, edge cases, dependencies, data structures, and configuration. The spec must be detailed enough that a competent developer could rewrite the module from scratch using only this document, with no access to the original source. Do not redesign or improve; spec what *is*. When something is genuinely ambiguous after careful reading, flag it explicitly.
-            '';
-          };
-
-        # Service overrides for opencode-web
-        systemd.user.services.opencode-web = {
+        # Web UI service URL: http://127.0.0.1:3080
+        systemd.user.services.dsh = {
           Unit = {
+            Description = "DeepSeek Harness (DSH) Web UI";
+            Documentation = "https://github.com/mihakrumpestar/deepseek-harness";
             After = [
               "graphical-session.target"
               "network-online.target"
@@ -617,19 +139,33 @@ in
             Wants = [ "network-online.target" ];
           };
           Service = {
+            Type = "simple";
             WorkingDirectory = "%h";
             TimeoutStartSec = 60;
-            # Module doesn't set EnvironmentFile when web.environmentFile is null,
-            # so we set it here with both the age secret and optional local secrets
+            ExecStart = "${pkgs.nix}/bin/nix run github:mihakrumpestar/deepseek-harness/nix -- web --no-open --host 127.0.0.1 --port 3080";
+            Environment = [
+              # Settings reports Nix-owned updates instead of offering npm
+              # self-update (see the upstream flake README).
+              "DSH_INSTALL_CHANNEL=nix"
+            ];
+            # The age secret provides GATEWAY_API_KEY and GATEWAY_API_BASE
+            # (used by the provider route and the gateway MCP proxies); the
+            # optional local file can override or extend them.
             EnvironmentFile = [
               config.age.secrets."llm_agent.env".path
-              "-/%h/.local/share/opencode/secrets.env"
+              "-/%h/.local/share/dsh/secrets.env"
             ];
+            Restart = "on-failure";
+            RestartSec = 10;
           };
           Install = {
             WantedBy = [ "graphical-session.target" ];
           };
         };
       };
+
+    nixos = {
+      my.impermanence.userDirectories = [ ".dsh" ];
+    };
   };
 }

@@ -111,7 +111,6 @@
                 tamasfe.even-better-toml
                 tumido.cron-explained
                 mathematic.vscode-pdf # VSCode does not have native PDF support for some reason
-                mermaidchart.vscode-mermaid-chart
                 yurierherrera.todo4vcode
 
                 # Latex
@@ -160,9 +159,6 @@
                 ecmel.vscode-html-css
                 esbenp.prettier-vscode
                 astro-build.astro-vscode
-
-                # AI
-                fedaykindev.openchamber # openchamber.apiUrl
 
                 # Rest
                 #humao.rest-client

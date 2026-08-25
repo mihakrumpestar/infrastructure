@@ -16,7 +16,7 @@ tasks:
 
   update:
     desc: |
-      Can also update a specific input with: task update -- opencode
+      Can also update a specific input with: task update -- <input-name>
     cmds:
       - nix flake update --flake 'path:{{.ROOT_DIR}}' {{.CLI_ARGS}}
 

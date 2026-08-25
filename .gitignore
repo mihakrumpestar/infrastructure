@@ -11,6 +11,3 @@ __pycache__
 
 # Generated statistics
 generated/
-
-# OpenCode
-.opencode/

@@ -73,8 +73,9 @@ in
             # control = "required"; # then you have to enter password too (strange logic but ok)
             settings = {
               authfile = config.age.secrets."pam_u2f".path; # Generate using: pamu2fcfg -u username -o pam://hostname
-              interactive = true; # Needed so that it does not wait for device if it is not present on KDE screensaver // TODO: maybe modify /etc/login.defs LOGIN_TIMEOUT
+              interactive = true; # Needed so that it does not wait for device if it is not present on KDE screensaver
               cue = true;
+              userpresence = 1;
             };
           };
           services = {
@@ -86,6 +87,11 @@ in
             "kde".allowNullPassword = lib.mkForce false;
           };
         };
+
+        # Bounds the whole login(1) PAM conversation incl. the u2f wait: shadow's login arms
+        # alarm(LOGIN_TIMEOUT) at startup and only cancels it after successful auth.
+        # Affects only the "login" service, not sudo or the KDE screensaver. Default is 60.
+        security.loginDefs.settings.LOGIN_TIMEOUT = 13;
 
         # Test pam:
         # nix-shell -p pamtester
