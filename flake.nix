@@ -65,6 +65,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    openchamber = {
+      url = "github:icebluerabbit/openchamber-flake/dev"; # Was zms-dev/openchamber-flake before
+    };
+
     # Experimental
     tix = {
       url = "github:JRMurr/tix";
@@ -85,6 +89,13 @@
     # CDP skill + CLI for browser
     browser-harness-js = {
       url = "github:browser-use/browser-harness-js";
+      flake = false;
+    };
+
+    # Skills
+
+    mattpocock-skills = {
+      url = "github:mattpocock/skills";
       flake = false;
     };
 

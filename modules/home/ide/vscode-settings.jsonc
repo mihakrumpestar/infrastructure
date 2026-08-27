@@ -99,6 +99,8 @@
     "!jsonc",
     "!yaml"
   ],
+  // OpenChamber
+  "openchamber.apiUrl": "http://127.0.0.1:4096",
   //                              //
   //  Language specific settings  //
   //                              //

@@ -167,6 +167,7 @@ flowchart LR
         input_import_tree["import-tree"]:::input
         input_infrastructure_secrets["infrastructure-secrets"]:::input
         input_lanzaboote["lanzaboote"]:::input
+        input_mattpocock_skills["mattpocock-skills"]:::input
         input_nix_index_database["nix-index-database"]:::input
         input_nix_vscode_extensions["nix-vscode-extensions"]:::input
         input_nixpkgs["nixpkgs"]:::input
@@ -306,6 +307,7 @@ flowchart LR
     input_import_tree --> flake
     input_infrastructure_secrets --> flake
     input_lanzaboote --> flake
+    input_mattpocock_skills --> flake
     input_nix_index_database --> flake
     input_nix_vscode_extensions --> flake
     input_nixpkgs --> flake
