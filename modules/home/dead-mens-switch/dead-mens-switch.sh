@@ -10,8 +10,10 @@ set -u
 # or zero if no command exited with a non-zero status.
 set -o pipefail
 
-error_exit() { 
-    DISPLAY=:0 notify-send -u critical -t 9999999 "Dead mens switch upload failed" "$1"
+error_exit() {
+    # Guard with || true: notify-send can fail outside an X session (e.g.
+    # pre-login catch-up at boot). We must still exit 1 so systemd restarts.
+    DISPLAY=:0 notify-send -u critical -t 9999999 "Dead mens switch upload failed" "$1" || true
     exit 1
 }
 trap 'error_exit "An error occurred on line $LINENO."' ERR
@@ -44,12 +46,17 @@ fi
 7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -mhe=on -p"$ZIP_PASSWORD" -mmt=on -mtc=on -mtm=on -mta=on "$TMP_ARCHIVE_PATH" "$SOURCE_DIR"
 
 # Upload using curl
-curl -T "$TMP_ARCHIVE_PATH" "ftp://$FTP_HOST" --user "$FTP_USER:$FTP_PASS"
+# Retry on transient errors so a single network hiccup does not cost a week
+# (the timer stamp is written at trigger time, not success time).
+curl --retry 10 --retry-all-errors --retry-delay 30 --connect-timeout 30 -T "$TMP_ARCHIVE_PATH" "ftp://$FTP_HOST" --user "$FTP_USER:$FTP_PASS"
 
 # Clean up
 rm "$TMP_ARCHIVE_PATH"
 
 # Send system notification
-DISPLAY=:0 notify-send -t 50000 "Dead mens switch upload successfull" "The file $ARCHIVE_NAME has been uploaded."
+# Guard with || true: notify-send can fail outside an X session, and an
+# unguarded failure here would mark the successful upload as failed, which
+# with Restart=on-failure would trigger a needless re-upload.
+DISPLAY=:0 notify-send -t 50000 "Dead mens switch upload successfull" "The file $ARCHIVE_NAME has been uploaded." || true
 
 echo "Script completed successfully."

@@ -6,6 +6,9 @@
 # This module configures a multi-agent opencode setup with:
 #   - oh-my-opencode-slim: 7-agent orchestration suite (orchestrator, council, etc.)
 #   - opencode-auto-resume: automatic stall/failure recovery for LLM sessions
+#   - magic-context: self-managing context + long-term memory (background
+#     historian compartmentalization, overnight dreamer consolidation, /ctx-aug
+#     sidekick)
 #   - Custom agents: advisor (quiet reviewer), checker (verification)
 #   - Mattpocock skills: code-review, tdd, to-spec, grill-with-docs, etc.
 #
@@ -53,8 +56,9 @@
 #
 #
 # Other tested harneses:
-# - https://github.com/monotykamary/deepseek-harness
+# - https://github.com/monotykamary/deepseek-harness: too many tool call failures, not that Nix friendly for plugin management
 #
+# Many of them can be found at https://github.com/numtide/llm-agents.nix
 { inputs, ... }:
 let
   secretsDir = inputs.infrastructure-secrets;
@@ -153,7 +157,10 @@ in
           settings = {
             autoupdate = false;
             default_agent = "orchestrator";
+            # Magic Context manages context itself; built-in auto/prune
+            # compaction would double-compress and thrash the prompt cache.
             compaction.auto = false;
+            compaction.prune = false;
 
             # Hide built-in free model providers; only our gateway models are selectable
             enabled_providers = [ "gateway" ];
@@ -288,9 +295,8 @@ in
             plugin = [
               "cc-safety-net"
 
-              # /magic-compact — summarize all old assistant turns
-              # /magic-compact 3 — keep the 3 most recent assistant turns, summarize the rest
-              "magic-compact"
+              # Magic Context: self-managing context + long-term memory
+              "@cortexkit/opencode-magic-context@latest"
               "oh-my-opencode-slim"
 
               # Automatic stall/failure recovery for LLM sessions
@@ -385,11 +391,13 @@ in
             # General guidelines
 
             - DO NOT use em dashes or other standalone dashes.
+            - READ-ONLY for git: run only read git operations yourself. Do NOT run write git
+              operations. When writing is needed, give the user the exact commands to run so he applies them manually.
             - Follow best coding practices: DRY, KISS, YAGNI principles.
             - Before making a change, scan landscape to indentify all places that need changes, and inform yourself with all the documentation we could possibly need.
             - Performance, readability, and maintainability are important.
             - If you do not understand something or something is strange, ask me or raise concern.
-            - Never delete code comments, only if user explicitly requests it, and add them where needed/reasonable.
+            - Never delete code comments, only if user explicitly requests it, and add them where needed/reasonable. Do not write overly verbose comments.
             - Do not do things blindly (assumptions kill): get the documentation, test the behaviour.
             - Take you time, quality over quantity.
             - Understand the problem as some things may not even be relevant and others might be missing.
@@ -480,6 +488,25 @@ in
           mattpocockSkillConfigs
           // cdpSkillConfigs
           // {
+            # Magic Context user-level config (~/.config/cortexkit/magic-context.jsonc)
+            # Historian: background compartmentalization of old history (required).
+            # Dreamer: overnight memory consolidation (verify/curate/promote).
+            # Sidekick: /ctx-aug session-start memory retrieval.
+            "cortexkit/magic-context.jsonc".text = ''
+              {
+                "$schema": "https://raw.githubusercontent.com/cortexkit/magic-context/master/assets/magic-context.schema.json",
+                "historian": {
+                  "opencode": { "model": "gateway/fast" }
+                },
+                "dreamer": {
+                  "opencode": { "model": "gateway/fast" }
+                },
+                "sidekick": {
+                  "model": "gateway/fast"
+                }
+              }
+            '';
+
             "opencode/oh-my-opencode-slim.jsonc".text = ''
               {
                 "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",

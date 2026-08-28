@@ -32,11 +32,13 @@
             Description = "Dead mens switch Upload Service";
             After = [ "network-online.target" ];
             Wants = [ "network-online.target" ];
-            Requires = [ "dead-mens-switch.timer" ];
+            StartLimitIntervalSec = 0;
           };
           Service = {
             Type = "simple";
             ExecStart = "${dead-mens-switch}/bin/dead-mens-switch";
+            Restart = "on-failure";
+            RestartSec = "5min";
           };
         };
 
@@ -47,7 +49,6 @@
           Timer = {
             OnCalendar = "weekly";
             Persistent = true;
-            OnBootSec = "5m30s";
           };
           Install = {
             WantedBy = [ "timers.target" ];
