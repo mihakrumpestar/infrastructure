@@ -65,6 +65,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    obsidian-extensions = {
+      url = "github:karaolidis/nix-obsidian-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     openchamber = {
       url = "github:icebluerabbit/openchamber-flake/dev"; # Was zms-dev/openchamber-flake before
     };

@@ -714,6 +714,27 @@
         "type": "github"
       }
     },
+    "obsidian-extensions": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "treefmt-nix": "treefmt-nix"
+      },
+      "locked": {
+        "lastModified": 1787936632,
+        "narHash": "sha256-RN1d30zpuvJLaMDxSnZGHH8lClhBvI0509wl5vhp3VM=",
+        "owner": "karaolidis",
+        "repo": "nix-obsidian-extensions",
+        "rev": "b7ae156349b67f492fab793a84e3045c1963520c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "karaolidis",
+        "repo": "nix-obsidian-extensions",
+        "type": "github"
+      }
+    },
     "openchamber": {
       "inputs": {
         "flake-parts": "flake-parts_2",
@@ -798,6 +819,7 @@
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs_4",
         "nur": "nur",
+        "obsidian-extensions": "obsidian-extensions",
         "openchamber": "openchamber",
         "plasma-manager": "plasma-manager",
         "stylix": "stylix",
@@ -1027,6 +1049,27 @@
       "original": {
         "owner": "JRMurr",
         "repo": "tix",
+        "type": "github"
+      }
+    },
+    "treefmt-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "obsidian-extensions",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1785360170,
+        "narHash": "sha256-XE1lKgQ3eIO3E7zWryqcRsax+mYXod/5RHBn4YaR9YE=",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "rev": "d1187f8bc71fb8aab02395869ec3f5c1920f75c0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "treefmt-nix",
         "type": "github"
       }
     },

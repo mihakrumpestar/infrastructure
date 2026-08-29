@@ -12,6 +12,7 @@ in
       home.web-browser
       home.storage
       home.home-apps
+      home.note-taking
       home.ide
       home.llm
       home.password-manager

@@ -20,6 +20,7 @@
                 echo "Starting minimal user apps"
                 yakuake &
                 keepassxc &
+                obsidian &
                 echo "Started minimal user apps"
               '';
             };

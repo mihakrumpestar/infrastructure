@@ -72,6 +72,7 @@
         nixpkgs.overlays = [
           inputs.nur.overlays.default
           inputs.nix-vscode-extensions.overlays.default
+          inputs.obsidian-extensions.overlays.default
           (_: prev: {
             consul-cni = inputs.consul-cni.packages.${prev.stdenv.hostPlatform.system}.default;
             tix = inputs.tix.packages.${prev.stdenv.hostPlatform.system}.default;
