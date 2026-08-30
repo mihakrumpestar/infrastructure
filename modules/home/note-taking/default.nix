@@ -22,7 +22,7 @@
               };
 
               themes = with pkgs.obsidianThemes; [
-                obsidian-material-ocean
+                material-ocean
               ];
 
               corePlugins = [
@@ -59,10 +59,26 @@
                 #"zk-prefixer"
               ];
 
+              # Plugins with `settings` get a read-only, store-symlinked data.json.
+              # Plugins that persist a "seen" marker into it (changelog, starter note)
+              # would otherwise show those on every start, since they cannot save the
+              # marker themselves - so such markers are pinned to the installed
+              # plugin version below.
               communityPlugins = with pkgs.obsidianPlugins; [
                 obsidian-excalidraw-plugin
                 fit
-                tasknotes
+                sfb-open-in-new-tab
+                git-file-explorer
+                table-editor-obsidian
+                {
+                  pkg = tasknotes;
+                  settings = {
+                    moveArchivedTasks = true;
+                    archiveFolder = "TaskNotes/Archive";
+                    taskCreationDefaults.defaultScheduledDate = "none"; # Don't pre-set the "scheduled" field on new tasks.
+                    lastSeenVersion = tasknotes.version;
+                  };
+                }
                 {
                   pkg = enhance-navigate-pane;
                   settings = {
@@ -86,6 +102,7 @@
                       darwin = "zsh";
                       linux = "zsh";
                     };
+                    lastSeenChangelogVersion = termy.version;
                   };
                 }
               ];

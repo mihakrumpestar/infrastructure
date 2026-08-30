@@ -111,14 +111,19 @@
         };
 
         # Connect to the existing opencode service instead of starting its own.
+        # OpenChamber runs `git ls-remote` per remote on startup (active-branch
+        # check), triggering SSH key prompts. Fail SSH fast and silently
+        # instead; local git ops still work. Override per-launch with
+        # GIT_SSH_COMMAND=ssh.
         openchamber-desktop-local = pkgs.symlinkJoin {
           name = "openchamber-desktop-local-wrapped";
           paths = [ source.openchamber-desktop ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
             wrapProgram $out/bin/openchamber-desktop \
-              --set OPENCODE_SKIP_START true \
-              --set OPENCODE_HOST http://127.0.0.1:4096
+              --set-default OPENCODE_SKIP_START true \
+              --set-default OPENCODE_HOST http://127.0.0.1:4096 \
+              --set-default GIT_SSH_COMMAND "ssh -o BatchMode=yes -o IdentityAgent=none -o ConnectTimeout=1"
           '';
         };
       in
