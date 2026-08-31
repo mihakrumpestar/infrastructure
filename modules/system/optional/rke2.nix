@@ -1,6 +1,5 @@
 { ... }:
 {
-  # Note: this is currently in testing phase to see how well it holds up
   den.aspects.rke2 = {
     nixos =
       {
@@ -12,9 +11,8 @@
       let
         cfg = config.my.rke2;
 
-        # TLS SANs: hostname + localhost + any user-specified extras (public IPs,
-        # domain names for multi-cluster connectivity). Baked into the API server
-        # certificate at first boot and cannot be changed without cert rotation.
+        # TLS SANs are baked into the API server certificate at first boot;
+        # changing them later requires certificate rotation.
         allTlsSans = [
           config.networking.hostName
           "127.0.0.1"
@@ -46,30 +44,15 @@
           "--kube-apiserver-arg=audit-log-path=/var/lib/rancher/rke2/server/logs/audit.log"
         ];
 
-        # Spegel: RKE2's embedded distributed OCI registry mirror (P2P image
-        # sharing between nodes). Reduces external registry pulls: nodes share
-        # already-pulled images directly with each other via a distributed hash
-        # table on port 5001.
+        # Spegel: embedded P2P OCI registry mirror between nodes (port 5001).
         # https://docs.rke2.io/install/registry_mirror
-        # https://github.com/spegel-org/spegel
         registryFlags = [ "--embedded-registry" ];
 
         allExtraFlags =
           tlsSanFlags ++ hardeningFlags ++ etcdSnapshotFlags ++ auditFlags ++ registryFlags ++ cfg.extraFlags;
 
-        # Static nft binary for kube-proxy. kube-proxy runs in a container with
-        # its own rootfs, so it needs nft at a known path that doesn't depend on
-        # NixOS's dynamic linker. The nft bundled in RKE2 containers crashes on
-        # kernel 6.12+ due to a NULL parse_udata callback.
-        # https://github.com/projectcalico/calico/issues/11750
-        # https://github.com/NixOS/nixpkgs/issues/500465
-        nftStatic = pkgs.pkgsStatic.nftables;
-        nftHostPath = "/var/lib/rancher/rke2/agent/bin/nft";
-
-        # Registries mirrored by Spegel. Each registry listed here is written to
-        # registries.yaml, which tells containerd to try the embedded P2P mirror
-        # before falling back to the upstream registry. Without this entry, Spegel
-        # will not share images from that registry between nodes.
+        # Registries mirrored by Spegel; containerd tries the embedded mirror
+        # before falling back to the upstream registry.
         # https://docs.rke2.io/install/registry_mirror#enabling-registry-mirroring
         registryMirrors = [
           "docker.io"
@@ -138,15 +121,16 @@
         };
 
         config = lib.mkIf cfg.enable {
-          # Kernel modules, must be pre-loaded because security.lockKernelModules = true.
+          # Pre-loaded because security.lockKernelModules = true: modules not
+          # listed here cannot be auto-loaded later, and missing iptables
+          # targets/matches cause silent rule failures (masquerade, hostPort).
+          # Consumers are Cilium (eBPF + iptables masquerade) and the CNI
+          # portmap plugin; kube-proxy and IPVS (ipset) modules are obsolete
+          # here since kube-proxy is fully replaced.
           boot.kernelModules = [
             "br_netfilter"
             "bridge"
             "veth"
-            "iptable_filter"
-            "iptable_nat"
-            "iptable_mangle"
-            "iptable_raw"
             "overlay"
             "nf_conntrack"
             "nf_nat"
@@ -158,46 +142,21 @@
             "nft_fib_ipv4"
             "nft_fib_ipv6"
             "nft_fib_inet"
-            "xt_set"
-            "ipt_rpfilter"
-            "ip_set"
-            "ip_set_hash_ip"
-            "ip_set_hash_net"
-            "ip_set_hash_ipportip"
-            "ip_set_hash_ipportnet"
-            "ip_set_hash_netport"
-            "ip_set_hash_netiface"
-            "ip_set_bitmap_ip"
-            "ip_set_bitmap_port"
-            "ip_set_bitmap_ipmac"
-            "ip_set_list_set"
-            "ip_vs"
-            "ip_vs_rr"
-            "ip_vs_wrr"
-            "ip_vs_sh"
+            "iptable_filter"
+            "iptable_nat"
+            "iptable_mangle"
+            "iptable_raw"
             "wireguard"
-            # VXLAN: required by Cilium tunnel mode (default). Creates the
-            # cilium_vxlan tunnel device for pod-to-pod encapsulation.
+            # VXLAN tunnel device for Cilium pod-to-pod encapsulation.
             "vxlan"
-            # XFRM: required by Cilium v1.19+ route reconciler (NETLINK_XFRM socket).
-            # See: https://github.com/cilium/cilium/issues/36600
+            # XFRM: required by Cilium v1.19+ route reconciler.
+            # https://github.com/cilium/cilium/issues/36600
             "xfrm_user"
-            # Netfilter xt modules: required by kube-proxy and CNI portmap plugin.
-            # All built as modules (=m) in NixOS kernel; must pre-load with
-            # security.lockKernelModules = true. Missing any causes silent
-            # iptables rule failures that break ClusterIP routing and hostPort.
-            "xt_MASQUERADE" # SNAT masquerade (kube-proxy, CNI portmap)
-            "xt_REJECT" # Reject packets (kube-proxy)
-            "xt_multiport" # Multi-port matching (CNI portmap DNAT for hostPorts)
-            "xt_statistic" # Random load balancing (kube-proxy)
-            "xt_REDIRECT" # Redirect target (CNI portmap)
-            "xt_NETMAP" # NETMAP target (CNI portmap)
-            "xt_LOG" # Log target (kube-proxy)
-            "xt_TCPMSS" # TCP MSS clamping (kube-proxy)
-            "xt_connmark" # Connection mark matching
-            "xt_CONNMARK" # Connection mark target
-            "xt_state" # Legacy conntrack state matching
-            "xt_tcpmss" # TCP MSS matching
+            # Cilium iptables masquerade and CNI portmap (hostPort) rules.
+            "xt_MASQUERADE"
+            "xt_multiport"
+            "xt_REDIRECT"
+            "xt_NETMAP"
           ];
 
           boot.kernel.sysctl = {
@@ -207,22 +166,11 @@
             "net.bridge.bridge-nf-call-ip6tables" = 1;
           };
 
-          # RKE2 service configuration.
-          # CNI is Cilium in VXLAN tunnel mode (RKE2 default) with WireGuard
-          # encryption and Hubble observability.
-          # https://docs.cilium.io/
-          # https://docs.rke2.io/install/network_options#cilium
-          #
-          # kube-proxy stays enabled. Cilium coexists with kube-proxy; this is
-          # stable and supported. Cilium handles ClusterIP load balancing via
-          # eBPF at the pod level even with kubeProxyReplacement=false, while
-          # kube-proxy handles host-namespace ClusterIP traffic.
-          # https://github.com/cilium/cilium/issues/23837
-          #
-          # Disabling kube-proxy is unnecessary and finicky: RKE2 fails to remove
-          # the existing kube-proxy static pod manifest when disable-kube-proxy is
-          # added after initial deployment, requiring manual manifest deletion.
-          # https://github.com/rancher/rke2/issues/2728
+          # Cilium CNI: VXLAN tunnel, WireGuard encryption (inert on
+          # single-node, active if nodes are added), Hubble observability.
+          # Service routing is fully eBPF (kube-proxy replaced — see the
+          # HelmChartConfig below and config.yaml).
+          # https://docs.rke2.io/networking/basic_network_options
           services.rke2 = {
             enable = true;
             package = pkgs.rke2_1_36;
@@ -236,44 +184,19 @@
           };
           services.rke2.tokenFile = lib.mkIf (cfg.tokenSecretFile != null) config.age.secrets.rke2-token.path;
 
-          # Installs a static nft binary at a known path for kube-proxy's container.
-          # Mounted into the kube-proxy pod via kube-proxy-extra-mount in config.yaml.
-          systemd.services.rke2-nft-binary = {
-            description = "Install static nft binary for RKE2 kube-proxy";
-            before = [ "rke2-server.service" ];
-            wantedBy = [ "multi-user.target" ];
-            serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = true;
-            };
-            script = ''
-              mkdir -p $(dirname ${nftHostPath})
-              cp ${nftStatic}/bin/nft ${nftHostPath}
-              chmod 755 ${nftHostPath}
-            '';
-          };
-
-          # Cilium HelmChartConfig.
-          # https://docs.cilium.io/
-          # https://docs.rke2.io/install/network_options#cilium
-          #
-          # Architecture:
-          #   - VXLAN tunnel mode (RKE2 default): Cilium encapsulates pod traffic
-          #     in VXLAN, encrypted by WireGuard. Requires no additional routing
-          #     configuration, works out of the box.
-          #   - kube-proxy stays enabled. Cilium coexists with kube-proxy.
-          #   - Hubble: network observability (flow logs, service map, DNS/HTTP
-          #     metrics) scraped by VictoriaMetrics via VMServiceScrape.
+          # Cilium HelmChartConfig, applied by RKE2's helm controller.
+          #   - kubeProxyReplacement: Cilium implements all service routing
+          #     (ClusterIP, NodePort, hostPort, host-namespace) in eBPF.
+          #     k8sServiceHost/Port must point at the local API server:
+          #     without kube-proxy, ClusterIP routing exists only once
+          #     Cilium programs it.
+          #     https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
+          #   - operator.replicas=1: the operator binds hostPort 8302; a second
+          #     replica can never schedule on a single-node cluster.
+          #   - Hubble: flow/DNS/HTTP observability, scraped by VictoriaMetrics.
           #     https://docs.cilium.io/en/stable/observability/hubble/
-          #
-          # Note: Cilium always handles ClusterIP load balancing via eBPF at the
-          # pod level (even with kubeProxyReplacement=false), bypassing
-          # kube-proxy's iptables rules for pod-originated traffic. kube-proxy
-          # still handles host-namespace ClusterIP traffic. This coexistence is
-          # by design and stable.
-          # https://github.com/cilium/cilium/issues/23837
           systemd.services.rke2-cilium-config = {
-            description = "Write Cilium HelmChartConfig for WireGuard encryption";
+            description = "Write Cilium HelmChartConfig for kube-proxy replacement, WireGuard, Hubble";
             before = [ "rke2-server.service" ];
             wantedBy = [ "multi-user.target" ];
             serviceConfig = {
@@ -290,6 +213,11 @@
                 namespace: kube-system
               spec:
                 valuesContent: |-
+                  kubeProxyReplacement: true
+                  k8sServiceHost: "localhost"
+                  k8sServicePort: "6443"
+                  operator:
+                    replicas: 1
                   encryption:
                     enabled: true
                     type: wireguard
@@ -316,20 +244,10 @@
             '';
           };
 
-          # Firewall for multi-node operation on public internet.
-          #
-          # Public ports (open to all):
-          #   80/443    Traefik ingress controller
-          #   6443      Kubernetes API server
-          #   51871/udp WireGuard (Cilium pod traffic encryption)
-          #
-          # Restricted ports (node IPs only):
-          #   9345      RKE2 supervisor API + embedded registry mirror
-          #   10250     kubelet API
-          #   2379-2381 etcd peer/client (server nodes only)
-          #   5001      Spegel P2P distributed hash table (image sharing)
-          #
-          # Forward rules: pod egress via host FORWARD chain (kube-proxy mode)
+          # Firewall for a public-internet node.
+          # Public: 80/443 (Traefik), 6443 (API server), 51871/udp (WireGuard).
+          # Restricted to node IPs: 9345 (supervisor + registry), 10250
+          # (kubelet), 2379-2381 (etcd, servers), 5001 (Spegel).
           networking.firewall =
             let
               restrictedTcpPorts =
@@ -346,6 +264,15 @@
                 ++ [ 5001 ];
             in
             {
+              # NixOS strict rpfilter (default with the nftables firewall)
+              # silently drops ALL pod->host traffic: pods arrive on lxc*
+              # veths but the pod CIDR routes via cilium_host, so the fib
+              # reverse-path check fails at PREROUTING. Cilium disables only
+              # the sysctl rp_filter, not this nft chain. "loose" still drops
+              # martian (unroutable) sources.
+              # https://github.com/cilium/cilium/issues/31565
+              checkReversePath = "loose";
+
               allowedTCPPorts = [
                 80
                 443
@@ -355,15 +282,20 @@
                 51871
               ];
 
-              # Allow pod egress through host FORWARD chain.
+              # Pod egress through the host FORWARD chain.
               extraForwardRules = [
                 "ip saddr 10.42.0.0/16 accept"
                 "ip daddr 10.42.0.0/16 accept"
               ];
 
-              # Allow restricted ports only from specified node IPs.
+              # Pods -> host-network services; the input chain is policy drop
+              # and this is CNI-agnostic. 9100 node-exporter, 10250 kubelet
+              # (metrics-server, exec/logs), 10257/10259 controller-manager
+              # and scheduler metrics, 2379 etcd, 4244 hubble-peer.
+              # Keep the CIDR in sync with cluster-cidr.
               extraInputRules = lib.concatStringsSep "\n" (
-                lib.flatten (
+                [ "ip saddr 10.42.0.0/16 tcp dport { 9100, 10250, 10257, 10259, 2379, 4244 } accept" ]
+                ++ lib.flatten (
                   map (
                     port: map (ip: "ip saddr ${ip} tcp dport ${toString port} accept") cfg.nodeAddresses
                   ) restrictedTcpPorts
@@ -380,19 +312,22 @@
 
           environment = {
             etc = {
-              # RKE2 server/agent config file.
               # https://docs.rke2.io/install/configuration
+              #
+              # disable-kube-proxy MUST be this config-file key: the embedded
+              # agent that stages static pod manifests honors only the file
+              # form (observed on rke2 1.36.3: the CLI flag alone is ignored
+              # and the kube-proxy manifest is re-staged on every start).
+              # With the key set the manifest is never written; kubelet's own
+              # KUBE-FIREWALL/canary chains remain, which is expected.
               "rancher/rke2/config.yaml" = {
                 text = ''
-                  kube-proxy-extra-mount:
-                    - "${nftHostPath}:/usr/sbin/nft:ro"
+                  disable-kube-proxy: true
                   ingress-controller: traefik
                 '';
               };
 
-              # Registry mirror config for Spegel P2P image sharing.
-              # Each mirror entry tells containerd to try the embedded registry
-              # before falling back to the upstream registry.
+              # Spegel mirror list for containerd.
               # https://docs.rke2.io/install/registry_mirror#enabling-registry-mirroring
               "rancher/rke2/registries.yaml" = {
                 text = registriesYaml;

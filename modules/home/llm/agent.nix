@@ -206,6 +206,13 @@ in
                 headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
               };
 
+              # Public remote MCPs (no auth)
+              gh_grep = {
+                type = "remote";
+                url = "https://mcp.grep.app";
+                enabled = true;
+              };
+
               # Local MCPs
               godoc = {
                 type = "local";
@@ -411,6 +418,7 @@ in
             - `nixos`: Nix/NixOS docs
             - `context7`: any other docs
             - `exa` or `webset`: get search results or queary web
+            - `gh_grep`: search real code examples across public GitHub repositories
             - `browser-harness-js`: browser automation via CDP (use the cdp skill).
               The CLI drives the user's Chrome; the REPL server auto-starts on
               first call and keeps one persistent session. The user starts Chrome
@@ -512,7 +520,9 @@ in
                 "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
                 "preset": "gateway",
                 "autoUpdate": false,
-                "disabled_mcps": ["websearch", "gh_grep"],
+                // The plugin's built-in MCPs would overwrite the gateway-proxied MCPs 
+                // in OpenCode (plugin merges built-ins into the mcp config
+                "disabled_mcps": ["websearch", "gh_grep", "context7"],
                 "multiplexer": {
                   "type": "none"
                 },
