@@ -177,6 +177,8 @@ in
                 options = {
                   baseURL = "{env:GATEWAY_API_BASE}/v1";
                   apiKey = "{env:GATEWAY_API_KEY}";
+                  timeout = 60 * 1000;
+                  chunkTimeout = 30 * 1000;
                 };
                 models = gatewayModels;
               };
@@ -308,13 +310,17 @@ in
 
               # Automatic stall/failure recovery for LLM sessions
               [
-                "opencode-auto-resume"
+                "opencode-auto-resume@1.1.12"
                 {
-                  # Total stall detection: chunkTimeoutMs + gracePeriodMs = 30s
-                  chunkTimeoutMs = 27000;
-                  gracePeriodMs = 3000;
-                  # Slightly more conservative for multi-agent orchestration
-                  subagentWaitMs = 20000;
+                  # Total stall detection: chunkTimeoutMs + gracePeriodMs = 40s
+                  chunkTimeoutMs = 20 * 1000;
+                  gracePeriodMs = 3 * 1000;
+
+                  busyStallStrategy = "abort"; # Hung provider stream
+                  checkIntervalMs = 2 * 1000;
+                  subagentWaitMs = 20 * 1000;
+                  maxRecoveryRetries = 3;
+                  continuePrompt = "session stalled, please continue";
                 }
               ]
             ];
@@ -395,20 +401,35 @@ in
 
           # ~/.config/opencode/AGENTS.md
           context = ''
-            # General guidelines
+            # MANDATORY RULES
+
+            **constantly/always**:
+
+            - seek, evaluate and follow dry, kiss, yagni and best coding principles.
+            - use, edit and create shared functions, logics, tests and configurables that will be re-used later on. build and think in blocks and modules.
+            - fully refractor and cleanup.
+            - verify everything is unified and working together.
+            - delegate work to agents to avoid overwhelming your context.
+            - use research agents with exa and scrapling for anything you are not 100% sure.
+            - awknowledge, analyze, evaluate and act all findings, reproduce if possible, no assumptions allowed. even for low impact ones.
+            - use one single source of truth, for everything.
+            - implement everything at the lowest choking point.
+            - expose as many settings, signals, actions and customization as possible for everything we build.
+            - seek, evaluate and act on gaps and improvements for your workflows and the app we are building. everything must be ultra modular, resiliant, reliable, agnostic and dynamic
+            - use, create and maintain broad, deterministic, mechanical, dynamic and intelligent tests, each issues/findings should ideally be found by tests next time.
+            - seek, use, create and maintain proper documentations. keep track of your progress, issues encountered, etc.
 
             - DO NOT use em dashes or other standalone dashes.
-            - READ-ONLY for git: run only read git operations yourself. Do NOT run write git
-              operations. When writing is needed, give the user the exact commands to run so he applies them manually.
-            - Follow best coding practices: DRY, KISS, YAGNI principles.
-            - Before making a change, scan landscape to indentify all places that need changes, and inform yourself with all the documentation we could possibly need.
-            - Performance, readability, and maintainability are important.
-            - If you do not understand something or something is strange, ask me or raise concern.
-            - Never delete code comments, only if user explicitly requests it, and add them where needed/reasonable. Do not write overly verbose comments.
-            - Do not do things blindly (assumptions kill): get the documentation, test the behaviour.
-            - Take you time, quality over quantity.
-            - Understand the problem as some things may not even be relevant and others might be missing.
-            - Triple check your work.
+            - READ-ONLY for git: run only read git operations yourself. Do NOT run write git operations. When writing is needed, give the user the exact commands to run so he applies them manually.
+
+            **never/avoid**:
+
+            - use static configurables inside the codebase.
+            - apply band aids or workarounds. 
+            - over engineer unless required.
+            - create similar or duplicate logics, consts, vars and functs.
+
+            **be proactive and apply anything else related to this not mentioned here. apply principles broadly.**
 
             ## MCP tools
 
@@ -419,10 +440,7 @@ in
             - `context7`: any other docs
             - `exa` or `webset`: get search results or queary web
             - `gh_grep`: search real code examples across public GitHub repositories
-            - `browser-harness-js`: browser automation via CDP (use the cdp skill).
-              The CLI drives the user's Chrome; the REPL server auto-starts on
-              first call and keeps one persistent session. The user starts Chrome
-              with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
+            - `browser-harness-js`: browser automation via CDP (use the cdp skill). The CLI drives the user's Chrome; the REPL server auto-starts on first call and keeps one persistent session. The user starts Chrome with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
             - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
             - `docs-mcp-server`: whenever user tells you to use it
             - `writeragent`: MCP for LibreOffice suite
@@ -430,22 +448,11 @@ in
             ## Multi-Agent Patterns
 
             Use these agents and skills for structured review and verification:
-
-            - `@council` — Run multiple reviewers in parallel and synthesize. Use for
-              high-stakes decisions: `@council review this architecture for correctness,
-              security, and operability.`
-            - `@advisor` — Quiet decision-point reviewer. Use when you want a second
-              opinion: `@advisor review this approach.`
-            - `@checker` — Verify implementation against spec, run tests, check edge
-              cases: `@checker verify the auth module against the spec.`
-            - `@oracle` — Architecture and debugging specialist from oh-my-opencode-slim.
-            - `@orchestrator` — Multi-agent orchestrator that delegates to specialists.
-
-            Existing skills also available:
-            - `/evaluate` — Unbiased critical evaluation of anything.
-            - `/code-review` — Review changes along Standards and Spec axes.
-            - `/grill-me` — Relentless interview to sharpen a plan.
-            - `/tdd` — Test-driven development workflow.
+            - `@council`: Run multiple reviewers in parallel and synthesize. Use for high-stakes decisions: `@council review this architecture for correctness, security, and operability.`
+            - `@advisor`: Quiet decision-point reviewer. Use when you want a second opinion: `@advisor review this approach.`
+            - `@checker`: Verify implementation against spec, run tests, check edge cases: `@checker verify the auth module against the spec.`
+            - `@oracle`: Architecture and debugging specialist from oh-my-opencode-slim.
+            - `@orchestrator`: Multi-agent orchestrator that delegates to specialists.
           '';
 
           # Web service (creates opencode-web.service)
