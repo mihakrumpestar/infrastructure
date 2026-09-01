@@ -312,7 +312,7 @@ in
               [
                 "opencode-auto-resume@1.1.12"
                 {
-                  # Total stall detection: chunkTimeoutMs + gracePeriodMs = 40s
+                  # Total stall detection: chunkTimeoutMs + gracePeriodMs
                   chunkTimeoutMs = 20 * 1000;
                   gracePeriodMs = 3 * 1000;
 
