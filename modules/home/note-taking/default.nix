@@ -68,7 +68,14 @@
                 obsidian-excalidraw-plugin
                 fit
                 sfb-open-in-new-tab
-                git-file-explorer
+                {
+                  pkg = git-file-explorer;
+                  settings = {
+                    # The sync widget runs `git fetch` on every refresh for
+                    # ahead/behind counts, which triggers SSH key prompts.
+                    gitSyncWidgetActive = false;
+                  };
+                }
                 table-editor-obsidian
                 {
                   pkg = tasknotes;

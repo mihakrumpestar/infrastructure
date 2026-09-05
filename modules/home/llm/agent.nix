@@ -177,7 +177,6 @@ in
                 options = {
                   baseURL = "{env:GATEWAY_API_BASE}/v1";
                   apiKey = "{env:GATEWAY_API_KEY}";
-                  timeout = 60 * 1000;
                   chunkTimeout = 30 * 1000;
                 };
                 models = gatewayModels;
