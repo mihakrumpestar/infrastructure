@@ -139,6 +139,35 @@ let
         "fast"
       ]
   );
+
+  # Opencode plugin pins (single source of truth). hash = null -> exact npm
+  # spec; hash set -> hermetic store path. See lib/opencode-plugins (flake
+  # input). Update: task update-opencode-plugins
+  opencodePluginPins = {
+    # Safety gate: blocks destructive commands and secret access
+    cc-safety-net = {
+      version = "2.3.3";
+      hash = "sha256-v4WRzS5OJXN/WmKNpw3tKEtTnj2tEKoXckGQakcv/MI=";
+    };
+
+    # Magic Context: self-managing context + long-term memory
+    "@cortexkit/opencode-magic-context" = {
+      version = "0.41.3";
+      hash = null;
+    };
+
+    # 7-agent orchestration suite (orchestrator, council, etc.)
+    oh-my-opencode-slim = {
+      version = "2.2.18";
+      hash = null;
+    };
+
+    # Automatic stall/failure recovery for LLM sessions
+    opencode-auto-resume = {
+      version = "1.1.13";
+      hash = "sha256-5P4SwsgxZsdDfRl6v3s3mfe+Li37eu+EVRDn8LqK3OQ=";
+    };
+  };
 in
 {
   home.llm-agent = {
@@ -299,30 +328,21 @@ in
                 max_bytes = 1024000;
               };
             */
+            plugin = inputs.opencode-plugins.lib.entries {
+              inherit pkgs;
+              pins = opencodePluginPins;
+              options.opencode-auto-resume = {
+                # Total stall detection: chunkTimeoutMs + gracePeriodMs
+                chunkTimeoutMs = 20 * 1000;
+                gracePeriodMs = 3 * 1000;
 
-            plugin = [
-              "cc-safety-net"
-
-              # Magic Context: self-managing context + long-term memory
-              "@cortexkit/opencode-magic-context@latest"
-              "oh-my-opencode-slim"
-
-              # Automatic stall/failure recovery for LLM sessions
-              [
-                "opencode-auto-resume@1.1.12"
-                {
-                  # Total stall detection: chunkTimeoutMs + gracePeriodMs
-                  chunkTimeoutMs = 20 * 1000;
-                  gracePeriodMs = 3 * 1000;
-
-                  busyStallStrategy = "abort"; # Hung provider stream
-                  checkIntervalMs = 2 * 1000;
-                  subagentWaitMs = 20 * 1000;
-                  maxRecoveryRetries = 3;
-                  continuePrompt = "session stalled, please continue";
-                }
-              ]
-            ];
+                busyStallStrategy = "abort"; # Hung provider stream
+                checkIntervalMs = 2 * 1000;
+                subagentWaitMs = 20 * 1000;
+                maxRecoveryRetries = 3;
+                continuePrompt = "session stalled, please continue";
+              };
+            };
           };
 
           agents = {
@@ -477,6 +497,10 @@ in
         # triggers.
         home.packages = [
           pkgs.opencode-desktop
+
+          # Opencode plugin pin updater (lib/opencode-plugins)
+          inputs.opencode-plugins.packages.${pkgs.stdenv.hostPlatform.system}.opencode-plugins-update
+
           (pkgs.writeShellApplication {
             name = "browser-harness-js";
             runtimeInputs = [

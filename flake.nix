@@ -86,6 +86,11 @@
 
     mutable-file.url = "./lib/mutable-file";
 
+    opencode-plugins = {
+      url = "./lib/opencode-plugins";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     virtualhere = {
       url = "./packages/virtualhere";
       inputs.nixpkgs.follows = "nixpkgs";

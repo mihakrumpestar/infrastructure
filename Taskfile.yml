@@ -15,8 +15,14 @@ tasks:
       - statix check
 
   update:
+    desc: Update everything
+    cmds:
+      - task: update-inputs
+      - task: update-opencode-plugins
+
+  update-inputs:
     desc: |
-      Can also update a specific input with: task update -- <input-name>
+      Can also update a specific input with: task update-inputs -- <input-name>
     cmds:
       - nix flake update --flake 'path:{{.ROOT_DIR}}' {{.CLI_ARGS}}
 
@@ -24,6 +30,13 @@ tasks:
     desc: Update secrets
     cmds:
       - task update -- infrastructure-secrets
+
+  update-opencode-plugins:
+    desc: |
+      Update opencode plugin pins in modules/home/llm/agent.nix against npm
+      dist-tags. Add --dry-run to only report available updates.
+    cmds:
+      - nix run path:{{.ROOT_DIR}}/lib/opencode-plugins#opencode-plugins-update -- --file {{.ROOT_DIR}}/modules/home/llm/agent.nix {{.CLI_ARGS}}
 
   generations:
     desc: List generations

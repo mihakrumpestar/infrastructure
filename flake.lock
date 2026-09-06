@@ -756,6 +756,22 @@
         "type": "github"
       }
     },
+    "opencode-plugins": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./lib/opencode-plugins",
+        "type": "path"
+      },
+      "original": {
+        "path": "./lib/opencode-plugins",
+        "type": "path"
+      },
+      "parent": []
+    },
     "plasma-manager": {
       "inputs": {
         "home-manager": [
@@ -821,6 +837,7 @@
         "nur": "nur",
         "obsidian-extensions": "obsidian-extensions",
         "openchamber": "openchamber",
+        "opencode-plugins": "opencode-plugins",
         "plasma-manager": "plasma-manager",
         "stylix": "stylix",
         "tix": "tix",
