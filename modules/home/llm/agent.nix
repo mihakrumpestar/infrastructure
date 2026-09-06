@@ -5,7 +5,6 @@
 #
 # This module configures a multi-agent opencode setup with:
 #   - oh-my-opencode-slim: 7-agent orchestration suite (orchestrator, council, etc.)
-#   - opencode-auto-resume: automatic stall/failure recovery for LLM sessions
 #   - magic-context: self-managing context + long-term memory (background
 #     historian compartmentalization, overnight dreamer consolidation, /ctx-aug
 #     sidekick)
@@ -162,11 +161,6 @@ let
       hash = null;
     };
 
-    # Automatic stall/failure recovery for LLM sessions
-    opencode-auto-resume = {
-      version = "1.1.13";
-      hash = "sha256-5P4SwsgxZsdDfRl6v3s3mfe+Li37eu+EVRDn8LqK3OQ=";
-    };
   };
 in
 {
@@ -331,17 +325,6 @@ in
             plugin = inputs.opencode-plugins.lib.entries {
               inherit pkgs;
               pins = opencodePluginPins;
-              options.opencode-auto-resume = {
-                # Total stall detection: chunkTimeoutMs + gracePeriodMs
-                chunkTimeoutMs = 20 * 1000;
-                gracePeriodMs = 3 * 1000;
-
-                busyStallStrategy = "abort"; # Hung provider stream
-                checkIntervalMs = 2 * 1000;
-                subagentWaitMs = 20 * 1000;
-                maxRecoveryRetries = 3;
-                continuePrompt = "session stalled, please continue";
-              };
             };
           };
 

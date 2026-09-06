@@ -52,7 +52,7 @@
           #chatbox # removed due to vasly end-of-life electron version
 
           # Office Suite
-          libreoffice-fresh
+          libreoffice-stable
           #onlyoffice-bin
 
           # File Management

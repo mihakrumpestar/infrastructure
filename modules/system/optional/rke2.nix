@@ -35,21 +35,12 @@
           "--etcd-snapshot-compress"
         ];
 
-        # API server audit logging: 30 days retention, 10 rotating 100MB files.
-        # https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/
-        auditFlags = [
-          "--kube-apiserver-arg=audit-log-maxage=30"
-          "--kube-apiserver-arg=audit-log-maxbackup=10"
-          "--kube-apiserver-arg=audit-log-maxsize=100"
-          "--kube-apiserver-arg=audit-log-path=/var/lib/rancher/rke2/server/logs/audit.log"
-        ];
-
         # Spegel: embedded P2P OCI registry mirror between nodes (port 5001).
         # https://docs.rke2.io/install/registry_mirror
         registryFlags = [ "--embedded-registry" ];
 
         allExtraFlags =
-          tlsSanFlags ++ hardeningFlags ++ etcdSnapshotFlags ++ auditFlags ++ registryFlags ++ cfg.extraFlags;
+          tlsSanFlags ++ hardeningFlags ++ etcdSnapshotFlags ++ registryFlags ++ cfg.extraFlags;
 
         # Registries mirrored by Spegel; containerd tries the embedded mirror
         # before falling back to the upstream registry.
@@ -320,10 +311,22 @@
               # and the kube-proxy manifest is re-staged on every start).
               # With the key set the manifest is never written; kubelet's own
               # KUBE-FIREWALL/canary chains remain, which is expected.
+              #
+              # audit-policy-file likewise only works in file form: audit-log-*
+              # kube-apiserver-arg flags never reach the static pod manifest
+              # (observed on rke2 1.36.3, no error logged). Setting the key
+              # makes rke2 stage /etc/rancher/rke2/audit-policy.yaml (default
+              # policy: level None, i.e. pipeline enabled, nothing logged),
+              # inject audit-log retention 30d/10 files/100MB and the default
+              # log path /var/lib/rancher/rke2/server/logs/audit.log, and
+              # mount that directory into the apiserver pod. Override the
+              # policy via environment.etc with this same path.
+              # https://docs.rke2.io/security/hardening_guide
               "rancher/rke2/config.yaml" = {
                 text = ''
                   disable-kube-proxy: true
                   ingress-controller: traefik
+                  audit-policy-file: /etc/rancher/rke2/audit-policy.yaml
                 '';
               };
 
