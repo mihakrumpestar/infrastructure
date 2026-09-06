@@ -28,7 +28,7 @@
         in
         {
           virtualhere-client-cli = pkgs.callPackage ./cli.nix { };
-          virtualhere-client-gui = pkgs.callPackage ./gui.nix { inherit pkgs; };
+          virtualhere-client-gui = pkgs.callPackage ./gui.nix { };
           default = self.packages.${system}.virtualhere-client-gui;
         }
       );
