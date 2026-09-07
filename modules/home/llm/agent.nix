@@ -160,7 +160,6 @@ let
       version = "2.2.18";
       hash = null;
     };
-
   };
 in
 {
@@ -180,6 +179,7 @@ in
           settings = {
             autoupdate = false;
             default_agent = "orchestrator";
+            model = "gateway/default";
             # Magic Context manages context itself; built-in auto/prune
             # compaction would double-compress and thrash the prompt cache.
             compaction.auto = false;
@@ -336,7 +336,6 @@ in
                 concern. Use when you want a second opinion on a design decision,
                 approach, or plan.
               mode: subagent
-              model: gateway/default
               permission:
                 edit: deny
                 bash: deny
@@ -370,7 +369,6 @@ in
                 Verify implementation against spec, run tests, check edge cases. Use
                 when you want to verify that work is complete and correct.
               mode: subagent
-              model: gateway/default
               permission:
                 edit: deny
                 bash:
@@ -542,40 +540,33 @@ in
                 "presets": {
                   "gateway": {
                     "orchestrator": {
-                      "model": "gateway/smart",
-                      "variant": "default",
                       "skills": ["*"],
                       "mcps": ["*"]
                     },
+                    // Subagents follow the primary session model
                     "explorer": {
-                      "model": "gateway/fast",
-                      "variant": "default",
+                      "inheritModelFrom": "session",
                       "mcps": ["*"]
                     },
                     "oracle": {
-                      "model": "gateway/default",
-                      "variant": "default",
+                      "inheritModelFrom": "session",
                       "skills": ["simplify"],
                       "mcps": ["*"]
                     },
                     "council": {
-                      "model": "gateway/default",
-                      "variant": "default",
+                      "inheritModelFrom": "session",
                       "mcps": ["*"]
                     },
                     "librarian": {
-                      "model": "gateway/default",
-                      "variant": "default",
+                      "inheritModelFrom": "session",
                       "mcps": ["*"]
                     },
                     "designer": {
-                      "model": "gateway/smart",
-                      "variant": "default",
+                      "inheritModelFrom": "session",
                       "mcps": ["*"]
                     },
                     "fixer": {
-                      "model": "gateway/fast",
-                      "variant": "default",
+                      "inheritModelFrom": "session",
                       "mcps": ["*"]
                     }
                   }
