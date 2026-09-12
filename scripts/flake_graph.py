@@ -16,14 +16,40 @@ from datetime import datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent
+
+# Local (non-remote) flake input URL prefixes: in-repo relative, sibling
+# absolute path:, and relative git+file forms.
+LOCAL_PREFIXES = ("./", "path:", "git+file:./", "git+file:../")
+
+
+def _local_label(url):
+    """Human label for a local input URL: relative to the repo where possible."""
+    if url.startswith("path:"):
+        p = url[len("path:") :]
+        try:
+            return os.path.relpath(p, REPO_ROOT)
+        except ValueError:
+            return os.path.basename(p)
+    return re.sub(r"^git\+file:", "", url)
+
+
 README_PATH = REPO_ROOT / "README.md"
 GENERATED_DIR = REPO_ROOT / "generated"
 DEPS_START = "<!-- DEPS_START -->"
 DEPS_END = "<!-- DEPS_END -->"
 
 EXCLUDE_DIRS = {
-    ".git", "result", "generated", ".venv", ".devbox",
-    "infrastructure-secrets", "node_modules", "devbox.d", "bin", "pkg", "docs",
+    ".git",
+    "result",
+    "generated",
+    ".venv",
+    ".devbox",
+    "infrastructure-secrets",
+    "node_modules",
+    "devbox.d",
+    "bin",
+    "pkg",
+    "docs",
 }
 
 # Maps system category dir -> mermaid ID prefix and label style
@@ -34,27 +60,34 @@ def find_nix_files():
     files = []
     for root, dirs, fnames in os.walk(REPO_ROOT):
         dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
-        files.extend(Path(root) / f for f in fnames if f.endswith(".nix") and f != "flake.lock")
+        files.extend(
+            Path(root) / f for f in fnames if f.endswith(".nix") and f != "flake.lock"
+        )
     return sorted(files)
 
 
 def _match_pair(text, start, opn, cls):
     depth = 0
     for i in range(start, len(text)):
-        if text[i] == opn: depth += 1
+        if text[i] == opn:
+            depth += 1
         elif text[i] == cls:
             depth -= 1
-            if depth == 0: return i
+            if depth == 0:
+                return i
     return -1
 
 
 def _resolve_rel(import_path, current_file):
     path = current_file.parent
     for part in import_path.strip("\"'").rstrip("/").split("/"):
-        if part == "..": path = path.parent
-        elif part != ".": path = path / part
+        if part == "..":
+            path = path.parent
+        elif part != ".":
+            path = path / part
     path = path.resolve()
-    if path.is_file(): return str(path.relative_to(REPO_ROOT))
+    if path.is_file():
+        return str(path.relative_to(REPO_ROOT))
     if path.is_dir() and (path / "default.nix").exists():
         return str((path / "default.nix").relative_to(REPO_ROOT))
     return None
@@ -63,8 +96,10 @@ def _resolve_rel(import_path, current_file):
 def _stem(path, parts, idx):
     """Get .nix-stripped filename at parts[idx], with special cases."""
     name = parts[idx].replace(".nix", "")
-    if name == "_hardware-configuration": return "hardware"
-    if name.startswith("_"): name = name.lstrip("_")
+    if name == "_hardware-configuration":
+        return "hardware"
+    if name.startswith("_"):
+        name = name.lstrip("_")
     return name
 
 
@@ -72,8 +107,10 @@ def node_id_and_label(path):
     """Return (mermaid_node_id, display_label) for a file path."""
     p = path.split("/")
 
-    if path == "flake.nix": return "flake", "flake"
-    if path == "modules/den.nix": return "den", "den"
+    if path == "flake.nix":
+        return "flake", "flake"
+    if path == "modules/den.nix":
+        return "den", "den"
 
     if path.startswith("modules/hosts/"):
         host = p[2]
@@ -96,18 +133,31 @@ def node_id_and_label(path):
             return f"home_{_sid(p[2].replace('.nix', ''))}", p[2].replace(".nix", "")
         if len(p) == 4:
             stem = _stem(path, p, 3)
-            return (f"home_{_sid(aspect)}", aspect) if stem == "default" \
+            return (
+                (f"home_{_sid(aspect)}", aspect)
+                if stem == "default"
                 else (f"home_{_sid(aspect)}_{_sid(stem)}", f"{aspect}/{stem}")
+            )
         stem = _stem(path, p, -1)
         parent = p[-2]
-        return (f"home_{_sid(aspect)}_{_sid(parent)}", f"{aspect}/{parent}") if stem == "default" \
-            else (f"home_{_sid(aspect)}_{_sid(parent)}_{_sid(stem)}", f"{aspect}/{parent}/{stem}")
+        return (
+            (f"home_{_sid(aspect)}_{_sid(parent)}", f"{aspect}/{parent}")
+            if stem == "default"
+            else (
+                f"home_{_sid(aspect)}_{_sid(parent)}_{_sid(stem)}",
+                f"{aspect}/{parent}/{stem}",
+            )
+        )
 
     if path.startswith("modules/system/"):
         prefix = SYS_PREFIX.get(p[2], "sys")
         if len(p) == 4:
             stem = _stem(path, p, 3)
-            return (prefix, stem) if stem == "default" else (f"{prefix}_{_sid(stem)}", stem)
+            return (
+                (prefix, stem)
+                if stem == "default"
+                else (f"{prefix}_{_sid(stem)}", stem)
+            )
         if len(p) == 5:
             parent, stem = p[3], _stem(path, p, 4)
             if stem in ("default", parent):
@@ -117,19 +167,29 @@ def node_id_and_label(path):
         sub = p[-2]
         if stem == "default":
             return f"{prefix}_{_sid(parent)}_{_sid(sub)}", f"{parent}/{sub}"
-        return f"{prefix}_{_sid(parent)}_{_sid(sub)}_{_sid(stem)}", f"{parent}/{sub}/{stem}"
+        return (
+            f"{prefix}_{_sid(parent)}_{_sid(sub)}_{_sid(stem)}",
+            f"{parent}/{sub}/{stem}",
+        )
 
     if path.startswith("packages/"):
         stem = p[-1].replace(".nix", "")
-        return (f"pkg_{_sid(p[1])}", p[1]) if stem == "flake" \
+        return (
+            (f"pkg_{_sid(p[1])}", p[1])
+            if stem == "flake"
             else (f"pkg_{_sid(p[1])}_{_sid(stem)}", p[1])
+        )
     if path.startswith("lib/"):
         stem = p[-1].replace(".nix", "")
-        return (f"lib_{_sid(p[1])}", p[1]) if stem == "flake" \
+        return (
+            (f"lib_{_sid(p[1])}", p[1])
+            if stem == "flake"
             else (f"lib_{_sid(p[1])}_{_sid(stem)}", p[1])
+        )
 
     name = p[-1].replace(".nix", "")
-    if name == "default" and len(p) > 1: name = p[-2]
+    if name == "default" and len(p) > 1:
+        name = p[-2]
     return _sid(name), name
 
 
@@ -141,10 +201,13 @@ def _sid(name):
 def find_aspect_file(name, all_files):
     """Find the file defining den.aspects.<name> or home.<name>."""
     candidates = [
-        f"modules/system/default/{name}.nix", f"modules/system/default/{name}/default.nix",
-        f"modules/system/optional/{name}.nix", f"modules/system/optional/{name}/default.nix",
+        f"modules/system/default/{name}.nix",
+        f"modules/system/default/{name}/default.nix",
+        f"modules/system/optional/{name}.nix",
+        f"modules/system/optional/{name}/default.nix",
         f"modules/system/type/{name}.nix",
-        f"modules/home/{name}.nix", f"modules/home/{name}/default.nix",
+        f"modules/home/{name}.nix",
+        f"modules/home/{name}/default.nix",
         f"modules/hosts/{name}/default.nix",
     ]
     if name == "common":
@@ -152,13 +215,18 @@ def find_aspect_file(name, all_files):
     if "-" in name:
         parent, _, child = name.rpartition("-")
         for cat in ("default", "optional", "type"):
-            candidates += [f"modules/system/{cat}/{parent}/{name}.nix",
-                           f"modules/system/{cat}/{parent}/{child}.nix"]
+            candidates += [
+                f"modules/system/{cat}/{parent}/{name}.nix",
+                f"modules/system/{cat}/{parent}/{child}.nix",
+            ]
         # Home aspects may use hyphen as path separator (e.g. llm-agent -> llm/agent)
-        candidates += [f"modules/home/{parent}/{child}.nix",
-                       f"modules/home/{parent}/{child}/default.nix"]
+        candidates += [
+            f"modules/home/{parent}/{child}.nix",
+            f"modules/home/{parent}/{child}/default.nix",
+        ]
     for c in candidates:
-        if c in all_files: return c
+        if c in all_files:
+            return c
     for f in sorted(all_files):
         if f.endswith(f"/{name}.nix") or f.endswith(f"/{name}/default.nix"):
             return f
@@ -168,26 +236,34 @@ def find_aspect_file(name, all_files):
 def extract_aspects(content, file_path):
     """Extract den.aspects.* and home.* definitions with their includes."""
     aspects = {}
-    for pattern, prefix in [(r"den\.aspects\.([\w-]+)\s*=\s*\{", "aspects"),
-                             (r"\bhome\.([\w-]+)\s*=\s*\{", "home")]:
+    for pattern, prefix in [
+        (r"den\.aspects\.([\w-]+)\s*=\s*\{", "aspects"),
+        (r"\bhome\.([\w-]+)\s*=\s*\{", "home"),
+    ]:
         for m in re.finditer(pattern, content):
             name = m.group(1)
             brace_end = _match_pair(content, m.end() - 1, "{", "}")
-            if brace_end == -1: continue
-            block = content[m.end() - 1:brace_end + 1]
-            info = aspects.setdefault(f"{prefix}.{name}",
-                                      {"includes": [], "home_refs": [], "imports": []})
+            if brace_end == -1:
+                continue
+            block = content[m.end() - 1 : brace_end + 1]
+            info = aspects.setdefault(
+                f"{prefix}.{name}", {"includes": [], "home_refs": [], "imports": []}
+            )
             for inc in re.finditer(r"den\.aspects\.([\w-]+)", block):
-                if inc.group(1) != name: info["includes"].append(inc.group(1))
+                if inc.group(1) != name:
+                    info["includes"].append(inc.group(1))
             inc_m = re.search(r"includes\s*=\s*\[", block)
             if inc_m:
                 bk = _match_pair(block, inc_m.end() - 1, "[", "]")
                 if bk != -1:
-                    for hm in re.finditer(r"\bhome\.([\w-]+)", block[inc_m.start():bk]):
+                    for hm in re.finditer(
+                        r"\bhome\.([\w-]+)", block[inc_m.start() : bk]
+                    ):
                         info["home_refs"].append(hm.group(1))
             for rel in re.finditer(r"(?:\.\./|\./)([\w./-]+\.nix)", block):
                 resolved = _resolve_rel(rel.group(0), file_path)
-                if resolved: info["imports"].append(resolved)
+                if resolved:
+                    info["imports"].append(resolved)
     return aspects
 
 
@@ -197,36 +273,58 @@ def extract_raw_imports(content, file_path):
     pos = 0
     while True:
         start = content.find("imports = [", pos)
-        if start < 0: break
+        if start < 0:
+            break
         end = _match_pair(content, start + len("imports = [") - 1, "[", "]")
-        if end == -1: break
-        for m in re.finditer(r"(?:\.\./|\./)[\w./-]+", content[start + len("imports = ["):end]):
+        if end == -1:
+            break
+        for m in re.finditer(
+            r"(?:\.\./|\./)[\w./-]+", content[start + len("imports = [") : end]
+        ):
             if m.group(0) not in ("./.", "././"):
                 resolved = _resolve_rel(m.group(0), file_path)
-                if resolved: imports.add(resolved)
+                if resolved:
+                    imports.add(resolved)
         pos = end + 1
     return imports
 
 
 def get_flake_inputs():
     try:
-        r = subprocess.run(["nix", "flake", "metadata", "--json"], capture_output=True, text=True, cwd=REPO_ROOT)
-        if r.returncode != 0: return [], {}
+        r = subprocess.run(
+            ["nix", "flake", "metadata", "--json"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        if r.returncode != 0:
+            return [], {}
         data = json.loads(r.stdout)
         fc = (REPO_ROOT / "flake.nix").read_text()
         external, local = [], {}
         for name in data.get("locks", {}).get("nodes", {}):
-            if name == "root": continue
+            if name == "root":
+                continue
             url = None
             im = re.search(rf'{name}\.url\s*=\s*"([^"]+)"', fc)
-            if im: url = im.group(1)
+            if im:
+                url = im.group(1)
             else:
-                bm = re.search(rf'{name}\s*=\s*\{{[^}}]*url\s*=\s*"([^"]+)"[^}}]*\}}', fc, re.DOTALL)
-                if bm: url = bm.group(1)
+                bm = re.search(
+                    rf'{name}\s*=\s*\{{[^}}]*url\s*=\s*"([^"]+)"[^}}]*\}}',
+                    fc,
+                    re.DOTALL,
+                )
+                if bm:
+                    url = bm.group(1)
             if url:
-                if url.startswith("./"): local[name] = url
-                elif name not in external: external.append(name)
-            elif name not in external and re.search(rf"^\s*{name}\s*[.{{=]", fc, re.MULTILINE):
+                if url.startswith(LOCAL_PREFIXES):
+                    local[name] = url
+                elif name not in external:
+                    external.append(name)
+            elif name not in external and re.search(
+                rf"^\s*{name}\s*[.{{=]", fc, re.MULTILINE
+            ):
                 external.append(name)
         return sorted(external), local
     except Exception as e:
@@ -244,7 +342,8 @@ def build_graph():
             content = f.read_text()
             deps[rel].update(extract_raw_imports(content, f))
             a = extract_aspects(content, f)
-            if a: aspect_info[rel] = a
+            if a:
+                aspect_info[rel] = a
         except Exception as e:
             print(f"⚠ Error parsing {rel}: {e}", file=sys.stderr)
     return dict(deps), aspect_info, all_files
@@ -290,7 +389,8 @@ def generate_mermaid(deps, aspect_info, all_files):
                 host_hw[parts[2]] = path
         elif path.startswith("modules/users/") and not path.endswith("/default.nix"):
             users.add(parts[-1].replace(".nix", ""))
-        elif path.startswith("modules/system/"): sys_aspects.add(path)
+        elif path.startswith("modules/system/"):
+            sys_aspects.add(path)
         elif path.startswith("modules/home/") and not path.endswith("namespace.nix"):
             home_aspects.add(path)
 
@@ -311,21 +411,26 @@ def generate_mermaid(deps, aspect_info, all_files):
         L.append("    end")
         L.append("")
 
-    subgraph("Inputs[Inputs]", [
-        (f"input_{_sid(n)}", n, "input") for n in ext_inputs
-    ] + [
-        (f"local_{_sid(n)}", p.lstrip("./"), "local") for n, p in sorted(local_inputs.items())
-    ])
+    subgraph(
+        "Inputs[Inputs]",
+        [(f"input_{_sid(n)}", n, "input") for n in ext_inputs]
+        + [
+            (f"local_{_sid(n)}", _local_label(p), "local")
+            for n, p in sorted(local_inputs.items())
+        ],
+    )
 
     subgraph("Core[Core]", [("flake", "flake", "flake"), ("den", "den", "flake")])
 
-    subgraph("SystemAspects[System Aspects]", [
-        (*node_id_and_label(p), "aspect") for p in sorted(sys_aspects)
-    ])
+    subgraph(
+        "SystemAspects[System Aspects]",
+        [(*node_id_and_label(p), "aspect") for p in sorted(sys_aspects)],
+    )
 
-    subgraph("HomeAspects[Home Namespace Aspects]", [
-        (*node_id_and_label(p), "aspect") for p in sorted(home_aspects)
-    ])
+    subgraph(
+        "HomeAspects[Home Namespace Aspects]",
+        [(*node_id_and_label(p), "aspect") for p in sorted(home_aspects)],
+    )
 
     host_nodes = []
     for h in sorted(hosts):
@@ -334,32 +439,37 @@ def generate_mermaid(deps, aspect_info, all_files):
             host_nodes.append((f"host_{_sid(h)}_hardware", "hardware", "config"))
     subgraph("Hosts[Hosts]", host_nodes)
 
-    subgraph("Users[Users]", [
-        (f"user_{_sid(u)}", u, "users") for u in sorted(users)
-    ])
+    subgraph("Users[Users]", [(f"user_{_sid(u)}", u, "users") for u in sorted(users)])
 
     # Edges (deduplicated)
     edges = set()
 
-    for n in ext_inputs: edges.add((f"input_{_sid(n)}", "flake"))
-    for n in sorted(local_inputs): edges.add((f"local_{_sid(n)}", "flake"))
+    for n in ext_inputs:
+        edges.add((f"input_{_sid(n)}", "flake"))
+    for n in sorted(local_inputs):
+        edges.add((f"local_{_sid(n)}", "flake"))
     edges.add(("flake", "den"))
 
     # den.nix -> baseline aspects + hosts + users
     den_content = ""
     den_path = REPO_ROOT / "modules" / "den.nix"
     if den_path.exists():
-        try: den_content = den_path.read_text()
-        except Exception: pass
+        try:
+            den_content = den_path.read_text()
+        except Exception:
+            pass
     for m in re.finditer(r"den\.aspects\.([\w-]+)", den_content):
         target = find_aspect_file(m.group(1), all_files)
-        if target: edges.add(("den", node_id_and_label(target)[0]))
+        if target:
+            edges.add(("den", node_id_and_label(target)[0]))
     for h in sorted(hosts):
         target = find_aspect_file(h, all_files)
-        if target: edges.add(("den", node_id_and_label(target)[0]))
+        if target:
+            edges.add(("den", node_id_and_label(target)[0]))
     for u in sorted(users):
         uf = f"modules/users/{u}.nix"
-        if uf in all_files: edges.add(("den", node_id_and_label(uf)[0]))
+        if uf in all_files:
+            edges.add(("den", node_id_and_label(uf)[0]))
 
     # Aspect includes
     for path, aspects in aspect_info.items():
@@ -367,20 +477,30 @@ def generate_mermaid(deps, aspect_info, all_files):
         for _, info in aspects.items():
             for inc in info["includes"]:
                 target = find_aspect_file(inc, all_files)
-                if target: edges.add((src, node_id_and_label(target)[0]))
+                if target:
+                    edges.add((src, node_id_and_label(target)[0]))
             for href in info["home_refs"]:
                 target = find_aspect_file(href, all_files)
-                if target: edges.add((src, node_id_and_label(target)[0]))
+                if target:
+                    edges.add((src, node_id_and_label(target)[0]))
             for imp in info["imports"]:
-                if imp in all_files: edges.add((src, node_id_and_label(imp)[0]))
+                if imp in all_files:
+                    edges.add((src, node_id_and_label(imp)[0]))
 
     # Raw import edges
     for src_path in sorted(deps):
-        if src_path.startswith(("packages/", "lib/")) or src_path.endswith("namespace.nix"): continue
+        if src_path.startswith(("packages/", "lib/")) or src_path.endswith(
+            "namespace.nix"
+        ):
+            continue
         src_id = node_id_and_label(src_path)[0]
         for tgt_path in sorted(deps[src_path]):
-            if tgt_path.startswith(("packages/", "lib/")) or tgt_path.endswith("namespace.nix"): continue
-            if tgt_path in all_files: edges.add((src_id, node_id_and_label(tgt_path)[0]))
+            if tgt_path.startswith(("packages/", "lib/")) or tgt_path.endswith(
+                "namespace.nix"
+            ):
+                continue
+            if tgt_path in all_files:
+                edges.add((src_id, node_id_and_label(tgt_path)[0]))
 
     L.append("")
     for s, t in sorted(edges):
@@ -391,11 +511,13 @@ def generate_mermaid(deps, aspect_info, all_files):
 
 
 def update_readme(content):
-    if not README_PATH.exists(): return
+    if not README_PATH.exists():
+        return
     txt = README_PATH.read_text()
     s, e = txt.find(DEPS_START), txt.find(DEPS_END)
-    if s == -1 or e == -1: return
-    README_PATH.write_text(txt[:s + len(DEPS_START)] + "\n" + content + "\n" + txt[e:])
+    if s == -1 or e == -1:
+        return
+    README_PATH.write_text(txt[: s + len(DEPS_START)] + "\n" + content + "\n" + txt[e:])
     print("✓ Updated README.md", file=sys.stderr)
 
 
@@ -403,22 +525,50 @@ def export_diagram(mermaid, output):
     """Export mermaid diagram to file. Format determined by output extension (pdf, png, svg)."""
     mmdc = shutil.which("mmdc")
     if not mmdc:
-        for p in (REPO_ROOT / ".devbox/nix/profile/default/bin/mmdc",
-                  Path.home() / ".devbox/nix/profile/default/bin/mmdc"):
-            if p.exists(): mmdc = str(p); break
+        for p in (
+            REPO_ROOT / ".devbox/nix/profile/default/bin/mmdc",
+            Path.home() / ".devbox/nix/profile/default/bin/mmdc",
+        ):
+            if p.exists():
+                mmdc = str(p)
+                break
     if not mmdc:
-        print(f"⚠ mmdc not found, skipping {output.suffix.lstrip('.')} export", file=sys.stderr); return
+        print(
+            f"⚠ mmdc not found, skipping {output.suffix.lstrip('.')} export",
+            file=sys.stderr,
+        )
+        return
 
-    content = mermaid.removeprefix("```mermaid\n").removesuffix("\n```\n").removesuffix("```")
+    content = (
+        mermaid.removeprefix("```mermaid\n").removesuffix("\n```\n").removesuffix("```")
+    )
     with tempfile.NamedTemporaryFile(mode="w", suffix=".mmd", delete=False) as f:
         f.write(content)
         tmp = f.name
     try:
-        cmd = [mmdc, "-i", tmp, "-o", str(output), "-b", "white", "-s", "4", "-w", "4096"]
-        if output.suffix == ".pdf": cmd.append("-f")
+        cmd = [
+            mmdc,
+            "-i",
+            tmp,
+            "-o",
+            str(output),
+            "-b",
+            "white",
+            "-s",
+            "4",
+            "-w",
+            "4096",
+        ]
+        if output.suffix == ".pdf":
+            cmd.append("-f")
         r = subprocess.run(cmd, capture_output=True, text=True)
-        if r.returncode != 0: print(f"⚠ {output.suffix.lstrip('.').upper()} export failed: {r.stderr}", file=sys.stderr)
-        else: print(f"✓ Exported {output}", file=sys.stderr)
+        if r.returncode != 0:
+            print(
+                f"⚠ {output.suffix.lstrip('.').upper()} export failed: {r.stderr}",
+                file=sys.stderr,
+            )
+        else:
+            print(f"✓ Exported {output}", file=sys.stderr)
     finally:
         Path(tmp).unlink(missing_ok=True)
 
@@ -426,8 +576,11 @@ def export_diagram(mermaid, output):
 def main():
     print("Building dependency graph...", file=sys.stderr)
     deps, aspect_info, all_files = build_graph()
-    print(f"Found {len(all_files)} files, {sum(len(v) for v in deps.values())} imports, "
-          f"{len(aspect_info)} aspect definitions", file=sys.stderr)
+    print(
+        f"Found {len(all_files)} files, {sum(len(v) for v in deps.values())} imports, "
+        f"{len(aspect_info)} aspect definitions",
+        file=sys.stderr,
+    )
 
     mermaid = generate_mermaid(deps, aspect_info, all_files)
     update_readme(mermaid)

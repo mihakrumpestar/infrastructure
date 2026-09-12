@@ -1,3 +1,7 @@
+# Decommissioned 2026-09-07: replaced back with Nomad+Consul, but simplified setup.
+# Retained as a reference for certificate/token wiring and the Cilium kube-proxy-free
+# networking setup.
+
 { ... }:
 {
   den.aspects.rke2 = {

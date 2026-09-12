@@ -15,9 +15,9 @@
         settings = {
           # Theme
           useSystemTheme = false;
-          themeId = "vesper-dark";
+          themeId = "mono-plus-dark";
           themeVariant = "dark";
-          darkThemeId = "vesper-dark";
+          darkThemeId = "mono-plus-dark";
 
           # Defaults
           defaultModel = "gateway/default";

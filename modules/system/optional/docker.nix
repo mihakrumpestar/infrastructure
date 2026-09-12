@@ -1,29 +1,15 @@
 { ... }:
 {
-  den.aspects.containers = {
+  den.aspects.docker = {
     nixos =
-      { pkgs, ... }:
+      { ... }:
       {
-
-        # Kernel modules required for Docker iptables rules (port mapping,
-        # loopback filtering). Without these, dockerd logs:
-        # "Extension tcp revision 0 not supported, missing kernel module?"
-        boot.kernelModules = [
-          "ip_tables"
-          "iptable_filter"
-          "iptable_nat"
-          "nf_conntrack"
-          "nf_nat"
-          "xt_tcp"
-          "xt_udp"
-          "br_netfilter"
-        ];
+        imports = [ ./_container-runtime.nix ];
 
         # Enable containers
 
         virtualisation.docker = {
           enable = true;
-          package = pkgs.docker_29; # v29 is just more broken with every single release # now this is the only wersion available, hopefully it will work
           storageDriver = "btrfs"; # All hosts use btrfs root; containerd overlayfs snapshotter is incompatible with btrfs
           daemon = {
             settings = {

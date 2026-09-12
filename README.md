@@ -12,7 +12,7 @@ NixOS configuration repository for managing multiple hosts using flakes.
 │   ├── users/              # User account definitions
 │   ├── system/
 │   │   ├── default/        # Baseline system aspects (core, disks, nix, networking, …)
-│   │   ├── optional/       # Optional system aspects (plasma, containers, nvidia, …)
+│   │   ├── optional/       # Optional system aspects (plasma, docker, podman, nomad, consul, nvidia, …)
 │   │   └── type/           # Host type aspects (client, server, vm-guest)
 │   └── home/               # Home-manager aspects (git, ide, browser, scripts, …)
 ├── packages/               # Custom package flakes (consul-cni, virtualhere)
@@ -160,6 +160,7 @@ flowchart LR
 
     subgraph Inputs[Inputs]
         input_agenix["agenix"]:::input
+        input_browser_harness_js["browser-harness-js"]:::input
         input_den["den"]:::input
         input_disko["disko"]:::input
         input_home_manager["home-manager"]:::input
@@ -172,12 +173,15 @@ flowchart LR
         input_nix_vscode_extensions["nix-vscode-extensions"]:::input
         input_nixpkgs["nixpkgs"]:::input
         input_nur["nur"]:::input
+        input_obsidian_extensions["obsidian-extensions"]:::input
+        input_openchamber["openchamber"]:::input
         input_plasma_manager["plasma-manager"]:::input
         input_stylix["stylix"]:::input
         input_tix["tix"]:::input
-        local_consul_cni["packages/consul-cni"]:::local
-        local_mutable_file["lib/mutable-file"]:::local
-        local_virtualhere["packages/virtualhere"]:::local
+        local_consul_cni["./packages/consul-cni"]:::local
+        local_mutable_file["./lib/mutable-file"]:::local
+        local_opencode_plugins["./lib/opencode-plugins"]:::local
+        local_virtualhere["./packages/virtualhere"]:::local
     end
 
     subgraph Core[Core]
@@ -199,10 +203,14 @@ flowchart LR
         sys_shell_starship["shell/starship"]:::aspect
         sys_shell_zsh["shell/zsh"]:::aspect
         sys_style["style"]:::aspect
-        opt_containers["containers"]:::aspect
+        opt_container_runtime["container-runtime"]:::aspect
+        opt_consul["consul"]:::aspect
+        opt_docker["docker"]:::aspect
+        opt_nomad["nomad"]:::aspect
         opt_nvidia["nvidia"]:::aspect
         opt_peripherals["peripherals"]:::aspect
         opt_plasma["plasma"]:::aspect
+        opt_podman["podman"]:::aspect
         opt_virtualization["virtualization"]:::aspect
         type_client["client"]:::aspect
         type_server["server"]:::aspect
@@ -224,6 +232,8 @@ flowchart LR
         home_llm["llm"]:::aspect
         home_llm_gateway["llm/gateway"]:::aspect
         home_llm_mcp["llm/mcp"]:::aspect
+        home_llm_ui["llm/ui"]:::aspect
+        home_note_taking["note-taking"]:::aspect
         home_password_manager["password-manager"]:::aspect
         home_scripts["scripts"]:::aspect
         home_ssh["ssh"]:::aspect
@@ -277,20 +287,24 @@ flowchart LR
     home_llm --> home_llm_agent
     home_llm --> home_llm_gateway
     home_llm --> home_llm_mcp
+    home_llm --> home_llm_ui
     home_web_browser --> home_web_browser_policies
     host_kiosk --> host_kiosk_hardware
     host_kiosk --> type_client
     host_personal_laptop --> host_personal_laptop_hardware
-    host_personal_laptop --> opt_containers
+    host_personal_laptop --> opt_docker
+    host_personal_laptop --> opt_podman
     host_personal_laptop --> opt_virtualization
     host_personal_laptop --> type_client
     host_personal_vps_02 --> host_personal_vps_02_hardware
+    host_personal_vps_02 --> opt_nomad
     host_personal_vps_02 --> type_server
     host_personal_vps_02 --> type_vm_guest
     host_personal_workstation --> home_backup
     host_personal_workstation --> home_dead_mens_switch
     host_personal_workstation --> host_personal_workstation_hardware
-    host_personal_workstation --> opt_containers
+    host_personal_workstation --> opt_docker
+    host_personal_workstation --> opt_podman
     host_personal_workstation --> opt_virtualization
     host_personal_workstation --> type_client
     host_server_01 --> host_server_01_hardware
@@ -300,6 +314,7 @@ flowchart LR
     host_server_03 --> orchestrator
     host_server_03 --> type_server
     input_agenix --> flake
+    input_browser_harness_js --> flake
     input_den --> flake
     input_disko --> flake
     input_home_manager --> flake
@@ -312,13 +327,19 @@ flowchart LR
     input_nix_vscode_extensions --> flake
     input_nixpkgs --> flake
     input_nur --> flake
+    input_obsidian_extensions --> flake
+    input_openchamber --> flake
     input_plasma_manager --> flake
     input_stylix --> flake
     input_tix --> flake
     local_consul_cni --> flake
     local_mutable_file --> flake
+    local_opencode_plugins --> flake
     local_virtualhere --> flake
-    orchestrator --> opt_containers
+    opt_docker --> opt_container_runtime
+    opt_nomad --> opt_consul
+    opt_nomad --> opt_podman
+    opt_podman --> opt_container_runtime
     sys_shell --> sys_shell_fonts
     sys_shell --> sys_shell_packages
     sys_shell --> sys_shell_starship
@@ -337,6 +358,7 @@ flowchart LR
     user_krumpy_miha --> home_home_apps
     user_krumpy_miha --> home_ide
     user_krumpy_miha --> home_llm
+    user_krumpy_miha --> home_note_taking
     user_krumpy_miha --> home_password_manager
     user_krumpy_miha --> home_scripts
     user_krumpy_miha --> home_ssh

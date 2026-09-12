@@ -145,13 +145,13 @@ let
   opencodePluginPins = {
     # Safety gate: blocks destructive commands and secret access
     cc-safety-net = {
-      version = "2.3.3";
-      hash = "sha256-v4WRzS5OJXN/WmKNpw3tKEtTnj2tEKoXckGQakcv/MI=";
+      version = "2.3.4";
+      hash = "sha256-0p9KRFcFLugX49DsjLKiim9JFGlqdBJQ7Ljlaa7zzBg=";
     };
 
     # Magic Context: self-managing context + long-term memory
     "@cortexkit/opencode-magic-context" = {
-      version = "0.41.3";
+      version = "0.41.4";
       hash = null;
     };
 
@@ -200,7 +200,7 @@ in
                 options = {
                   baseURL = "{env:GATEWAY_API_BASE}/v1";
                   apiKey = "{env:GATEWAY_API_KEY}";
-                  chunkTimeout = 30 * 1000;
+                  chunkTimeout = 60 * 1000;
                 };
                 models = gatewayModels;
               };

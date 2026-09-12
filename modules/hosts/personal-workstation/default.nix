@@ -3,7 +3,8 @@
   den.aspects.personal-workstation = {
     includes = [
       den.aspects.client
-      den.aspects.containers
+      den.aspects.docker
+      den.aspects.podman
       den.aspects.virtualization
 
       home.backup

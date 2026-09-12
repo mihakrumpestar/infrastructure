@@ -74,6 +74,7 @@
           yaak # TODO: test
           gitleaks # Check for leaks in git repos, scans all branches with all commit history
           devbox
+          devenv
           scc
 
           # Tools
