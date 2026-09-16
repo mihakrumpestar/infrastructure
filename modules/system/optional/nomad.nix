@@ -64,6 +64,17 @@
         };
 
         config = lib.mkIf cfg.enable {
+          # consul-cni (Connect transparent proxy, wired below via
+          # client.cni_path) programs iptables rules that match on
+          # --uid-owner (exclude the envoy sidecar's own UID from the
+          # redirect) and on conntrack state. security.lockKernelModules
+          # blocks autoload, so both must be loaded at boot or every
+          # Connect alloc fails its network setup.
+          boot.kernelModules = [
+            "xt_owner"
+            "xt_conntrack"
+          ];
+
           services.nomad = {
             enable = true;
             package = pkgs.nomad_2_0;

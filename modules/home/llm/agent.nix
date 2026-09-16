@@ -229,6 +229,12 @@ in
                 enabled = true;
                 headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
               };
+              gh = {
+                type = "remote";
+                url = "{env:GATEWAY_API_BASE}/mcp/gh";
+                enabled = true;
+                headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
+              };
 
               # Public remote MCPs (no auth)
               gh_grep = {
@@ -264,6 +270,16 @@ in
                   "bunx"
                   "@sylphx/pdf-reader-mcp"
                 ];
+                enabled = true;
+              };
+              # Code intelligence: per-project tree-sitter knowledge graph
+              # (index in ~/.cache/codebase-memory-mcp). Index a repo first
+              # (index_repository), then query search_graph/trace_path/
+              # get_architecture instead of grep. Tune: `codebase-memory-mcp
+              # config set auto_index true` (auto-index on session start).
+              "codebase-memory-mcp" = {
+                type = "local";
+                command = [ "${pkgs.codebase-memory-mcp}/bin/codebase-memory-mcp" ];
                 enabled = true;
               };
 
@@ -442,6 +458,7 @@ in
             - `gh_grep`: search real code examples across public GitHub repositories
             - `browser-harness-js`: browser automation via CDP (use the cdp skill). The CLI drives the user's Chrome; the REPL server auto-starts on first call and keeps one persistent session. The user starts Chrome with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
             - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
+            - `codebase-memory-mcp`: code knowledge graph; index the repo first (index_repository tool), then prefer search_graph/trace_path/get_architecture over grep for structural questions
             - `docs-mcp-server`: whenever user tells you to use it
             - `writeragent`: MCP for LibreOffice suite
 
@@ -478,6 +495,10 @@ in
         # triggers.
         home.packages = [
           pkgs.opencode-desktop
+
+          # Code intelligence MCP server; on PATH for the CLI (index/config/
+          # query). MCP entry lives in settings.mcp above.
+          pkgs.codebase-memory-mcp
 
           # Opencode plugin pin updater (lib/opencode-plugins)
           inputs.opencode-plugins.packages.${pkgs.stdenv.hostPlatform.system}.opencode-plugins-update

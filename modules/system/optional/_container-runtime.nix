@@ -38,5 +38,7 @@
     "xt_multiport"
     "xt_REDIRECT"
     "xt_NETMAP"
+    "xt_comment"
+    "xt_mark"
   ];
 }
