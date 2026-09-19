@@ -101,6 +101,10 @@
   ],
   // OpenChamber
   "openchamber.apiUrl": "http://127.0.0.1:4096",
+  // devenv: apply the dev env automatically; the extension restarts itself on changes
+  "devenv": {
+    "restart.automatic": true
+  },
   //                              //
   //  Language specific settings  //
   //                              //
@@ -112,7 +116,8 @@
     "importStrategy": "useBundled", // The default "fronEnvironment" does not even load the extension
     "analysis.exclude": [
       "**/.venv",
-      "**/.devbox"
+      "**/.devbox",
+      "**/.devenv"
     ]
   },
   // Quarto

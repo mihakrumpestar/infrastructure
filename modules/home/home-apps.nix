@@ -74,7 +74,6 @@
           yaak # TODO: test
           gitleaks # Check for leaks in git repos, scans all branches with all commit history
           devbox
-          devenv
           scc
 
           # Tools
@@ -160,6 +159,24 @@
           Install = {
             WantedBy = [ "graphical-session.target" ];
           };
+        };
+      };
+
+    # v4l2loopback: virtual webcam device so scrcpy's camera source (and
+    # droidcam) can feed the phone camera to other applications. It has to be
+    # loaded at boot because security.lockKernelModules forbids loading
+    # kernel modules after the system is fully initialised.
+    nixos =
+      { config, ... }:
+      {
+        boot = {
+          extraModulePackages = [ config.boot.kernelPackages.v4l2loopback ];
+
+          kernelModules = [ "v4l2loopback" ];
+
+          extraModprobeConfig = ''
+            options v4l2loopback devices=1 video_nr=10 card_label="PhoneCam" exclusive_caps=1
+          '';
         };
       };
   };

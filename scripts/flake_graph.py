@@ -44,6 +44,7 @@ EXCLUDE_DIRS = {
     "generated",
     ".venv",
     ".devbox",
+    ".devenv",
     "infrastructure-secrets",
     "node_modules",
     "devbox.d",
@@ -524,14 +525,6 @@ def update_readme(content):
 def export_diagram(mermaid, output):
     """Export mermaid diagram to file. Format determined by output extension (pdf, png, svg)."""
     mmdc = shutil.which("mmdc")
-    if not mmdc:
-        for p in (
-            REPO_ROOT / ".devbox/nix/profile/default/bin/mmdc",
-            Path.home() / ".devbox/nix/profile/default/bin/mmdc",
-        ):
-            if p.exists():
-                mmdc = str(p)
-                break
     if not mmdc:
         print(
             f"⚠ mmdc not found, skipping {output.suffix.lstrip('.')} export",

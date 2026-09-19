@@ -60,6 +60,8 @@ in
         # https://github.com/trustcrypto/python-onlykey/issues/82#issuecomment-3503421686
         nixpkgs.config.permittedInsecurePackages = [
           "python3.14-ecdsa-0.19.2"
+          # onlykey (nwjs-based wrapper) pulls nwjs, marked insecure for bundled Chrome vulnerabilities
+          "nwjs-0.102.1"
         ];
 
         age.secrets."pam_u2f" = {

@@ -5,9 +5,7 @@
 #
 # This module configures a multi-agent opencode setup with:
 #   - oh-my-opencode-slim: 7-agent orchestration suite (orchestrator, council, etc.)
-#   - magic-context: self-managing context + long-term memory (background
-#     historian compartmentalization, overnight dreamer consolidation, /ctx-aug
-#     sidekick)
+#   - DCP (dynamic-context-pruning): prunes/compresses stale session context
 #   - Custom agents: advisor (quiet reviewer), checker (verification)
 #   - Mattpocock skills: code-review, tdd, to-spec, grill-with-docs, etc.
 #
@@ -145,19 +143,20 @@ let
   opencodePluginPins = {
     # Safety gate: blocks destructive commands and secret access
     cc-safety-net = {
-      version = "2.3.4";
-      hash = "sha256-0p9KRFcFLugX49DsjLKiim9JFGlqdBJQ7Ljlaa7zzBg=";
+      version = "2.4.3";
+      hash = "sha256-YD7qcbu5aclKiT1MReN6WolfGDNFWAKO8T9ki9ztPx0=";
     };
 
-    # Magic Context: self-managing context + long-term memory
-    "@cortexkit/opencode-magic-context" = {
-      version = "0.41.4";
+    # Dynamic context pruning (DCP): prunes/compresses stale context.
+    # Replaces @cortexkit/opencode-magic-context (glitchy, not appropriate for prolonged usage).
+    "@tarquinen/opencode-dcp" = {
+      version = "3.1.15";
       hash = null;
     };
 
     # 7-agent orchestration suite (orchestrator, council, etc.)
     oh-my-opencode-slim = {
-      version = "2.2.18";
+      version = "2.2.21";
       hash = null;
     };
   };
@@ -165,7 +164,12 @@ in
 {
   home.llm-agent = {
     homeManager =
-      { config, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       {
         age.secrets."llm_agent.env" = {
           file = "${secretsDir}/secrets/users/krumpy-miha/llm_agent.env.age";
@@ -180,8 +184,8 @@ in
             autoupdate = false;
             default_agent = "orchestrator";
             model = "gateway/default";
-            # Magic Context manages context itself; built-in auto/prune
-            # compaction would double-compress and thrash the prompt cache.
+            # DCP manages context itself; built-in auto/prune compaction
+            # would double-compress and thrash the prompt cache.
             compaction.auto = false;
             compaction.prune = false;
 
@@ -273,10 +277,9 @@ in
                 enabled = true;
               };
               # Code intelligence: per-project tree-sitter knowledge graph
-              # (index in ~/.cache/codebase-memory-mcp). Index a repo first
-              # (index_repository), then query search_graph/trace_path/
-              # get_architecture instead of grep. Tune: `codebase-memory-mcp
-              # config set auto_index true` (auto-index on session start).
+              # (index in ~/.cache/codebase-memory-mcp; auto_index enforced by
+              # the activation entry below). Query with search_graph/
+              # trace_path/get_architecture instead of grep.
               "codebase-memory-mcp" = {
                 type = "local";
                 command = [ "${pkgs.codebase-memory-mcp}/bin/codebase-memory-mcp" ];
@@ -458,7 +461,7 @@ in
             - `gh_grep`: search real code examples across public GitHub repositories
             - `browser-harness-js`: browser automation via CDP (use the cdp skill). The CLI drives the user's Chrome; the REPL server auto-starts on first call and keeps one persistent session. The user starts Chrome with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
             - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
-            - `codebase-memory-mcp`: code knowledge graph; index the repo first (index_repository tool), then prefer search_graph/trace_path/get_architecture over grep for structural questions
+            - `codebase-memory-mcp`: code knowledge graph (projects auto-index on first connect; verify with list_projects/index_status), prefer search_graph/trace_path/get_architecture over grep for structural questions
             - `docs-mcp-server`: whenever user tells you to use it
             - `writeragent`: MCP for LibreOffice suite
 
@@ -486,6 +489,19 @@ in
             ];
           };
         };
+
+        # codebase-memory-mcp keeps runtime settings in a SQLite DB, so HM
+        # can't own them as a file; re-assert auto_index on every activation
+        # (config set is idempotent; never fails activation).
+        home.activation.codebaseMemoryMcpSettings =
+          lib.hm.dag.entryAfter
+            [
+              "writeBoundary"
+            ]
+            ''
+              ${pkgs.codebase-memory-mcp}/bin/codebase-memory-mcp config set auto_index true \
+                || echo "codebase-memory-mcp-settings: could not enable auto_index" >&2
+            '';
 
         # Electron desktop client (CLI is installed by the HM module)
         # browser-harness-js CLI: thin wrapper so bun + curl resolve inside
@@ -528,22 +544,12 @@ in
           mattpocockSkillConfigs
           // cdpSkillConfigs
           // {
-            # Magic Context user-level config (~/.config/cortexkit/magic-context.jsonc)
-            # Historian: background compartmentalization of old history (required).
-            # Dreamer: overnight memory consolidation (verify/curate/promote).
-            # Sidekick: /ctx-aug session-start memory retrieval.
-            "cortexkit/magic-context.jsonc".text = ''
+            # DCP user-level config (~/.config/opencode/dcp.jsonc). Version is
+            # pinned via opencodePluginPins; runtime auto-update stays off.
+            "opencode/dcp.jsonc".text = ''
               {
-                "$schema": "https://raw.githubusercontent.com/cortexkit/magic-context/master/assets/magic-context.schema.json",
-                "historian": {
-                  "opencode": { "model": "gateway/fast" }
-                },
-                "dreamer": {
-                  "opencode": { "model": "gateway/fast" }
-                },
-                "sidekick": {
-                  "model": "gateway/fast"
-                }
+                "$schema": "https://raw.githubusercontent.com/Opencode-DCP/opencode-dynamic-context-pruning/master/dcp.schema.json",
+                "autoUpdate": false
               }
             '';
 

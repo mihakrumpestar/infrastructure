@@ -83,6 +83,13 @@
           "${config.home.homeDirectory}/.local/bin"
         ];
 
+        # devenv: per-project dev environments; the zsh integration activates
+        # them on cd and the VS Code extension mirrors the env into the editor.
+        programs.devenv = {
+          enable = true;
+          enableZshIntegration = true;
+        };
+
         programs.vscodium = {
           enable = true;
           mutableExtensionsDir = false;
@@ -132,6 +139,9 @@
                 # Nix
                 jnoortheen.nix-ide
                 #kamadorueda.alejandra
+
+                # devenv: mirror the devenv environment into the editor and terminals
+                datakurre.devenv
 
                 # MD
                 shd101wyy.markdown-preview-enhanced
