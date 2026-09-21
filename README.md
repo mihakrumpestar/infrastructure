@@ -102,9 +102,9 @@ Share of each row host's closure that also appears in the column host's closure.
 ```mermaid
 %%{init: {
   'theme': 'base',
+  'fontFamily': 'system-ui',
   'themeVariables': {
     'fontSize': '14px',
-    'fontFamily': 'system-ui',
     'lineColor': '#6e7681',
     'textColor': '#6e7681',
     'titleColor': '#6e7681',

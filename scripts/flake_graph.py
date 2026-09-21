@@ -315,13 +315,15 @@ STYLES = {
 
 #: One neutral clears 4:1 on both canvases. GitHub ignores subgraph textColor,
 #: so clusterLabelColor and titleColor are both set; cluster backgrounds stay
-#: transparent so the page background shows through.
+#: transparent so the page background shows through. fontFamily must stay at
+#: the init root: mermaid sanitizes themeVariables values with
+#: /^[\d "#%(),.;A-Za-z]+$/, which blanks hyphenated values like system-ui.
 INIT = (
     "%%{init: {",
     "  'theme': 'base',",
+    "  'fontFamily': 'system-ui',",
     "  'themeVariables': {",
     "    'fontSize': '14px',",
-    "    'fontFamily': 'system-ui',",
     "    'lineColor': '#6e7681',",
     "    'textColor': '#6e7681',",
     "    'titleColor': '#6e7681',",
