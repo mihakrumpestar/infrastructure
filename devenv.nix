@@ -1,20 +1,20 @@
 { pkgs, ... }:
 {
   packages = [
-    pkgs.go-task
-    pkgs.nixfmt-tree
     pkgs.deadnix
-    pkgs.statix
+    pkgs.flake-checker
+    pkgs.go-task
     pkgs.mermaid-cli
-    pkgs.hashrat
+    pkgs.nixfmt-tree
+    pkgs.statix
   ];
 
   # Python for scripts/flake_stats.py (tabulate and matplotlib imports).
   languages.python = {
     enable = true;
     package = pkgs.python313.withPackages (ps: [
-      ps.tabulate
       ps.matplotlib
+      ps.tabulate
     ]);
   };
 

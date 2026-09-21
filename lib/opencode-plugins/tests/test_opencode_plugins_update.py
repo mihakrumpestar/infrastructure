@@ -1,4 +1,4 @@
-"""Unit tests for scripts/opencode_plugins_update.py."""
+"""Unit tests for lib/opencode-plugins/opencode_plugins_update.py."""
 
 from __future__ import annotations
 

@@ -1,134 +1,102 @@
+<div align="center">
+
 # Infrastructure
 
 NixOS configuration repository for managing multiple hosts using flakes.
 
-## Repository Structure
+![GitHub last commit](https://img.shields.io/github/last-commit/mihakrumpestar/panix)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://github.com/mihakrumpestar/panix/blob/main/LICENSE)
+[![NixOS](https://img.shields.io/badge/NIX-5277C3.svg?style=flat&logo=NixOS&logoColor=white)](https://nixos.org)
 
-```sh
-├── flake.nix               # Flake entry point
-├── modules/
-│   ├── den.nix             # Den framework: host declarations & aspect composition
-│   ├── hosts/              # Per-host configurations & hardware configs
-│   ├── users/              # User account definitions
-│   ├── system/
-│   │   ├── default/        # Baseline system aspects (core, disks, nix, networking, …)
-│   │   ├── optional/       # Optional system aspects (plasma, docker, podman, nomad, consul, nvidia, …)
-│   │   └── type/           # Host type aspects (client, server, vm-guest)
-│   └── home/               # Home-manager aspects (git, ide, browser, scripts, …)
-├── packages/               # Custom package flakes (consul-cni, virtualhere)
-├── lib/                    # Standalone library/module flakes (mutable-file)
-├── scripts/                # Utility scripts (generate_stats.py, flake_graph.py)
-└── docs/                   # Documentation
-```
+</div>
 
 ## Hosts
 
-| **Host** | **Type** | **Boot** | **Disk enc.** | **Local login** | **Secrets enc.** | **Impermanence** | **Home Manager** |
-|---|---|---|---|---|---|---|---|
+| Host | Type | Boot | Root enc. | Login | Secrets | Impermanence | Home Manager |
+|:---|:---|:---|:---|:---|:---|:---|:---|
 | personal-workstation | Client | Lanzaboote | FIDO2 | FIDO2 | TPM | Default | Full |
 | personal-laptop | Client | Lanzaboote | FIDO2 | FIDO2 | TPM | Default | Full |
 | server-01 | Server | Lanzaboote | TPM2 | Password | TPM | Default | None |
 | server-03 | Server | systemd-boot | TPM2 | Password | TPM | Default | None |
-| personal-vps-02 | Server+VM guest | GRUB | None | Password | SSH key | Default | None |
-| kiosk | Client (kiosk) | Lanzaboote | TPM2 | Auto | TPM | Maximum | Kiosk-only |
+| personal-vps-02 | Server and VM guest | GRUB | None | Password | SSH key | Default | None |
+| kiosk | Client (kiosk) | Lanzaboote | TPM2 | Auto | TPM | Full | Kiosk only |
 
-## Build Statistics
+## Build statistics
 
-<!-- STATS_START -->
+<!-- FAST_START -->
+_Fast tier: refreshed automatically on every commit (pre-commit hook, task generate-fast)._
 
-commit hash: 47fde4a3c3973d0428debe4294be01e5e1de2564
+### Lines of code
 
-nix (Nix) 2.34.7
+7,745 non-blank lines, comments included and Markdown excluded.
 
-Kernel: 7.1.2
+![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
-CPU: AMD Ryzen 9 5900HX with Radeon Graphics
-
-Disk: Micron Technology Inc 3400 NVMe SSD [Hendrix] (SN: MTFDKBA512TFH-1BC1AABHA)
-
-Memory: 29 GiB
-
-
-## Lines of Code
-
-**Table 1:** Non-blank lines across the flake's source tree.
-
-LOC excludes blank lines but includes comments. All file types are counted (`.nix`, `.json`, `.jsonc`, `.sh`, `.ini`, etc.) except Markdown (`.md`).
+<details>
+<summary>Lines of code table</summary>
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |      89 |
-| modules/den.nix  |      94 |
-| modules/hosts    |     462 |
-| modules/system   |    1942 |
-| modules/home     |    2831 |
-| modules/users    |     184 |
-| modules (total)  |    5513 |
-| packages (total) |     279 |
-| lib (total)      |      97 |
-| **Total**        |    5978 |
+| flake.nix        |     105 |
+| modules/den.nix  |     100 |
+| modules/hosts    |     468 |
+| modules/system   |   2,188 |
+| modules/home     |   3,531 |
+| modules/users    |     192 |
+| modules (total)  |   6,479 |
+| packages (total) |     422 |
+| lib (total)      |     739 |
+| **Total**        |   7,745 |
 
-## NixOS Configuration Sizes
+</details>
+<!-- FAST_END -->
 
-**Table 2:** NixOS system configuration sizes for each host.
+---
 
-This table presents the closure size (total disk space required for all dependencies) for each configured host in the infrastructure. Closure size is measured in GiB (gibibytes, 2³⁰ bytes) and represents the complete set of packages, libraries, and system components required for each configuration. System/Home Pkgs shows the count of packages in each profile (excluding -doc, -man, -info, -dev, -bin outputs). System/Home Refs shows the total recursive dependencies for each profile.
+<!-- HEAVY_START -->
+_Heavy tier: refreshed manually with `task generate-heavy`, budgeted under 5 minutes; package counts come from the built closures. Last measured 2026-09-21._
 
-|                 Host |   Closure Size |   System Pkgs |   Home Pkgs |   System Refs |   Home Refs |
-|---------------------:|---------------:|--------------:|------------:|--------------:|------------:|
-|                kiosk |      10.39 GiB |          1434 |         521 |          2179 |         576 |
-|      personal-laptop |      36.60 GiB |          6241 |        5527 |          8299 |        6869 |
-|      personal-vps-02 |       3.60 GiB |           675 |           - |          1182 |           - |
-| personal-workstation |      37.62 GiB |          6293 |        5530 |          8379 |        6875 |
-|            server-01 |       6.12 GiB |           705 |           - |          1244 |           - |
-|            server-03 |       4.38 GiB |           683 |           - |          1197 |           - |
+### Fleet
 
-## Eval Performance
+One row per host, from the built system and home profiles.
 
-**Statistics computed over 5 run(s)**
+| Host                 | Desktop   |   Closure (GiB) |   System pkgs |   Home pkgs |   Services |   Secrets |
+|:---------------------|:----------|----------------:|--------------:|------------:|-----------:|----------:|
+| kiosk                | plasma    |           10.61 |         1,421 |         523 |         98 |         1 |
+| personal-laptop      | plasma    |           38.07 |         6,485 |       5,772 |        100 |         2 |
+| personal-vps-02      | n/a       |            4.34 |           734 |         n/a |         81 |         1 |
+| personal-workstation | plasma    |           39.25 |         6,564 |       5,775 |        100 |         2 |
+| server-01            | n/a       |            6.22 |           713 |         n/a |         87 |         1 |
+| server-03            | n/a       |            4.48 |           691 |         n/a |         76 |         1 |
 
-### Sequential
+![Closure footprint chart: store footprint per host in GiB](assets/stats/closure-size.svg)
 
-**Table 3:** Evaluation time per host with no concurrent evaluation. Each host is evaluated in isolation using `nix eval --option eval-cache false` to ensure deterministic, cache-free measurements.
+![Package counts chart: system and home package counts per host, from the built closures](assets/stats/package-counts.svg)
 
-|                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
-|---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 12.705s |  12.685s |    0.069s | 12.621s | 12.811s |      5 |
-|      personal-laptop | 17.332s |  17.370s |    0.140s | 17.187s | 17.518s |      5 |
-|      personal-vps-02 |  8.604s |   8.618s |    0.042s |  8.551s |  8.651s |      5 |
-| personal-workstation | 17.573s |  17.518s |    0.166s | 17.423s | 17.776s |      5 |
-|            server-01 |  9.713s |   9.707s |    0.110s |  9.545s |  9.837s |      5 |
-|            server-03 |  8.603s |   8.626s |    0.098s |  8.482s |  8.717s |      5 |
+Union closure 40.91 GiB; summing the hosts separately gives 102.97 GiB, so 60% is shared.
 
-### Simultaneous
+### Closure reuse
 
-**Table 4:** Evaluation time per host with all hosts evaluated concurrently. All hosts are evaluated in parallel to measure the overhead of concurrent Nix evaluation (CPU contention, lock contention, etc.).
+Share of each row host's closure that also appears in the column host's closure.
 
-|                 Host |    Mean |   Median |   Std Dev |     Min |     Max |   Runs |
-|---------------------:|--------:|---------:|----------:|--------:|--------:|-------:|
-|                kiosk | 25.402s |  25.402s |    0.062s | 25.316s | 25.468s |      5 |
-|      personal-laptop | 30.461s |  30.467s |    0.169s | 30.259s | 30.661s |      5 |
-|      personal-vps-02 | 20.726s |  20.738s |    0.099s | 20.607s | 20.861s |      5 |
-| personal-workstation | 30.552s |  30.562s |    0.077s | 30.435s | 30.628s |      5 |
-|            server-01 | 22.033s |  22.020s |    0.078s | 21.961s | 22.161s |      5 |
-|            server-03 | 20.676s |  20.668s |    0.080s | 20.557s | 20.755s |      5 |
+![Closure reuse chart: heatmap of shared closure paths between hosts, row share contained in column host](assets/stats/closure-reuse.svg)
 
-## Closure Reuse Matrix
+<details>
+<summary>Reuse matrix</summary>
 
-**Table 5:** Binary-level dependency sharing between host configurations.
+| Host                 |   kiosk |   personal-laptop |   personal-vps-02 |   personal-workstation |   server-01 |   server-03 |
+|:---------------------|--------:|------------------:|------------------:|-----------------------:|------------:|------------:|
+| kiosk                |         |               95% |               48% |                    95% |         51% |         50% |
+| personal-laptop      |     23% |                   |               12% |                   100% |         12% |         12% |
+| personal-vps-02      |     83% |               88% |                   |                    88% |         87% |         88% |
+| personal-workstation |     23% |               98% |               12% |                        |         12% |         12% |
+| server-01            |     88% |               87% |               88% |                    87% |             |         92% |
+| server-03            |     90% |               90% |               93% |                    90% |         95% |             |
 
-This matrix quantifies the degree of dependency reuse across different NixOS host configurations. Each cell shows the percentage of packages (derivations) from the row host's closure that also appear in the column host's closure. A value of 100% would indicate complete subsumption. The diagonal shows dashes (-) as self-comparison is omitted. Higher percentages indicate greater infrastructure consolidation potential through shared package caches and common dependency management.
+</details>
+<!-- HEAVY_END -->
 
-|                 Host |   kiosk |   personal-laptop |   personal-vps-02 |   personal-workstation |   server-01 |   server-03 |
-|---------------------:|--------:|------------------:|------------------:|-----------------------:|------------:|------------:|
-|                kiosk |       - |               94% |               47% |                    93% |         49% |         48% |
-|      personal-laptop |     24% |                 - |               12% |                    99% |         12% |         12% |
-|      personal-vps-02 |     87% |               87% |                 - |                    87% |         93% |         94% |
-| personal-workstation |     24% |               98% |               12% |                      - |         12% |         12% |
-|            server-01 |     86% |               85% |               88% |                    85% |           - |         91% |
-|            server-03 |     88% |               88% |               93% |                    88% |         95% |           - |<!-- STATS_END -->
-
-## Dependency Graph
+## Dependency graph
 
 <!-- DEPS_START -->
 ```mermaid
@@ -137,7 +105,12 @@ This matrix quantifies the degree of dependency reuse across different NixOS hos
   'themeVariables': {
     'fontSize': '14px',
     'fontFamily': 'system-ui',
-    'lineColor': '#888'
+    'lineColor': '#6e7681',
+    'textColor': '#6e7681',
+    'titleColor': '#6e7681',
+    'clusterLabelColor': '#6e7681',
+    'clusterBkg': 'transparent',
+    'clusterBorder': '#7d8590'
   },
   'flowchart': {
     'nodeSpacing': 3,
@@ -150,13 +123,13 @@ This matrix quantifies the degree of dependency reuse across different NixOS hos
 flowchart LR
 
     %% Styles
-    classDef input fill:#e0f7fa,stroke:#00838f,stroke-width:1px,color:#006064
-    classDef local fill:#efebe9,stroke:#6d4c41,stroke-width:1px,color:#4e342e
-    classDef flake fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1.5px,color:#7b1fa2
-    classDef hosts fill:#e8f5e9,stroke:#388e3c,stroke-width:1px,color:#2e7d32
-    classDef users fill:#fce4ec,stroke:#c2185b,stroke-width:1px,color:#ad1457
-    classDef aspect fill:#e3f2fd,stroke:#1565c0,stroke-width:1px,color:#1565c0
-    classDef config fill:#fafafa,stroke:#757575,stroke-width:0.5px,color:#424242
+    classDef input fill:#2563eb,stroke:#60a5fa,stroke-width:1px,color:#ffffff
+    classDef local fill:#b45309,stroke:#fbbf24,stroke-width:1px,color:#ffffff
+    classDef flake fill:#0e7490,stroke:#22d3ee,stroke-width:1.5px,color:#ecfeff
+    classDef hosts fill:#0f766e,stroke:#2dd4bf,stroke-width:1px,color:#f0fdfa
+    classDef users fill:#7c3aed,stroke:#a78bfa,stroke-width:1px,color:#f5f3ff
+    classDef aspect fill:#e9eff6,stroke:#5a7086,stroke-width:1.5px,color:#1f2328
+    classDef config fill:#64748b,stroke:#cbd5e1,stroke-width:1px,color:#ffffff
 
     subgraph Inputs[Inputs]
         input_agenix["agenix"]:::input
@@ -308,10 +281,8 @@ flowchart LR
     host_personal_workstation --> opt_virtualization
     host_personal_workstation --> type_client
     host_server_01 --> host_server_01_hardware
-    host_server_01 --> orchestrator
     host_server_01 --> type_server
     host_server_03 --> host_server_03_hardware
-    host_server_03 --> orchestrator
     host_server_03 --> type_server
     input_agenix --> flake
     input_browser_harness_js --> flake
@@ -368,6 +339,26 @@ flowchart LR
 ```
 <!-- DEPS_END -->
 
+## Repository structure
+
+```text
+infrastructure/
+├── flake.nix, flake.lock          # Flake entry point and pinned inputs
+├── devenv.nix, Taskfile.yml       # Tooling shell and tasks (generate, ci)
+├── modules/                       # Den aspects
+│   ├── den.nix                    # Host declarations and aspect composition
+│   ├── hosts/                     # Per-host configs and hardware
+│   ├── users/                     # User accounts
+│   ├── system/                    # default, optional, and type aspects
+│   └── home/                      # Home-manager aspects
+├── packages/, lib/                # Custom package and library flakes
+├── scripts/                       # Stats pipeline and dependency graph
+├── assets/                        # Wallpaper and stats charts
+├── docs/                          # Operational notes
+├── decommissioned/                # Retired host configs
+└── generated/                     # Timestamped run artifacts (gitignored)
+```
+
 ## TODO
 
 - https://saylesss88.github.io/nix/hardening_NixOS.html
@@ -397,3 +388,13 @@ Configs:
 - https://github.com/leoank/neusis: Nvidia Datacenter GPU
 - https://github.com/pranjalv123/nix-config: VMs
 - https://github.com/abehidek/nix-config: VMs
+
+## Theme
+
+Stylix paints the fleet from `assets/backgrounds/nebula-8k-wallpaper.jpg`.
+
+![Deep teal nebula wallpaper used by Stylix](assets/backgrounds/nebula-8k-wallpaper.jpg)
+
+## License
+
+MIT licensed. See `LICENSE`.

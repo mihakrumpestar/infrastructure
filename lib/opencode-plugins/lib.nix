@@ -12,7 +12,7 @@
 #                        install-once cache (plugins with runtime deps)
 #
 # Pins live in the consuming module and are rewritten by
-# scripts/opencode_plugins_update.py.
+# lib/opencode-plugins/opencode_plugins_update.py.
 {
   # Build the opencode `plugin` config list from a pins attrset. Entries with
   # a matching `options` attribute become [ entry, options ] tuples.
