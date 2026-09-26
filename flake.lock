@@ -521,6 +521,21 @@
         "type": "github"
       }
     },
+    "multiverse": {
+      "locked": {
+        "lastModified": 1790176818,
+        "narHash": "sha256-y+nPP3Eq7J3paBi4qIbBoDSTG1Ag6GIqMpGQh4q3iSw=",
+        "owner": "fzakaria",
+        "repo": "nixpkgs-multiverse",
+        "rev": "bc2a401fe6ecfd5c693466590dd7c4891adab2dc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fzakaria",
+        "repo": "nixpkgs-multiverse",
+        "type": "github"
+      }
+    },
     "mutable-file": {
       "inputs": {
         "nixpkgs": "nixpkgs_3"
@@ -827,6 +842,7 @@
         "infrastructure-secrets": "infrastructure-secrets",
         "lanzaboote": "lanzaboote",
         "mattpocock-skills": "mattpocock-skills",
+        "multiverse": "multiverse",
         "mutable-file": "mutable-file",
         "nix-index-database": "nix-index-database",
         "nix-vscode-extensions": "nix-vscode-extensions",

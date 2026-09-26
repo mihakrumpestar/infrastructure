@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   packages = [
     pkgs.deadnix
@@ -8,6 +8,9 @@
     pkgs.nixfmt-tree
     pkgs.statix
   ];
+
+  # Per-project shell history, stored in the gitignored .devenv/state dir.
+  env.HISTFILE = "${config.devenv.state}/shell_history";
 
   # Python for scripts/flake_stats.py (tabulate and matplotlib imports).
   languages.python = {

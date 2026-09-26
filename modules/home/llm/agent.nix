@@ -546,10 +546,16 @@ in
           // {
             # DCP user-level config (~/.config/opencode/dcp.jsonc). Version is
             # pinned via opencodePluginPins; runtime auto-update stays off.
+            # manualMode disables autonomous compression; it only runs when
+            # explicitly triggered (/dcp-compress or the DCP panel). Dedup/
+            # purgeErrors keep running (automaticStrategies default true).
             "opencode/dcp.jsonc".text = ''
               {
                 "$schema": "https://raw.githubusercontent.com/Opencode-DCP/opencode-dynamic-context-pruning/master/dcp.schema.json",
-                "autoUpdate": false
+                "autoUpdate": false,
+                "manualMode": {
+                  "enabled": true
+                }
               }
             '';
 

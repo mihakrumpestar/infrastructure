@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-7,745 non-blank lines, comments included and Markdown excluded.
+7,762 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     105 |
-| modules/den.nix  |     100 |
+| flake.nix        |     109 |
+| modules/den.nix  |     107 |
 | modules/hosts    |     468 |
 | modules/system   |   2,188 |
-| modules/home     |   3,531 |
+| modules/home     |   3,537 |
 | modules/users    |     192 |
-| modules (total)  |   6,479 |
+| modules (total)  |   6,492 |
 | packages (total) |     422 |
 | lib (total)      |     739 |
-| **Total**        |   7,745 |
+| **Total**        |   7,762 |
 
 </details>
 <!-- FAST_END -->
@@ -142,6 +142,7 @@ flowchart LR
         input_infrastructure_secrets["infrastructure-secrets"]:::input
         input_lanzaboote["lanzaboote"]:::input
         input_mattpocock_skills["mattpocock-skills"]:::input
+        input_multiverse["multiverse"]:::input
         input_nix_index_database["nix-index-database"]:::input
         input_nix_vscode_extensions["nix-vscode-extensions"]:::input
         input_nixpkgs["nixpkgs"]:::input
@@ -294,6 +295,7 @@ flowchart LR
     input_infrastructure_secrets --> flake
     input_lanzaboote --> flake
     input_mattpocock_skills --> flake
+    input_multiverse --> flake
     input_nix_index_database --> flake
     input_nix_vscode_extensions --> flake
     input_nixpkgs --> flake

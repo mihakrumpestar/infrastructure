@@ -60,6 +60,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Every nixpkgs revision behind one input, for exact-version package pins
+    # (see the pinOverlay in modules/den.nix). Fetches nixpkgs revisions
+    # itself, so it has no nixpkgs input to follow.
+    multiverse.url = "github:fzakaria/nixpkgs-multiverse";
+
     nix-vscode-extensions = {
       url = "github:nix-community/nix-vscode-extensions";
       inputs.nixpkgs.follows = "nixpkgs";

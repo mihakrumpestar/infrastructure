@@ -77,6 +77,13 @@
             consul-cni = inputs.consul-cni.packages.${prev.stdenv.hostPlatform.system}.default;
             tix = inputs.tix.packages.${prev.stdenv.hostPlatform.system}.default;
           })
+          # Pin the opencode suite to an exact version since latest one is broken
+          (inputs.multiverse.lib.pinOverlay {
+            pins = {
+              opencode = "1.18.29";
+              opencode-desktop = "1.18.29";
+            };
+          })
         ];
 
         imports = [
