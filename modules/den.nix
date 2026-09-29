@@ -19,6 +19,11 @@
       users.krumpy-miha.classes = [ "homeManager" ];
     };
 
+    mihakrumpestar-work-laptop = {
+      includes = [ den.aspects.mihakrumpestar-work-laptop ];
+      users.krumpy-miha.classes = [ "homeManager" ];
+    };
+
     server-01 = {
       includes = [ den.aspects.server-01 ];
       users.admin = { };

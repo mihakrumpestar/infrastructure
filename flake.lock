@@ -468,18 +468,14 @@
     "infrastructure-secrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1785324767,
-        "narHash": "sha256-OH07KGiHYpT8QFx3lG3Y7lF+mczoV117US7xRGpEDRY=",
-        "ref": "main",
-        "rev": "5f40e5e28f0fa0057b9f2d3e928069b1f3123452",
-        "revCount": 78,
-        "type": "git",
-        "url": "ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git"
+        "lastModified": 1790669720,
+        "narHash": "sha256-9G3cNZWt9C91a08SI9uVxY8AePZPN7KOiYcb/7LOOiE=",
+        "path": "/home/krumpy-miha/repos/personal/infrastructure-secrets",
+        "type": "path"
       },
       "original": {
-        "ref": "main",
-        "type": "git",
-        "url": "ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git"
+        "path": "/home/krumpy-miha/repos/personal/infrastructure-secrets",
+        "type": "path"
       }
     },
     "lanzaboote": {

@@ -84,6 +84,14 @@
                   User = "root";
                   Port = 22222;
                 };
+
+                # Redirect ssh to github https since company firewall usually block port 22
+                "github.com" = {
+                  hostname = "ssh.github.com";
+                  port = 443;
+                  user = "git";
+                };
+
                 "*" = {
                   ForwardAgent = false;
                   AddKeysToAgent = "no";
