@@ -36,6 +36,7 @@
                     "Log Out Without Confirmation" = [ "Meta+L" ];
                     "Reboot Without Confirmation" = [ "Meta+R" ];
                     "Shut Down" = [ "Meta+Q" ];
+                    "Lock Session" = [ "Ctrl+Alt+L" ];
                   };
 
                   yakuake.toggle-window-state = "F12";

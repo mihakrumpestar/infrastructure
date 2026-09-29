@@ -1,11 +1,9 @@
 { den, ... }:
 {
   den.aspects.nomad = {
-    # Runtime deps: podman aspect (socket, kernel modules, sysctls) and
-    # consul aspect (agent the scheduler integrates with).
+    # Runtime dep: podman aspect. Consul integration lives in consul.nix.
     includes = [
       den.aspects.podman
-      den.aspects.consul
     ];
     nixos =
       {
@@ -20,11 +18,7 @@
       in
       {
         options.my.nomad = {
-          # Single-agent Nomad with Consul service discovery. Jobs use
-          # group network mode = "bridge": Nomad generates the bridge
-          # CNI conflist itself and appends consul-cni automatically for
-          # Connect transparent-proxy sidecars. consul-cni never talks to
-          # Consul; Nomad feeds it the iptables config via CNI args.
+          # Single-agent Nomad; jobs use group network mode = "bridge".
           # https://developer.hashicorp.com/nomad/docs
           enable = lib.mkEnableOption "Nomad single-agent orchestrator (podman driver, loopback API)";
 
@@ -52,6 +46,15 @@
             '';
           };
 
+          extraCniDirs = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = ''
+              Extra CNI plugin directories appended to
+              services.nomad.settings.client.cni_path.
+            '';
+          };
+
           extraSettings = lib.mkOption {
             inherit (jsonFormat) type;
             default = { };
@@ -64,17 +67,6 @@
         };
 
         config = lib.mkIf cfg.enable {
-          # consul-cni (Connect transparent proxy, wired below via
-          # client.cni_path) programs iptables rules that match on
-          # --uid-owner (exclude the envoy sidecar's own UID from the
-          # redirect) and on conntrack state. security.lockKernelModules
-          # blocks autoload, so both must be loaded at boot or every
-          # Connect alloc fails its network setup.
-          boot.kernelModules = [
-            "xt_owner"
-            "xt_conntrack"
-          ];
-
           services.nomad = {
             enable = true;
             package = pkgs.nomad_2_0;
@@ -86,13 +78,8 @@
 
             extraSettingsPlugins = [ pkgs.nomad-driver-podman ];
 
-            # consul-cni shells out via nsenter (util-linux); the consul
-            # binary is required for Envoy sidecars.
-            extraPackages = [
-              pkgs.nftables
-              pkgs.util-linux
-              pkgs.consul
-            ];
+            # nftables: iptables backend for the CNI plugins.
+            extraPackages = [ pkgs.nftables ];
 
             settings = lib.recursiveUpdate {
               # Loopback-only: no mTLS/ACLs yet, so the API must stay off
@@ -123,7 +110,7 @@
                 enabled = true;
                 # CNI binaries for group network mode=bridge (Nomad generates
                 # the conflist itself). Discovery is cni_path, not PATH.
-                cni_path = "${pkgs.cni-plugins}/bin:${pkgs.consul-cni}/bin";
+                cni_path = lib.concatStringsSep ":" ([ "${pkgs.cni-plugins}/bin" ] ++ cfg.extraCniDirs);
               }
               // lib.optionalAttrs (cfg.disabledDrivers != [ ]) {
                 options."driver.denylist" = lib.concatStringsSep "," cfg.disabledDrivers;
@@ -138,13 +125,6 @@
               # gc.container = true).
               plugin."nomad-driver-podman".config = { };
             } cfg.extraSettings;
-          };
-
-          # Consul may not be up when nomad starts; the agent retries
-          # discovery, but explicit ordering keeps startup deterministic.
-          systemd.services.nomad = {
-            after = [ "consul.service" ];
-            wants = [ "consul.service" ];
           };
 
           # Kernel modules + sysctls come from the included podman aspect.

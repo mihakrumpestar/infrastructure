@@ -1,4 +1,4 @@
-{ den, ... }:
+{ den, lib, ... }:
 {
   den.aspects.mihakrumpestar-work-laptop = {
     includes = [
@@ -6,6 +6,7 @@
       den.aspects.docker
       den.aspects.podman
       den.aspects.virtualization
+      den.aspects.nomad
     ];
     nixos =
       { ... }:
@@ -26,11 +27,15 @@
             swapSize = "16G";
             encryptRoot = "fido2";
           };
+
+          nomad.enable = true;
         };
 
         home-manager.users."krumpy-miha" = {
           my.home.fullAutostart.enable = true;
         };
+
+        security.lockKernelModules = lib.mkForce false; # Disable for more rapid experimentation
       };
   };
 }

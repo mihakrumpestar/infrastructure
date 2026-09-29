@@ -204,6 +204,11 @@ def find_aspect_file(name, all_files):
 
 def extract_aspects(content, file_path):
     """Extract den.aspects.* and home.* definitions with their includes."""
+    # Comments may name aspects (docs); strip them so they don't produce
+    # phantom definitions or includes. '#' inside strings is not
+    # respected; none of the extracted patterns occur in strings here.
+    content = re.sub(r"/\*.*?\*/", " ", content, flags=re.S)
+    content = re.sub(r"#[^\n]*", "", content)
     aspects = {}
     for pattern, prefix in [
         (r"den\.aspects\.([\w-]+)\s*=\s*\{", "aspects"),

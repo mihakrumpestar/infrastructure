@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-7,840 non-blank lines, comments included and Markdown excluded.
+7,856 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -39,14 +39,14 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 |:-----------------|--------:|
 | flake.nix        |     109 |
 | modules/den.nix  |     111 |
-| modules/hosts    |     529 |
-| modules/system   |   2,188 |
+| modules/hosts    |     533 |
+| modules/system   |   2,200 |
 | modules/home     |   3,550 |
 | modules/users    |     192 |
-| modules (total)  |   6,570 |
+| modules (total)  |   6,586 |
 | packages (total) |     422 |
 | lib (total)      |     739 |
-| **Total**        |   7,840 |
+| **Total**        |   7,856 |
 
 </details>
 <!-- FAST_END -->
@@ -270,6 +270,7 @@ flowchart LR
     host_kiosk --> type_client
     host_mihakrumpestar_work_laptop --> host_mihakrumpestar_work_laptop_hardware
     host_mihakrumpestar_work_laptop --> opt_docker
+    host_mihakrumpestar_work_laptop --> opt_nomad
     host_mihakrumpestar_work_laptop --> opt_podman
     host_mihakrumpestar_work_laptop --> opt_virtualization
     host_mihakrumpestar_work_laptop --> type_client
@@ -279,6 +280,7 @@ flowchart LR
     host_personal_laptop --> opt_virtualization
     host_personal_laptop --> type_client
     host_personal_vps_02 --> host_personal_vps_02_hardware
+    host_personal_vps_02 --> opt_consul
     host_personal_vps_02 --> opt_nomad
     host_personal_vps_02 --> type_server
     host_personal_vps_02 --> type_vm_guest
@@ -318,7 +320,6 @@ flowchart LR
     local_opencode_plugins --> flake
     local_virtualhere --> flake
     opt_docker --> opt_container_runtime
-    opt_nomad --> opt_consul
     opt_nomad --> opt_podman
     opt_podman --> opt_container_runtime
     sys_shell --> sys_shell_fonts
