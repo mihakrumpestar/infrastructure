@@ -68,12 +68,15 @@
 
                 gitMatchBlocks = lib.mapAttrs' (
                   name: entry:
-                  lib.nameValuePair name {
-                    HostName = entry.url;
-                    User = entry.email;
-                    IdentityFile = "~/${identitiesDir}/git-${name}.pub";
-                    IdentitiesOnly = true;
-                  }
+                  lib.nameValuePair name (
+                    {
+                      HostName = entry.url;
+                      User = entry.email;
+                      IdentityFile = "~/${identitiesDir}/git-${name}.pub";
+                      IdentitiesOnly = true;
+                    }
+                    // lib.optionalAttrs (entry.port != null) { Port = entry.port; }
+                  )
                 ) gitIdentities;
               in
               hostMatchBlocks

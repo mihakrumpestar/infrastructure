@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-7,833 non-blank lines, comments included and Markdown excluded.
+7,840 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -41,12 +41,12 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | modules/den.nix  |     111 |
 | modules/hosts    |     529 |
 | modules/system   |   2,188 |
-| modules/home     |   3,543 |
+| modules/home     |   3,550 |
 | modules/users    |     192 |
-| modules (total)  |   6,563 |
+| modules (total)  |   6,570 |
 | packages (total) |     422 |
 | lib (total)      |     739 |
-| **Total**        |   7,833 |
+| **Total**        |   7,840 |
 
 </details>
 <!-- FAST_END -->
@@ -219,6 +219,8 @@ flowchart LR
     subgraph Hosts[Hosts]
         host_kiosk["kiosk"]:::hosts
         host_kiosk_hardware["hardware"]:::config
+        host_mihakrumpestar_work_laptop["mihakrumpestar-work-laptop"]:::hosts
+        host_mihakrumpestar_work_laptop_hardware["hardware"]:::config
         host_personal_laptop["personal-laptop"]:::hosts
         host_personal_laptop_hardware["hardware"]:::config
         host_personal_vps_02["personal-vps-02"]:::hosts
@@ -239,6 +241,7 @@ flowchart LR
 
 
     den --> host_kiosk
+    den --> host_mihakrumpestar_work_laptop
     den --> host_personal_laptop
     den --> host_personal_vps_02
     den --> host_personal_workstation
@@ -265,6 +268,11 @@ flowchart LR
     home_web_browser --> home_web_browser_policies
     host_kiosk --> host_kiosk_hardware
     host_kiosk --> type_client
+    host_mihakrumpestar_work_laptop --> host_mihakrumpestar_work_laptop_hardware
+    host_mihakrumpestar_work_laptop --> opt_docker
+    host_mihakrumpestar_work_laptop --> opt_podman
+    host_mihakrumpestar_work_laptop --> opt_virtualization
+    host_mihakrumpestar_work_laptop --> type_client
     host_personal_laptop --> host_personal_laptop_hardware
     host_personal_laptop --> opt_docker
     host_personal_laptop --> opt_podman

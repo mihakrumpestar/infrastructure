@@ -20,6 +20,10 @@
                 name = lib.mkOption { type = lib.types.str; };
                 email = lib.mkOption { type = lib.types.str; };
                 url = lib.mkOption { type = lib.types.str; };
+                port = lib.mkOption {
+                  type = lib.types.nullOr lib.types.int;
+                  default = null;
+                };
                 signingKey = lib.mkOption { type = lib.types.str; };
               };
             }
