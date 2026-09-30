@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 {
   den.aspects.podman = {
     nixos =
@@ -10,6 +10,9 @@
           enable = true;
           autoPrune.enable = true;
         };
+
+        # Quiet the podman API service
+        systemd.services.podman.environment.LOGGING = lib.mkForce "--log-level=warn";
 
         # Native btrfs storage driver (docker stance in docker.nix);
         # must be set before first use, switching later orphans images.

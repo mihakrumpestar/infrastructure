@@ -10,12 +10,31 @@
           {
             # Has to be enabled since we need at least the basic zsh config file in users home dir
             programs.zsh.enable = true;
+
+            # Last word on HISTFILE: injected value, else devenv per-project
+            # state, else the default above. Captured by /etc/zshenv (shellInit).
+            programs.zsh.initContent = ''
+              if [[ -n "''${__HISTFILE_INJECTED:-}" ]]; then
+                HISTFILE="$__HISTFILE_INJECTED"
+              elif [[ -n "''${DEVENV_STATE:-}" ]]; then
+                HISTFILE="$DEVENV_STATE/shell_history"
+              fi
+              mkdir -p "$(dirname "$HISTFILE")"
+            '';
           }
         ];
 
         programs.zsh = {
           enable = true;
           histSize = 10000;
+
+          # Capture the devenv-injected HISTFILE before anything overwrites it:
+          # shellInit lands in /etc/zshenv, sourced first by every zsh.
+          shellInit = ''
+            if [[ -n "$HISTFILE" ]]; then
+              export __HISTFILE_INJECTED="$HISTFILE"
+            fi
+          '';
           autosuggestions.enable = true;
           syntaxHighlighting.enable = true;
           # https://zsh.sourceforge.io/Doc/Release/Options.html

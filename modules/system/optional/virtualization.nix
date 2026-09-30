@@ -41,7 +41,10 @@
           };
         };
 
-        # Default NAT bridge virbr0 is allowed by the libvirtd module default.
+        # NixOS nftables-based firewall drops DHCP/DNS on libvirt's default
+        # NAT bridge unless the interface is trusted (nixpkgs #437920).
+        # The libvirtd module only auto-allows virbr0 for iptables setups.
+        networking.firewall.trustedInterfaces = [ "virbr0" ];
         programs.virt-manager.enable = true;
       };
   };
