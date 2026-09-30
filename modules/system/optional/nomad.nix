@@ -106,6 +106,11 @@
                 bootstrap_expect = 1;
               };
 
+              # Task stats collection is off by default; without it the client
+              # never queries driver TaskStats and the UI shows no CPU/memory
+              # utilization.
+              telemetry.publish_allocation_metrics = true;
+
               client = {
                 enabled = true;
                 # CNI binaries for group network mode=bridge (Nomad generates

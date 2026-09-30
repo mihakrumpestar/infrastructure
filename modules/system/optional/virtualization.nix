@@ -31,25 +31,18 @@
           cdrkit # For genisoimage and other tools
         ];
 
-        /*
-          virtualisation = {
-            spiceUSBRedirection.enable = true;
+        virtualisation = {
+          # spice-gtk USB redirection for virt-manager VM viewers
+          spiceUSBRedirection.enable = true;
 
-            libvirtd = {
-              enable = true;
-              qemu.swtpm.enable = true;
-              allowedBridges = ["virbr0" "br0" "br1"];
-            };
+          libvirtd = {
+            enable = true;
+            qemu.swtpm.enable = true; # TPM emulation for VMs (Win11 needs it)
           };
+        };
 
-          system.activationScripts.makeDefaultPool = lib.stringAfter ["var"] ''
-            mkdir -p /var/lib/libvirt/images
-            mkdir -p /var/lib/libvirt/iso
-          '';
-
-          programs.virt-manager.enable = true;
-          # Add required users to group "libvirtd"
-        */
+        # Default NAT bridge virbr0 is allowed by the libvirtd module default.
+        programs.virt-manager.enable = true;
       };
   };
 }
