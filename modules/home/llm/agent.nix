@@ -490,6 +490,11 @@ in
           };
         };
 
+        systemd.user.services.opencode-web.Unit = {
+          Wants = [ "agenix.service" ];
+          After = [ "agenix.service" ];
+        };
+
         # codebase-memory-mcp keeps runtime settings in a SQLite DB, so HM
         # can't own them as a file; re-assert auto_index on every activation
         # (config set is idempotent; never fails activation).

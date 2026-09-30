@@ -18,6 +18,13 @@
         # GTK reads user styles from XDG data dirs, which stylix covers for
         # user sessions anyway.
         targets.gtksourceview.enable = false;
+
+        # NOTE: targets.qt stays enabled on purpose. Stylix's qt target is the
+        # only writer of qt.enable/platformTheme/style in this config; under
+        # platform=kde it sets platformTheme=kde + style=breeze, which land in
+        # /etc/set-environment and ~/.config/environment.d. Its eval warning
+        # only means the qtct-file theming (palette/fonts/icons) is
+        # unsupported for kde, not that the target is broken.
       };
     };
   };

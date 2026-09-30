@@ -11,7 +11,6 @@
   # their autoload, so without them bridge containers fail with
   # "nft did not return successfully" (kernel ENOENT on the expr).
   boot.kernelModules = [
-    "ip_tables"
     "br_netfilter"
     "bridge"
     "veth"
@@ -29,10 +28,6 @@
     "nft_masq"
     "nft_nat"
     "nft_redir"
-    "iptable_filter"
-    "iptable_nat"
-    "iptable_mangle"
-    "iptable_raw"
     "xt_tcpudp"
     "xt_MASQUERADE"
     "xt_multiport"

@@ -20,7 +20,6 @@
                 echo "Starting minimal user apps"
                 yakuake &
                 keepassxc &
-                obsidian &
                 echo "Started minimal user apps"
               '';
             };
@@ -32,6 +31,7 @@
                 echo "Starting full user apps"
                 bash -c "sleep 13 && codium" &
                 bash -c "sleep 13 && librewolf" &
+                bash -c "sleep 13 && obsidian" &
                 bash -c "sleep 13 && openchamber-desktop" &
                 echo "Started full user apps"
               '';
