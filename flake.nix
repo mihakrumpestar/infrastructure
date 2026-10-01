@@ -114,6 +114,11 @@
       flake = false;
     };
 
+    archify = {
+      url = "github:tt-a1i/archify";
+      flake = false;
+    };
+
     # Secrets
 
     infrastructure-secrets = {

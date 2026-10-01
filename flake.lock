@@ -24,6 +24,22 @@
         "type": "github"
       }
     },
+    "archify": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790754773,
+        "narHash": "sha256-wh8JRrZ7vBuEHCnZzucXj2nT+EUweojtmcWuFjxYxOY=",
+        "owner": "tt-a1i",
+        "repo": "archify",
+        "rev": "d5a1333d7447c866a765adac7d4d062f2f02e4d2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tt-a1i",
+        "repo": "archify",
+        "type": "github"
+      }
+    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -832,6 +848,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "archify": "archify",
         "browser-harness-js": "browser-harness-js",
         "consul-cni": "consul-cni",
         "den": "den",

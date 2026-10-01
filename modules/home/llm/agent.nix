@@ -89,6 +89,11 @@ let
   # cdp skill (browser-harness-js: SKILL.md + sdk/) from the upstream repo
   cdpSkillConfigs = discoverFiles "opencode/skills/cdp" inputs.browser-harness-js;
 
+  # archify skill: interactive explorable diagrams (SKILL.md + bin/, schemas/,
+  # examples/, references/, ...). The skill package lives in the repo's
+  # archify/ subdirectory; node comes from the IDE home packages.
+  archifySkillConfigs = discoverFiles "opencode/skills/archify" (inputs.archify + "/archify");
+
   # opencode auto-generates reasoning-effort variants, we just want the default (which is the only one that stays enabled)
   reasoningVariants = builtins.listToAttrs (
     map
@@ -548,6 +553,7 @@ in
         xdg.configFile =
           mattpocockSkillConfigs
           // cdpSkillConfigs
+          // archifySkillConfigs
           // {
             # DCP user-level config (~/.config/opencode/dcp.jsonc). Version is
             # pinned via opencodePluginPins; runtime auto-update stays off.

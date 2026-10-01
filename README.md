@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-7,887 non-blank lines, comments included and Markdown excluded.
+7,896 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     109 |
+| flake.nix        |     113 |
 | modules/den.nix  |     111 |
 | modules/hosts    |     533 |
 | modules/system   |   2,227 |
-| modules/home     |   3,554 |
+| modules/home     |   3,559 |
 | modules/users    |     192 |
-| modules (total)  |   6,617 |
+| modules (total)  |   6,622 |
 | packages (total) |     422 |
 | lib (total)      |     739 |
-| **Total**        |   7,887 |
+| **Total**        |   7,896 |
 
 </details>
 <!-- FAST_END -->
@@ -133,6 +133,7 @@ flowchart LR
 
     subgraph Inputs[Inputs]
         input_agenix["agenix"]:::input
+        input_archify["archify"]:::input
         input_browser_harness_js["browser-harness-js"]:::input
         input_den["den"]:::input
         input_disko["disko"]:::input
@@ -296,6 +297,7 @@ flowchart LR
     host_server_03 --> host_server_03_hardware
     host_server_03 --> type_server
     input_agenix --> flake
+    input_archify --> flake
     input_browser_harness_js --> flake
     input_den --> flake
     input_disko --> flake
