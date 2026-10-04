@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-7,905 non-blank lines, comments included and Markdown excluded.
+8,982 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -41,12 +41,12 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | modules/den.nix  |     111 |
 | modules/hosts    |     533 |
 | modules/system   |   2,236 |
-| modules/home     |   3,559 |
+| modules/home     |   4,636 |
 | modules/users    |     192 |
-| modules (total)  |   6,631 |
+| modules (total)  |   7,708 |
 | packages (total) |     422 |
 | lib (total)      |     739 |
-| **Total**        |   7,905 |
+| **Total**        |   8,982 |
 
 </details>
 <!-- FAST_END -->
@@ -212,7 +212,9 @@ flowchart LR
         home_password_manager["password-manager"]:::aspect
         home_scripts["scripts"]:::aspect
         home_ssh["ssh"]:::aspect
+        home_storage_bisync["storage/bisync"]:::aspect
         home_storage["storage"]:::aspect
+        home_storage_mount["storage/mount"]:::aspect
         home_web_browser_policies["web-browser/policies"]:::aspect
         home_web_browser["web-browser"]:::aspect
     end
@@ -266,6 +268,8 @@ flowchart LR
     home_llm --> home_llm_gateway
     home_llm --> home_llm_mcp
     home_llm --> home_llm_ui
+    home_storage --> home_storage_bisync
+    home_storage --> home_storage_mount
     home_web_browser --> home_web_browser_policies
     host_kiosk --> host_kiosk_hardware
     host_kiosk --> type_client
