@@ -28,9 +28,7 @@
     };
 
     agenix = {
-      # PR #353: fix agenix + userborn ordering (secrets before sysusers, chown after)
-      # https://github.com/ryantm/agenix/pull/353
-      url = "github:ryantm/agenix/pull/353/head";
+      url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -78,6 +76,8 @@
     openchamber = {
       url = "github:icebluerabbit/openchamber-flake/dev"; # Was zms-dev/openchamber-flake before
     };
+
+    llm-agents.url = "github:numtide/llm-agents.nix";
 
     # Experimental
     tix = {
@@ -139,4 +139,12 @@
     {
       inherit (den.flake) nixosConfigurations;
     };
+
+  # Numtide llm-agents.nix binary cache
+  nixConfig = {
+    extra-substituters = [ "https://cache.numtide.com" ];
+    extra-trusted-public-keys = [
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+    ];
+  };
 }
