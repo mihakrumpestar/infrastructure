@@ -68,6 +68,9 @@
 
           # Markdown
           mermaid-cli
+
+          # Git
+          pre-commit
         ];
 
         home.sessionVariables = {
