@@ -53,6 +53,7 @@
 
         config =
           let
+            swapEnabled = config.my.disks.swapSize != null;
             lanzabooteEnabled = config.my.disks.bootLoader == "lanzaboote";
             fido2Enabled = config.my.disks.encryptRoot == "fido2";
             tpm2Enabled = config.my.disks.encryptRoot == "tpm2";
@@ -200,6 +201,8 @@
                 };
               };
             };
+
+            zramSwap.enable = swapEnabled;
 
             environment.systemPackages = mkIf lanzabooteEnabled [
               pkgs.sbctl
