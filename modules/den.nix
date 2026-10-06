@@ -81,7 +81,6 @@
           inputs.llm-agents.overlays.shared-nixpkgs
           (_: prev: {
             consul-cni = inputs.consul-cni.packages.${prev.stdenv.hostPlatform.system}.default;
-            tix = inputs.tix.packages.${prev.stdenv.hostPlatform.system}.default;
           })
           # Replace nixpkgs opencode with v2 from llm-agents once they support no auth serve
           (final: _: {

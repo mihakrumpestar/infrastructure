@@ -51,6 +51,7 @@
 
           # Development tools
           devbox # Supports zsh well
+          openssl
         ];
 
         programs = {

@@ -79,12 +79,6 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
-    # Experimental
-    tix = {
-      url = "github:JRMurr/tix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Local
 
     consul-cni.url = "./packages/consul-cni";

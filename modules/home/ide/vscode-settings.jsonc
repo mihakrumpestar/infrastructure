@@ -144,22 +144,6 @@
         "nixfmt"
       ]
     }
-    //"serverPath": [
-    //  "tix",
-    //  "lsp"
-    //],
-    //"serverSettings": {
-    //  "stubs": [
-    //    "./my-stubs"
-    //  ],
-    //  "inlayHints": {
-    //    "enable": true
-    //  },
-    //  "diagnostics": {
-    //    "enable": true,
-    //    "unknownType": "hint"
-    //  }
-    //}
   },
   // HTML
   "[html]": {

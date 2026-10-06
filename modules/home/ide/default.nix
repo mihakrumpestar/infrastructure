@@ -17,17 +17,8 @@
         };
       in
       {
+        # This are ment for system, not projects
         home.packages = with pkgs; [
-          # Task runner
-          go-task
-
-          # Github
-          gh
-
-          # Formatters
-          prettier
-          caddy # Also a linter
-
           # Latex
           tex-fmt
           texliveFull # Containes pdflatex and Tex packages required by xournalpp (full is the minimum req to run)
@@ -38,29 +29,11 @@
 
           # Python
           python3
-          basedpyright
           uv
 
           # Nix
           nixd # Language server
           nixfmt # Formatter
-          tix # Does not appear to work yet as IDE LSP
-
-          # Quarto
-          quarto
-
-          # Dockerfile
-          hadolint
-
-          # Golang
-          go
-          # Next pkgs are for the extension
-          gopls
-          delve # dlv
-          impl
-          gotests
-          go-tools # staticcheck
-          golangci-lint
 
           # Javascript
           bun
@@ -108,7 +81,6 @@
                 vscode-icons-team.vscode-icons
                 donjayamanne.githistory
                 edwinhuish.better-comments-next
-                eliostruyf.screendown
                 waderyan.gitblame
                 github.github-vscode-theme
                 hediet.vscode-drawio
@@ -121,7 +93,6 @@
                 tamasfe.even-better-toml
                 tumido.cron-explained
                 mathematic.vscode-pdf # VSCode does not have native PDF support for some reason
-                yurierherrera.todo4vcode
 
                 # Latex
                 james-yu.latex-workshop
@@ -156,15 +127,6 @@
 
                 # Typst
                 myriad-dreamin.tinymist
-
-                # RST # Not needed currently
-                #lextudio.restructuredtext
-                #swyddfa.esbonio # Live preview and IntelliSense
-                #chrisjsewell.myst-tml-syntax # Dependancy for above
-                #trond-snekvik.simple-rst # Syntax highlighting
-
-                # AsciiDoc
-                #asciidoctor.asciidoctor-vscode # TODO: won't build
 
                 # HTML/VSS/JS/TS
                 bradlc.vscode-tailwindcss

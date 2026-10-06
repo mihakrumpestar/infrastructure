@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-8,989 non-blank lines, comments included and Markdown excluded.
+8,938 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     119 |
-| modules/den.nix  |     110 |
+| flake.nix        |     114 |
+| modules/den.nix  |     109 |
 | modules/hosts    |     533 |
-| modules/system   |   2,236 |
-| modules/home     |   4,638 |
+| modules/system   |   2,237 |
+| modules/home     |   4,592 |
 | modules/users    |     192 |
-| modules (total)  |   7,709 |
+| modules (total)  |   7,663 |
 | packages (total) |     422 |
 | lib (total)      |     739 |
-| **Total**        |   8,989 |
+| **Total**        |   8,938 |
 
 </details>
 <!-- FAST_END -->
@@ -153,7 +153,6 @@ flowchart LR
         input_openchamber["openchamber"]:::input
         input_plasma_manager["plasma-manager"]:::input
         input_stylix["stylix"]:::input
-        input_tix["tix"]:::input
         local_consul_cni["./packages/consul-cni"]:::local
         local_mutable_file["./lib/mutable-file"]:::local
         local_opencode_plugins["./lib/opencode-plugins"]:::local
@@ -322,7 +321,6 @@ flowchart LR
     input_openchamber --> flake
     input_plasma_manager --> flake
     input_stylix --> flake
-    input_tix --> flake
     local_consul_cni --> flake
     local_mutable_file --> flake
     local_opencode_plugins --> flake
