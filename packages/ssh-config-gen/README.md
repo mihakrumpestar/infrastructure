@@ -1,0 +1,216 @@
+# ssh-config-gen
+
+Generate your OpenSSH client config, public keys, and SSH signing trust file from a KeePassXC database, so KeePassXC is the single source of truth for SSH keys and connections. Ships with a system tray for intentional refreshes.
+
+Inspired by [rosec](https://github.com/jmylchreest/rosec), which serves SSH keys, config, and `allowed_signers` from secret providers such as KeePassXC.
+
+The tool never writes private key material to disk: private keys stay in KeePassXC (or its agent); only public keys are derived and written.
+
+## How it works
+
+1. Reads entry metadata and custom fields with `keepassxc-cli export -f xml`.
+2. Derives the public key for each entry from its private-key attachment (`attachment-export`), because the XML export omits KDBX4 binaries.
+3. Writes the config fragment, the derived public keys, and the signing trust file.
+
+`~/.ssh/config` includes the fragment via a glob, so the generated file can be absent without breaking `ssh`.
+
+A refresh unlocks the database at most twice: once for the metadata export and once inside a single `keepassxc-cli open` session that exports every key attachment. So a challenge-response prompt is answered once or twice per refresh, not once per key.
+
+## Requirements
+
+- `keepassxc-cli` (provided automatically by the module).
+- A KeePassXC database with your SSH private keys stored as **attachments** (KeePassXC's "external file" mode is not supported, since the key must be inside the database).
+- For the tray: a StatusNotifierItem host (KDE Plasma, or a GNOME extension). The tray is pure Go over D-Bus; no GTK/AppIndicator is needed.
+
+## KeePassXC entry setup
+
+For each SSH key, create an entry and add custom fields (entry editor -> **Advanced** -> **Additional attributes**).
+
+### `ssh_hosts` (required to emit `Host` blocks)
+
+One host per line. Each line is a Host pattern (or comma-separated patterns) followed by optional `Directive=Value` pairs using OpenSSH directive names:
+
+```
+ssh_hosts:
+  workstation HostName=192.0.2.10 Port=2200 User=admin
+  git.example.com,git-alt HostName=git.example.com Port=443 User=git
+  *.prod.example.com User=deploy ProxyJump=bastion
+```
+
+- The key is derived from the entry's attachment and shared by every host on the entry, so one entry can serve many hosts.
+- `IdentityFile` and `IdentitiesOnly yes` are emitted automatically. If a line sets `IdentityFile` explicitly, that line uses it and no key is derived.
+- Values may be quoted when they contain spaces, e.g. `ProxyCommand="ssh -W %h:%p jump"`.
+- An entry with `ssh_hosts` but no derivable key is skipped with a warning.
+
+### `ssh_sign` (optional, for SSH commit signing)
+
+One or more signing principals (comma- or newline-separated). Each principal is written to `allowed_signers` for this key:
+
+```
+ssh_sign:
+  me@example.com
+```
+
+### `git.name` / `git.email` (optional, per `ssh_hosts` line)
+
+Add these to a `ssh_hosts` line to generate a git identity file for that host alias (they are not OpenSSH directives). The entry must also have `ssh_sign`, which marks it as a signing identity:
+
+```
+ssh_hosts:
+  github-personal HostName=ssh.github.com Port=443 User=git git.name=Miha git.email=me@example.com
+ssh_sign:
+  me@example.com
+```
+
+This writes `~/.config/git/keepass-identities/github-personal`:
+
+```
+[user]
+  name = Miha
+  email = me@example.com
+  signingkey = ssh-ed25519 AAAA...
+
+[core]
+  sshCommand = ssh -o IdentitiesOnly=yes github-personal
+```
+
+Select an identity inside a repository with `git setuser <alias>`. The directory is pruned on every run.
+
+### The private key
+
+Attach the OpenSSH private key to the entry (**Advanced** -> **Attachments**), and set the SSH Agent tab to use that attachment. If the key file itself is passphrase-protected, put the passphrase in the entry's **Password** field; the tool uses it to derive the public key.
+
+## Home Manager / NixOS setup
+
+The package exposes a home-manager module (`homeManagerModules.default`).
+
+```nix
+# flake.nix
+inputs.ssh-config-gen.url = "./packages/ssh-config-gen";
+
+# home-manager sharedModules
+inputs.ssh-config-gen.homeManagerModules.default
+```
+
+```nix
+programs.ssh-config-gen = {
+  enable = true;
+  database = "~/Passwords.kdbx";
+
+  # How to unlock the database non-interactively (needed for the service/tray):
+  #   - no master password (challenge-response / key-file only):
+  yubikey = "2";        # YubiKey/OnlyKey challenge-response slot[:serial]
+  noPassword = true;
+  #   - or a master password from a command/file:
+  # passwordCommand = "secret-tool lookup service keepassxc";
+  # passwordFile = "/run/secrets/keepass";
+};
+```
+
+### Options
+
+| Option | Default | Purpose |
+|---|---|---|
+| `enable` | `false` | Install the CLI, the `~/.ssh/config` include, and the service/tray |
+| `package` | built from this flake | Override the package |
+| `database` | `~/Passwords.kdbx` | KeePassXC database to read |
+| `keepassxcCli` | `pkgs.keepassxc`'s CLI | `keepassxc-cli` binary |
+| `output` | `~/.ssh/config.d/keepass.conf` | Generated config fragment |
+| `identitiesDir` | `~/.ssh/keepass-identities` | Derived public keys (kept separate from the Nix-managed `~/.ssh/identities`) |
+| `allowedSigners.enable` | `true` | Generate `allowed_signers` |
+| `allowedSigners.path` | `~/.ssh/allowed_signers` | `allowed_signers` path |
+| `git.enable` | `false` | Point git at `allowed_signers` and enable SSH signing. Off by default because it conflicts with any other definition of `programs.git.settings.gpg.ssh.allowedSignersFile` |
+| `agentSocket` | `null` | Emit `IdentityAgent` in every `Host` block |
+| `keyfile` | `null` | KeePassXC key file, if used |
+| `yubikey` | `null` | Challenge-response slot, e.g. `"2"` or `"2:7370001"` |
+| `noPassword` | `false` | Set when the database has no master password |
+| `passwordCommand` / `passwordFile` | `null` | Non-interactive master password source |
+| `includeInSshConfig` | `true` | Add the generated glob to `programs.ssh.includes` |
+| `service.enable` | `true` | Install the on-demand regeneration service (triggered by `service.watch` or manually; the tray regenerates directly) |
+| `service.watch` | `false` | Regenerate on database change via a systemd path unit |
+| `tray.enable` | `true` | System tray icon (Refresh / Open config / Show log / Quit) |
+
+The service and tray only install when a non-interactive credential is available (`noPassword`, `passwordCommand`, or `passwordFile`). A key file or YubiKey alone is not sufficient, because the database may also require a password.
+
+### When does it regenerate?
+
+The service is **on-demand** and is never started at login:
+
+- **Tray** (primary): left click, or the **Refresh** menu item, regenerates immediately.
+- **`service.watch = true`**: a systemd path unit runs it when the database changes.
+- **Manually**: `systemctl --user start ssh-config-gen`.
+
+This is intentional. The generated config persists until it is refreshed, so there is nothing to regenerate at start: only an explicit refresh or an actual database change should trigger a run. It also keeps a possible interactive or hardware unlock (for example a touch-requiring YubiKey challenge-response) out of boot and NixOS/home-manager activation, where a prompt would block at the worst possible time.
+
+## Command-line usage
+
+```sh
+# Preview the generated config (prompts for the master password)
+ssh-config-gen --database ~/Passwords.kdbx --print
+
+# Challenge-response database
+ssh-config-gen --database ~/Passwords.kdbx --yubikey 2 --no-password --print
+
+# Write the files
+ssh-config-gen --database ~/Passwords.kdbx --yubikey 2 --no-password
+
+# CI-style check: exit 1 if the outputs would change
+ssh-config-gen --database ~/Passwords.kdbx --check
+
+# Skip work when the database is unchanged (used by the service/tray)
+ssh-config-gen --database ~/Passwords.kdbx --if-changed
+```
+
+Run `ssh-config-gen -h` for all flags (`--keyfile`, `--password-command`, `--password-file`, `--password-env`, `--agent-socket`, `--state-file`, `--log-file`, `--tray`, ...).
+
+## The tray
+
+- **Left click**: refresh.
+- **Right click**: menu (Refresh, Open config, Show log, Quit).
+- The icon turns **red** when the last refresh failed.
+- Errors are written to `~/.local/state/ssh-config-gen/log` (open it with **Show log**); the tooltip only shows a short status.
+
+The tray runs as a systemd user service bound to `graphical-session.target`. It requires a credential as above.
+
+## Generated files
+
+| Path | Contents |
+|---|---|
+| `~/.ssh/config.d/keepass.conf` | `Host` blocks (included from `~/.ssh/config`) |
+| `~/.ssh/keepass-identities/*.pub` | Public keys derived from the database |
+| `~/.ssh/allowed_signers` | `principal namespaces="git" <pubkey>` lines |
+| `~/.local/state/ssh-config-gen/db-state` | Last database/options fingerprint (for `--if-changed`) |
+| `~/.local/state/ssh-config-gen/log` | Tray last-run log |
+
+Every run prunes stale outputs: `.pub` files that are no longer produced are removed, and `allowed_signers` is rewritten in full.
+
+## Gotchas
+
+- **`ssh-copy-id` needs `-f`.** The tool writes only public keys, so `ssh-copy-id -i <pub> host` fails its private-key check. Use `ssh-copy-id -f -i <pub> host`, or drop `-i` to use the agent's keys.
+- **`~/.ssh/config` include ordering.** Home Manager renders `Include` first, and OpenSSH is first-match-wins, so generated `Host` blocks shadow hand-written blocks for the same host. Do not define the same host in both places.
+- **One source of truth for `allowed_signers`.** If another module also writes `programs.git.settings.gpg.ssh.allowedSignersFile`, pick one owner. Set `git.enable = true` here only if you have removed the other definition.
+- **Key passphrase.** The entry's Password field is assumed to be the private key's passphrase. Non-OpenSSH key formats (`.ppk`, PKCS#12) are not supported.
+- **Challenge-response needs no button press for unattended use.** If the YubiKey/OnlyKey slot requires a touch, a run cannot complete without one. Set the slot to "button press not required" (YubiKey: program without `-t`) if you want `service.watch` to run unattended; otherwise refresh from the tray so the touch happens on your terms.
+- **Do not put secrets in `passwordCommand`.** The value is stored in the world-readable Nix store and the unit file. Reference a secret path instead.
+
+## Troubleshooting
+
+- Run with `--print` to see exactly what would be written.
+- Authentication failures: open **Show log** (or `~/.local/state/ssh-config-gen/log`). The tool does not pass `-q` to `keepassxc-cli`, so its messages are captured. Common causes: wrong challenge-response slot, a touch-required slot, or `noPassword` set on a database that still has a master password.
+- Verify the database unlocks independently: `keepassxc-cli export -f xml <db>` (add `-y <slot>` / `--no-password` as needed).
+- The tray not appearing: confirm the StatusNotifierItem widget is present in your panel, and check `systemctl --user status ssh-config-gen-tray`.
+
+## Development
+
+```sh
+cd packages/ssh-config-gen
+go vet ./...
+go test ./...
+go build .
+```
+
+Tests cover the config parser, the keepassxc-cli argument construction, the XML entry-path derivation, public-key derivation, and the change fingerprint.
+
+## Credits
+
+Inspired by [rosec](https://github.com/jmylchreest/rosec).
