@@ -148,8 +148,8 @@ let
   opencodePluginPins = {
     # Safety gate: blocks destructive commands and secret access
     cc-safety-net = {
-      version = "2.5.2";
-      hash = "sha256-HWWZEyt8du5HV1m+mIofZOKnweLaj6M4qRanKJM9c3w=";
+      version = "2.6.0";
+      hash = "sha256-hzfkiFdMYRxfm+BtEw9Mwx+/CWLkNqe5teAICi/JqIQ=";
     };
 
     # Dynamic context pruning (DCP): prunes/compresses stale context.
@@ -161,7 +161,7 @@ let
 
     # 7-agent orchestration suite (orchestrator, council, etc.)
     oh-my-opencode-slim = {
-      version = "3.0.2";
+      version = "3.0.3";
       hash = null;
     };
   };
