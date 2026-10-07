@@ -95,6 +95,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    ssh-config-gen = {
+      url = "./packages/ssh-config-gen";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # CDP skill + CLI for browser
     browser-harness-js = {
       url = "github:browser-use/browser-harness-js";

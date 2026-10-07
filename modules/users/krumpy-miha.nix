@@ -1,7 +1,6 @@
 { home, inputs, ... }:
 let
   data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
-  userData = import "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/data.nix";
 in
 {
   den.aspects.krumpy-miha = {
@@ -22,8 +21,13 @@ in
     ];
 
     homeManager = _: {
-      my.ssh.hosts = userData.ssh.hosts;
-      my.git.identities = userData.git.identities;
+      programs.ssh-config-gen = {
+        enable = true;
+        database = "~/Documents/digital-identity/KeePass.kdbx";
+        yubikey = "1";
+        noPassword = true;
+        git.enable = true;
+      };
     };
     nixos =
       {

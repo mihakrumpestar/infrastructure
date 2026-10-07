@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-8,974 non-blank lines, comments included and Markdown excluded.
+10,533 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     114 |
-| modules/den.nix  |     109 |
+| flake.nix        |     118 |
+| modules/den.nix  |     110 |
 | modules/hosts    |     533 |
 | modules/system   |   2,270 |
-| modules/home     |   4,592 |
-| modules/users    |     195 |
-| modules (total)  |   7,699 |
-| packages (total) |     422 |
+| modules/home     |   4,474 |
+| modules/users    |     199 |
+| modules (total)  |   7,586 |
+| packages (total) |   2,090 |
 | lib (total)      |     739 |
-| **Total**        |   8,974 |
+| **Total**        |  10,533 |
 
 </details>
 <!-- FAST_END -->
@@ -156,6 +156,7 @@ flowchart LR
         local_consul_cni["./packages/consul-cni"]:::local
         local_mutable_file["./lib/mutable-file"]:::local
         local_opencode_plugins["./lib/opencode-plugins"]:::local
+        local_ssh_config_gen["./packages/ssh-config-gen"]:::local
         local_virtualhere["./packages/virtualhere"]:::local
     end
 
@@ -324,6 +325,7 @@ flowchart LR
     local_consul_cni --> flake
     local_mutable_file --> flake
     local_opencode_plugins --> flake
+    local_ssh_config_gen --> flake
     local_virtualhere --> flake
     opt_docker --> opt_container_runtime
     opt_nomad --> opt_podman

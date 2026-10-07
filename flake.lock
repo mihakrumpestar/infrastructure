@@ -846,6 +846,7 @@
         "openchamber": "openchamber",
         "opencode-plugins": "opencode-plugins",
         "plasma-manager": "plasma-manager",
+        "ssh-config-gen": "ssh-config-gen",
         "stylix": "stylix",
         "virtualhere": "virtualhere"
       }
@@ -870,6 +871,22 @@
         "repo": "rust-overlay",
         "type": "github"
       }
+    },
+    "ssh-config-gen": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./packages/ssh-config-gen",
+        "type": "path"
+      },
+      "original": {
+        "path": "./packages/ssh-config-gen",
+        "type": "path"
+      },
+      "parent": []
     },
     "stylix": {
       "inputs": {
