@@ -24,6 +24,7 @@
             "libvirtd"
             "kvm"
             "tss"
+            "netbird" # NetBird control socket access (services.netbird in networking.nix)
           ];
           hashedPasswordFile = config.age.secrets."admin_hashedPassword".path;
           openssh.authorizedKeys.keys = [ ];

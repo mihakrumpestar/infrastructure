@@ -25,6 +25,7 @@ in
             "video"
             "networkmanager"
             "tss" # TPM device access for age-plugin-tpm
+            "netbird" # NetBird control socket access (services.netbird in networking.nix)
           ];
         };
 

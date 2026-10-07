@@ -51,6 +51,7 @@ in
             "tss"
             "plugdev" # Old onlykey
             "networkmanager"
+            "netbird" # NetBird control socket access (services.netbird in networking.nix)
           ];
         };
 

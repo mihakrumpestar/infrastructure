@@ -18,8 +18,41 @@ in
             path = "/etc/NetworkManager/system-connections/homeWifi.nmconnection";
           };
 
-          # Check: ss -tulnp
-          services.resolved.settings.Resolve.DNSStubListener = false;
+          # systemd-resolved is NetBird's supported Linux DNS backend (per-link
+          # DNS and split domains over D-Bus). On NetworkManager hosts this also
+          # switches NM to dns=systemd-resolved; on systemd-networkd hosts the
+          # networkd module already enables it.
+          #
+          # The stub listener is pinned on. It only ever binds loopback
+          # (127.0.0.53 and 127.0.0.54), never a wildcard or a public interface,
+          # so it never exposes DNS on the network. A local resolver bound to a
+          # specific address still coexists; only a wildcard :53 bind can clash.
+          # Check: resolvectl status, ss -lunp | grep :53
+          services.resolved = {
+            enable = true;
+            settings.Resolve.DNSStubListener = true;
+          };
+
+          # NetBird mesh VPN client (WireGuard-based). https://docs.netbird.io
+          # The client key "netbird" keeps the canonical names: netbird.service,
+          # the netbird/netbird-ui CLIs and the "netbird" socket group.
+          # Hardened (module default) runs the daemon as a dedicated user and
+          # restricts its control socket to the "netbird" group; interactive
+          # users join that group in modules/users. Authenticate with
+          # `netbird up` (SSO). Set useRoutingFeatures to "client"/"server"/
+          # "both" when using exit nodes, network routes or this host as a
+          # routing peer.
+          services.netbird = {
+            # netbird-ui only where a graphical session exists
+            ui.enable = config.services.displayManager.sessionPackages != [ ] || config.services.xserver.enable;
+
+            clients.netbird = {
+              port = 51820;
+              interface = "wt0";
+              openFirewall = true;
+              openInternalFirewall = true;
+            };
+          };
 
           networking = {
             useDHCP = false;
@@ -28,7 +61,7 @@ in
           };
 
           boot.kernel.sysctl = {
-            # Enable IP forwarding for tailscale, kubernetes, and VMs
+            # Enable IP forwarding for NetBird, kubernetes, and VMs
             "net.ipv4.ip_forward" = true; # Verify: "cat /proc/sys/net/ipv4/ip_forward" or "sysctl net.ipv4.ip_forward"
             "net.ipv6.conf.all.forwarding" = true;
 
