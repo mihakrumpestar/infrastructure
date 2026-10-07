@@ -117,7 +117,9 @@ in
         description = ''
           Point git at the generated allowed_signers file, enable SSH signing,
           and generate per-line git identity files (from ssh_hosts lines that
-          carry git.name/git.email). Off by default because the gpg wiring
+          carry git.name/git.email). Also generates
+          ~/.config/git/keepass-identities/include.conf, which auto-applies each
+          identity by remote alias. Off by default because the gpg wiring
           conflicts with any other definition of
           programs.git.settings.gpg.ssh.allowedSignersFile.
         '';
@@ -126,7 +128,7 @@ in
       identitiesDir = lib.mkOption {
         type = lib.types.str;
         default = "~/.config/git/keepass-identities";
-        description = "Directory for generated git identity files (consumed by git-setuser).";
+        description = "Directory for generated git identity files (included by the generated include.conf).";
       };
     };
 
@@ -223,6 +225,10 @@ in
           format = "ssh";
           ssh.allowedSignersFile = allowedSignersPath;
         };
+      })
+
+      (lib.mkIf cfg.git.enable {
+        programs.git.settings.include.path = "${cfg.git.identitiesDir}/include.conf";
       })
 
       (lib.mkIf (cfg.service.enable && hasCredential) (
