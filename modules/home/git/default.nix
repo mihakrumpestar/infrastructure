@@ -6,7 +6,8 @@
       {
         # Per-identity git configs (~/.config/git/keepass-identities/*) and the SSH
         # signing trust file are generated from KeePassXC by
-        # programs.ssh-config-gen; select an identity with `git setuser <name>`.
+        # programs.ssh-config-gen. A repo whose remote uses an identity's SSH
+        # alias (git@<alias>:owner/repo.git) picks up that identity automatically.
         programs.git = {
           enable = true;
           lfs.enable = true;
@@ -90,11 +91,6 @@
                 refactor = mkAcpAlias "refactor";
                 test = mkAcpAlias "test";
                 chore = mkAcpAlias "chore";
-                setuser =
-                  let
-                    gitSetUser = pkgs.writeScriptBin "git-setuser" (builtins.readFile ./setuser.sh);
-                  in
-                  "!${gitSetUser}/bin/git-setuser";
               };
           };
         };
