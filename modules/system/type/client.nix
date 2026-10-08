@@ -9,10 +9,20 @@ in
       den.aspects.peripherals
     ];
     nixos =
-      { config, lib, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       {
         # Networking
-        networking.networkmanager.enable = true;
+        networking.networkmanager = {
+          enable = true;
+
+          # OpenVPN support for the NM clients
+          plugins = [ pkgs.networkmanager-openvpn ];
+        };
 
         # nm-online -s waits for ALL devices to be activated or failed, which
         # blocks boot for ~30s on interfaces with no cable. Without -s, it
