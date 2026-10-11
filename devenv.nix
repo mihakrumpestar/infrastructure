@@ -1,12 +1,13 @@
 { pkgs, ... }:
 {
-  packages = [
-    pkgs.deadnix
-    pkgs.flake-checker
-    pkgs.go-task
-    pkgs.mermaid-cli
-    pkgs.nixfmt-tree
-    pkgs.statix
+  packages = with pkgs; [
+    deadnix
+    flake-checker
+    go-task
+    mermaid-cli
+    nixfmt-tree
+    statix
+    gitleaks
   ];
 
   # Python for scripts/flake_stats.py (tabulate and matplotlib imports).

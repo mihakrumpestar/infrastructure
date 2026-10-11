@@ -65,8 +65,8 @@
     nixos =
       { config, ... }:
       {
-        # For nixd to work properly
-        nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+        # For nixpkgs.expr to work properly in VSCode extension
+        nix.settings.nix-path = [ "nixpkgs=${inputs.nixpkgs}" ];
 
         # In regular setups this would be a hardcoded version string (e.g. "26.11"), but in my case, it is whatever the latest version is.
         # This is ment to gatekeep applications such as DBs, that don't have automatic migrations on major version updates, from being automatically

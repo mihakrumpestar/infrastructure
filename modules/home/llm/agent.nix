@@ -189,8 +189,8 @@ in
             autoupdate = false;
             default_agent = "orchestrator";
             model = "gateway/default";
-            # DCP manages context itself; built-in auto/prune compaction
-            # would double-compress and thrash the prompt cache.
+            # Built-in compaction off; DCP handles compression (manual /compact
+            # still works on demand).
             compaction.auto = false;
             compaction.prune = false;
 
@@ -329,13 +329,13 @@ in
             permission = {
               external_directory = {
                 "/tmp/**" = "allow";
-                "~/repos/**" = "allow";
+                "~/Projects/**" = "allow";
                 "~/go/**" = "allow";
                 "/nix/store/**" = "allow";
               };
               edit = {
                 "/tmp/**" = "allow";
-                "~/repos/**" = "ask";
+                "~/Projects/**" = "ask";
                 "~/go/**" = "deny";
               };
             };
@@ -500,6 +500,11 @@ in
           After = [ "agenix.service" ];
         };
 
+        # opencode-web needs the flag too (TUI/CLI get it via sessionVariables).
+        systemd.user.services.opencode-web.Service.Environment = [
+          "OPENCODE_EXPERIMENTAL_CODE_MODE=1"
+        ];
+
         # codebase-memory-mcp keeps runtime settings in a SQLite DB, so HM
         # can't own them as a file; re-assert auto_index on every activation
         # (config set is idempotent; never fails activation).
@@ -519,6 +524,12 @@ in
         # itself in the skill directory and auto-starts it on first use.
         # bun comes from nixpkgs, so the upstream bun self-installer never
         # triggers.
+
+        # Experimental Code Mode: MCP schemas (gh alone ~32k tokens) collapsed
+        # behind one sandboxed `execute` tool. Revert by removing this var;
+        # opencode v2 offers per-server codemode instead.
+        home.sessionVariables.OPENCODE_EXPERIMENTAL_CODE_MODE = "1";
+
         home.packages = [
           pkgs.opencode-desktop
 
@@ -555,17 +566,19 @@ in
           // cdpSkillConfigs
           // archifySkillConfigs
           // {
-            # DCP user-level config (~/.config/opencode/dcp.jsonc). Version is
-            # pinned via opencodePluginPins; runtime auto-update stays off.
-            # manualMode disables autonomous compression; it only runs when
-            # explicitly triggered (/dcp-compress or the DCP panel). Dedup/
-            # purgeErrors keep running (automaticStrategies default true).
+            # DCP auto mode: reminders from 250k, strong from 500k. No forced
+            # compression exists in DCP - the model must act on nudges.
+            # "/dcp manual" re-enables manual compression per session.
             "opencode/dcp.jsonc".text = ''
               {
                 "$schema": "https://raw.githubusercontent.com/Opencode-DCP/opencode-dynamic-context-pruning/master/dcp.schema.json",
                 "autoUpdate": false,
                 "manualMode": {
-                  "enabled": true
+                  "enabled": false
+                },
+                "compress": {
+                  "maxContextLimit": 500000,
+                  "minContextLimit": 250000
                 }
               }
             '';

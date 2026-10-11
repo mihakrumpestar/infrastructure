@@ -1,0 +1,15 @@
+--- a/app/src/lib/stores/app-store.ts
++++ b/app/src/lib/stores/app-store.ts
+@@ -2352,6 +2352,12 @@
+     repository: Repository,
+     lastPush: Date | null
+   ): Promise<boolean> {
++    // Allow disabling all automatic background fetches (the periodic
++    // fetcher and the repository indicator updater).
++    if (process.env.GITHUB_DESKTOP_DISABLE_BACKGROUND_FETCH === '1') {
++      return false
++    }
++
+     const gitStore = this.gitStoreCache.get(repository)
+     const lastFetched = await gitStore.updateLastFetched()
+ 

@@ -22,6 +22,17 @@
             desktopManager.plasma6.enable = true;
           };
 
+          # Route portal interfaces to the KDE/GTK backends only. The kwallet
+          # Secret portal backend is ksecretd, which is deliberately disabled in
+          # favour of KeePassXC as the secret-service provider (see kwalletrc
+          # below); without this pinning, every Secret portal request
+          # D-Bus-activates ksecretd, which exits immediately, producing a
+          # repeating "unit failed" error in the journal.
+          xdg.portal.config.kde.default = [
+            "kde"
+            "gtk"
+          ];
+
           # GNOME and GTK fix
           programs.dconf.enable = true;
 

@@ -1,0 +1,31 @@
+--- a/app/src/main-process/main.ts
++++ b/app/src/main-process/main.ts
+@@ -280,6 +280,28 @@
+     return
+   }
+ 
++  // On Linux, protocol activation arrives as a plain argument to a new app
++  // instance launched by the system (xdg-open), either at first startup or
++  // delivered to an existing instance via second-instance.
++  if (process.platform === 'linux') {
++    const prefixes = Array.from(possibleProtocols, p => `${p}://`)
++    const matchingUrl = argv.find(arg => {
++      if (prefixes.some(p => arg.startsWith(p))) {
++        try {
++          new URL(arg)
++          return true
++        } catch (e) {
++          log.error(`Unable to parse argument as URL: ${arg}`)
++        }
++      }
++      return false
++    })
++
++    if (matchingUrl) {
++      handleAppURL(matchingUrl)
++    }
++  }
++
+   if (typeof args['cli-open'] === 'string') {
+     handleCLIAction({ kind: 'open-repository', path: args['cli-open'] })
+   } else if (typeof args['cli-clone'] === 'string') {

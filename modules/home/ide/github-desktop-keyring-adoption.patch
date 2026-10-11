@@ -1,0 +1,118 @@
+--- a/app/src/lib/stores/token-store.ts
++++ b/app/src/lib/stores/token-store.ts
+@@ -12,8 +12,13 @@
+   return keytar.deletePassword(key, login)
+ }
+ 
++function findCredentials(key: string) {
++  return keytar.findCredentials(key)
++}
++
+ export const TokenStore = {
+   setItem,
+   getItem,
+   deleteItem,
++  findCredentials,
+ }
+--- a/app/src/lib/stores/stores.ts
++++ b/app/src/lib/stores/stores.ts
+@@ -7,4 +7,12 @@
+   setItem(key: string, login: string, value: string): Promise<void>
+   getItem(key: string, login: string): Promise<string | null>
+   deleteItem(key: string, login: string): Promise<boolean>
++
++  /**
++   * Enumerates the credentials stored for the given key or service, if
++   * the underlying store supports enumeration.
++   */
++  findCredentials?(
++    key: string
++  ): Promise<ReadonlyArray<{ account: string; password: string }>>
+ }
+--- a/app/src/lib/stores/accounts-store.ts
++++ b/app/src/lib/stores/accounts-store.ts
+@@ -1,7 +1,12 @@
+ import { IDataStore, ISecureStore } from './stores'
+-import { getKeyForAccount } from '../auth'
++import { getKeyForAccount, getKeyForEndpoint } from '../auth'
+ import { Account, isDotComAccount } from '../../models/account'
+-import { fetchUser, EmailVisibility, getEnterpriseAPIURL } from '../api'
++import {
++  fetchUser,
++  EmailVisibility,
++  getDotComAPIEndpoint,
++  getEnterpriseAPIURL,
++} from '../api'
+ import { fatalError } from '../fatal-error'
+ import { TypedBaseStore } from './base-store'
+ import { isGHE } from '../endpoint-capabilities'
+@@ -208,6 +213,7 @@
+   private async loadFromStore(): Promise<void> {
+     const raw = this.dataStore.getItem('users')
+     if (!raw || !raw.length) {
++      await this.adoptAccountsFromKeyring()
+       return
+     }
+ 
+@@ -248,6 +254,61 @@
+     }
+   }
+ 
++  /**
++   * On a fresh machine the local account list is empty, but the system
++   * keychain may already contain tokens written by GitHub Desktop on
++   * another machine sharing the same keychain. Adopt the accounts behind
++   * those tokens so the user doesn't have to sign in again.
++   *
++   * Note that only github.com accounts are adopted: enterprise endpoints
++   * can't be discovered without knowing their URL in advance.
++   */
++  private async adoptAccountsFromKeyring(): Promise<void> {
++    const endpoint = getDotComAPIEndpoint()
++
++    let credentials:
++      | ReadonlyArray<{ account: string; password: string }>
++      | undefined
++    try {
++      credentials = await this.secureStore.findCredentials?.(
++        getKeyForEndpoint(endpoint)
++      )
++    } catch (e) {
++      // The keychain may be unavailable (e.g. locked or not running).
++      // Leave the account list empty; the user can sign in normally.
++      log.warn('Unable to enumerate keychain credentials', e)
++      return
++    }
++
++    if (credentials === undefined) {
++      return
++    }
++
++    const adopted = new Map<string, Account>()
++
++    for (const { account: login, password: token } of credentials) {
++      if (!login || !token) {
++        continue
++      }
++
++      try {
++        // Verify the token against the API and fetch the account details
++        // before adopting it.
++        const account = await fetchUser(endpoint, token)
++        adopted.set(account.login, account)
++      } catch (e) {
++        // Invalid or expired token, or no connectivity. Leave the
++        // credential in the keychain for a future launch.
++        log.warn(`Unable to adopt keychain account '${login}'`, e)
++      }
++    }
++
++    if (adopted.size > 0) {
++      this.accounts = sortAccounts([...adopted.values()])
++      this.save()
++    }
++  }
++
+   private save() {
+     const usersWithoutTokens = this.accounts.map(account =>
+       account.withToken('')

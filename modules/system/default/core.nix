@@ -64,7 +64,7 @@
 
             # Prevent loading kernel modules after start (should prevent nasty exploits of loading obscure modules)
             # Note that we have to load all needed ones therefore in config
-            lockKernelModules = true;
+            lockKernelModules = false; # Disabling this for the time being, due to it requiring too much work with not that much benefit
           };
 
           environment.systemPackages = with pkgs; [

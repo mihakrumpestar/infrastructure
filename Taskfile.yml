@@ -1,11 +1,5 @@
 version: "3"
 
-includes:
-  secrets:
-    taskfile: ../infrastructure-secrets/Taskfile.yml
-    dir: ../infrastructure-secrets
-    flatten: true
-
 tasks:
   ci:
     cmds:

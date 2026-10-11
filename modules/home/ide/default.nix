@@ -15,6 +15,33 @@
             sha256 = "09jp99vcafj83d4s5p8d9f2k2znv96ig9awhr4mdn4qnx8081qdy";
           };
         };
+        # Unofficial patches:
+        # - oauth-linux: official builds gate protocol-URL handling behind
+        #   __WIN32__, so OAuth callbacks are dropped on Linux
+        # - keyring-adoption: adopt accounts from the system keychain on
+        #   fresh machines (zero-click sign-in across PCs sharing a keyring)
+        # - disable-background-fetch: gate all automatic fetches behind
+        #   GITHUB_DESKTOP_DISABLE_BACKGROUND_FETCH (set by the wrapper below)
+        github-desktop-patched = pkgs.github-desktop.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [
+            ./github-desktop-oauth-linux.patch
+            ./github-desktop-keyring-adoption.patch
+            ./github-desktop-disable-background-fetch.patch
+          ];
+        });
+
+        # Stop automatic background fetches without touching the session
+        # environment; override per-launch with
+        # GITHUB_DESKTOP_DISABLE_BACKGROUND_FETCH=0.
+        github-desktop-local = pkgs.symlinkJoin {
+          name = "github-desktop-local-wrapped";
+          paths = [ github-desktop-patched ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/github-desktop \
+              --set-default GITHUB_DESKTOP_DISABLE_BACKGROUND_FETCH 1
+          '';
+        };
       in
       {
         # This are ment for system, not projects
@@ -43,7 +70,15 @@
           mermaid-cli
 
           # Git
-          pre-commit
+          git
+          git-filter-repo
+          github-cli
+          github-desktop-local
+
+          yaak # TODO: test
+          scc
+          bruno
+          devbox
         ];
 
         home.sessionVariables = {
@@ -65,6 +100,12 @@
           enable = true;
           enableZshIntegration = true;
         };
+
+        xdg.configFile."secretspec/config.toml".text = ''
+          [defaults]
+          provider = "keyring"
+          profile = "default"
+        '';
 
         programs.vscodium = {
           enable = true;
