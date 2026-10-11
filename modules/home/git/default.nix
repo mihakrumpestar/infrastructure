@@ -8,12 +8,31 @@
         # signing trust file are generated from KeePassXC by
         # programs.ssh-config-gen. A repo whose remote uses an identity's SSH
         # alias (git@<alias>:owner/repo.git) picks up that identity automatically.
+
+        # Bare filter commands below invoke git-lfs via PATH; keep it installed
+        # (lfs.enable = false no longer installs it into the user profile)
+        home.packages = [ pkgs.git-lfs ];
         programs.git = {
           enable = true;
-          lfs.enable = true;
+
+          # Disabled: HM's default writes absolute /nix/store paths, which
+          # git-lfs's own `install` validation rejects by strict equality
+          # (warning + exit 2 on every `git lfs install`, surfaced by e.g.
+          # GitHub Desktop's startup check as an error dialog).
+          lfs.enable = false;
+
           settings = {
             core = {
               editor = "codium --wait";
+            };
+
+            # Bare command names exactly as git-lfs expects them; requires
+            # git-lfs on PATH wherever the filter runs
+            "filter.lfs" = {
+              clean = "git-lfs clean -- %f";
+              smudge = "git-lfs smudge -- %f";
+              process = "git-lfs filter-process";
+              required = "true";
             };
             diff = {
               tool = "codium";

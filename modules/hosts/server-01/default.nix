@@ -1,8 +1,4 @@
-{ den, inputs, ... }:
-let
-  data = import "${inputs.infrastructure-secrets}/secrets/data.nix";
-  host = data.hosts.server-01;
-in
+{ den, ... }:
 {
   den.aspects.server-01 = {
     includes = [
@@ -28,16 +24,6 @@ in
             bootDisk = "/dev/sda";
             swapSize = "32G";
             encryptRoot = "tpm2";
-          };
-
-          server.networking = {
-            bridges.br0 = {
-              inherit (host.nics.default) ip cidr;
-              members.pcie0.mac = host.nics.default.mac;
-            };
-            standaloneNics = {
-              inherit (host.nics) nic0;
-            };
           };
 
           /*

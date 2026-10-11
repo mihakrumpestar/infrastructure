@@ -1,8 +1,4 @@
-{ den, inputs, ... }:
-let
-  data = import "${inputs.infrastructure-secrets}/secrets/data.nix";
-  host = data.hosts.server-03;
-in
+{ den, ... }:
 {
   den.aspects.server-03 = {
     includes = [
@@ -29,13 +25,6 @@ in
             encryptRoot = "tpm2";
             bootLoader = "systemd-boot"; # BIOS v1.5 broke third-party Secure Boot (even as enabled in BIOS, reports as being disabled in system)
             #pcrlockSupport = false; # "systemd-pcrlock is-supported" returns "obsolete"
-          };
-
-          server.networking = {
-            bridges.br0 = {
-              inherit (host.nics.default) ip cidr;
-              members.nic0.mac = host.nics.default.mac;
-            };
           };
 
           /*

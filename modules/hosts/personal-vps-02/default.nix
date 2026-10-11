@@ -34,21 +34,6 @@ in
           nomad.enable = true;
         };
 
-        # For systemd-networkd-wait-online to work properly
-        systemd.network = {
-          # Match by MAC to avoid catching container veth interfaces
-          # (podman/CNI), which are also Type=ether
-          links."10-wan0" = {
-            matchConfig.PermanentMACAddress = "ca:d1:23:02:a1:e3";
-            linkConfig.Name = "wan0";
-          };
-          networks."40-wan0" = {
-            matchConfig.Name = "wan0";
-            networkConfig.DHCP = "yes";
-            linkConfig.RequiredForOnline = "routable";
-          };
-        };
-
         users.users.root.openssh.authorizedKeys.keys = lib.mkForce [
           data.ssh_authorized_keys.vps
         ];

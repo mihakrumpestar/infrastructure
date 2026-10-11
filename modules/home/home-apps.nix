@@ -66,16 +66,6 @@
           file-roller # GUI archiving tool
           nextcloud-client
 
-          # Programming
-          git
-          git-filter-repo
-          gnumake # make
-          bruno
-          yaak # TODO: test
-          gitleaks # Check for leaks in git repos, scans all branches with all commit history
-          devbox
-          scc
-
           # Tools
           gsmartcontrol
           gnome-disk-utility

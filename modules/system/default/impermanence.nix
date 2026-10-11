@@ -103,7 +103,8 @@
               "Downloads"
               "Pictures"
               "Videos"
-              "repos"
+              "Projects"
+              "repos" # TODO: remove after migrated all repos to "Projects"
             ];
 
             filesToPersist =

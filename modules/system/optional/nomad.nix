@@ -15,12 +15,48 @@
       let
         cfg = config.my.nomad;
         jsonFormat = pkgs.formats.json { };
+
+        # Agent protocol ports (Nomad defaults). Single source of truth for
+        # the advertise scheme and the exposed-interface firewall.
+        protoPort = {
+          http = 4646;
+          rpc = 4647;
+          serf = 4648;
+        };
+
+        # Bind+advertise scheme for every protocol. Nomad 2.0 rejects a
+        # defaulted loopback advertise ("Defaulting advertise to localhost is
+        # unsafe"), so the advertise side stays explicit.
+        endpointScheme =
+          { bind, advertise }:
+          {
+            addresses = {
+              http = bind;
+              rpc = bind;
+              serf = bind;
+            };
+            advertise = {
+              http = advertise protoPort.http;
+              rpc = advertise protoPort.rpc;
+              serf = advertise protoPort.serf;
+            };
+          };
+
+        # Agent address scheme chosen by exposedInterfaces. Keys are disjoint
+        # from the generated settings base, so the fold ranks layers purely
+        # (base < scheme < extraSettings).
+        # Advertise is always explicit loopback so the agent starts
+        # unconditionally, regardless of any mesh/interface state.
+        agentScheme = endpointScheme {
+          bind = if cfg.exposedInterfaces == [ ] then "127.0.0.1" else "0.0.0.0";
+          advertise = port: "127.0.0.1:${toString port}";
+        };
       in
       {
         options.my.nomad = {
           # Single-agent Nomad; jobs use group network mode = "bridge".
           # https://developer.hashicorp.com/nomad/docs
-          enable = lib.mkEnableOption "Nomad single-agent orchestrator (podman driver, loopback API)";
+          enable = lib.mkEnableOption "Nomad single-agent orchestrator (podman driver, mesh-reachable API, see my.nomad.exposedInterfaces)";
 
           region = lib.mkOption {
             type = lib.types.str;
@@ -59,9 +95,31 @@
             inherit (jsonFormat) type;
             default = { };
             description = ''
-              Extra agent settings deep-merged into /etc/nomad.json
-              (services.nomad.settings). See
-              https://developer.hashicorp.com/nomad/docs/configuration
+              Extra agent settings deep-merged over every generated leaf of
+              /etc/nomad.json (services.nomad.settings). Recursive update:
+              a list value replaces lists wholesale rather than appending
+              (e.g. overriding client.cni_path must carry the full path).
+              See https://developer.hashicorp.com/nomad/docs/configuration
+            '';
+          };
+
+          exposedInterfaces = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ "wt0" ];
+            description = ''
+              Interfaces the agent is reachable on. HTTP/RPC/Serf bind
+              0.0.0.0 and the firewall opens the agent ports only on these,
+              keeping the agent off the public network.
+              Default targets the NetBird mesh interface "wt0"
+              (modules/system/default/networking.nix): when NetBird is up the
+              agent is mesh-reachable, otherwise the interface stays idle and
+              nothing is exposed — no wiring needed in either case, and the
+              agent starts unconditionally regardless of NetBird state (it is
+              ordered after the netbird client unit only).
+              Set to [ ] for a loopback-only agent.
+              The agent advertises loopback (single agent, no cross-node
+              consumers); adding agents to the mesh later requires an
+              explicit advertise override via `my.nomad.extraSettings`.
             '';
           };
         };
@@ -81,56 +139,73 @@
             # nftables: iptables backend for the CNI plugins.
             extraPackages = [ pkgs.nftables ];
 
-            settings = lib.recursiveUpdate {
-              # Loopback-only: no mTLS/ACLs yet, so the API must stay off
-              # the network. Remote access: ssh -L 4646:127.0.0.1:4646 (see
-              # host config); NOMAD_ADDR cannot tunnel over SSH.
-              addresses = {
-                http = "127.0.0.1";
-                rpc = "127.0.0.1";
-                serf = "127.0.0.1";
-              };
+            # Generated settings, deep-overridden last by extraSettings
+            # (agentScheme's addresses/advertise keys stay disjoint from the
+            # base set, so fold order fully ranks the three layers).
+            settings = lib.foldl lib.recursiveUpdate { } [
+              {
+                inherit (cfg) region datacenter;
 
-              # Nomad 2.0 refuses a defaulted loopback advertise
-              # ("Defaulting advertise to localhost is unsafe").
-              advertise = {
-                http = "127.0.0.1:4646";
-                rpc = "127.0.0.1:4647";
-                serf = "127.0.0.1:4648";
-              };
+                server = {
+                  enabled = true;
+                  bootstrap_expect = 1;
+                };
 
-              inherit (cfg) region datacenter;
+                # Task stats collection is off by default; without it the
+                # client never queries driver TaskStats and the UI shows no
+                # CPU/memory utilization.
+                telemetry.publish_allocation_metrics = true;
 
-              server = {
-                enabled = true;
-                bootstrap_expect = 1;
-              };
+                client = {
+                  enabled = true;
+                  # CNI binaries for group network mode=bridge (Nomad
+                  # generates the conflist itself). Discovery is cni_path,
+                  # not PATH.
+                  cni_path = lib.concatStringsSep ":" ([ "${pkgs.cni-plugins}/bin" ] ++ cfg.extraCniDirs);
+                }
+                // lib.optionalAttrs (cfg.disabledDrivers != [ ]) {
+                  options."driver.denylist" = lib.concatStringsSep "," cfg.disabledDrivers;
+                };
 
-              # Task stats collection is off by default; without it the client
-              # never queries driver TaskStats and the UI shows no CPU/memory
-              # utilization.
-              telemetry.publish_allocation_metrics = true;
-
-              client = {
-                enabled = true;
-                # CNI binaries for group network mode=bridge (Nomad generates
-                # the conflist itself). Discovery is cni_path, not PATH.
-                cni_path = lib.concatStringsSep ":" ([ "${pkgs.cni-plugins}/bin" ] ++ cfg.extraCniDirs);
+                # Rootful podman driver on the default rootful socket. Since
+                # Nomad 1.10 this block is required or the plugin is silently
+                # skipped. The config MUST stay empty: Nomad 2.0 JSON configs
+                # cannot express nested plugin-config blocks (hcl v1 rejects
+                # them with "unexpected keys"), and the driver defaults
+                # already match (rootful socket, recover_stopped = false,
+                # gc.container = true).
+                plugin."nomad-driver-podman".config = { };
               }
-              // lib.optionalAttrs (cfg.disabledDrivers != [ ]) {
-                options."driver.denylist" = lib.concatStringsSep "," cfg.disabledDrivers;
-              };
-
-              # Rootful podman driver on the default rootful socket. Since
-              # Nomad 1.10 this block is required or the plugin is silently
-              # skipped. The config MUST stay empty: Nomad 2.0 JSON configs
-              # cannot express nested plugin-config blocks (hcl v1 rejects
-              # them with "unexpected keys"), and the driver defaults
-              # already match (rootful socket, recover_stopped = false,
-              # gc.container = true).
-              plugin."nomad-driver-podman".config = { };
-            } cfg.extraSettings;
+              agentScheme
+              cfg.extraSettings
+            ];
           };
+
+          # Interface-scoped firewall for mesh exposure (empty list
+          # contributes no interface). Requires the firewall from the
+          # networking aspect (networking.firewall.enable).
+          networking.firewall.interfaces = lib.genAttrs cfg.exposedInterfaces (_: {
+            allowedTCPPorts = lib.attrValues protoPort;
+            allowedUDPPorts = [ protoPort.serf ];
+          });
+
+          # Sequencing only: start after the netbird client units that own
+          # the exposed interfaces. `wants` (not requires/Requires) means a
+          # failed or missing netbird never blocks or fails nomad: the agent
+          # starts unconditionally (advertise is loopback) and is simply
+          # reachable over the mesh whenever the interface comes up.
+          systemd.services.nomad =
+            let
+              netbirdUnits = lib.mapAttrsToList (_: client: "${client.service.name}.service") (
+                lib.filterAttrs (
+                  _: client: lib.elem client.interface cfg.exposedInterfaces
+                ) config.services.netbird.clients
+              );
+            in
+            {
+              wants = netbirdUnits;
+              after = netbirdUnits;
+            };
 
           # Kernel modules + sysctls come from the included podman aspect.
         };
