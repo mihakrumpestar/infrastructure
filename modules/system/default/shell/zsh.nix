@@ -81,7 +81,7 @@
             # Basic
             cp = "cp -i";
             mv = "mv -i";
-            rm = "trash -v";
+            #rm = "trash -v";
             mkdir = "mkdir -p";
             ps = "ps auxf";
             less = "less -R";
