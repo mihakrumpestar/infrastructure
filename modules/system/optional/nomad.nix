@@ -82,6 +82,19 @@
             '';
           };
 
+          enableRawExec = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Enable the built-in raw_exec task driver via its plugin block
+              (plugin."raw_exec".config.enabled). raw_exec runs tasks as the
+              agent user — root here, since dropPrivileges = false — with no
+              filesystem, network, or cgroup isolation, so only run trusted
+              job specs. A raw_exec entry in disabledDrivers
+              (driver.denylist) overrides this and keeps the driver off.
+            '';
+          };
+
           extraCniDirs = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
@@ -169,12 +182,16 @@
 
                 # Rootful podman driver on the default rootful socket. Since
                 # Nomad 1.10 this block is required or the plugin is silently
-                # skipped. The config MUST stay empty: Nomad 2.0 JSON configs
-                # cannot express nested plugin-config blocks (hcl v1 rejects
-                # them with "unexpected keys"), and the driver defaults
-                # already match (rootful socket, recover_stopped = false,
-                # gc.container = true).
-                plugin."nomad-driver-podman".config = { };
+                # skipped. Keep its config empty: the driver defaults already
+                # match (rootful socket, recover_stopped = false,
+                # gc.container = true), and the driver rejects unknown keys.
+                # raw_exec is enabled below when enableRawExec is on.
+                plugin = {
+                  "nomad-driver-podman".config = { };
+                }
+                // lib.optionalAttrs cfg.enableRawExec {
+                  raw_exec.config.enabled = true;
+                };
               }
               agentScheme
               cfg.extraSettings
