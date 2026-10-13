@@ -47,11 +47,13 @@ in
           ];
           extraGroups = [
             "docker"
+            "podman"
             "libvirtd"
             "kvm"
             "virtualhere"
             "adbusers"
             "wheel"
+            "lpadmin" # CUPS admin: manage printers/queues without sudo
             "tss"
             "plugdev" # Old onlykey
             "networkmanager"
