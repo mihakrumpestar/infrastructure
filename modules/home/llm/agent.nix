@@ -566,8 +566,9 @@ in
           // cdpSkillConfigs
           // archifySkillConfigs
           // {
-            # DCP auto mode: reminders from 250k, strong from 500k. No forced
-            # compression exists in DCP - the model must act on nudges.
+            # DCP auto mode: reminders from 25%, strong from 50% of the model
+            # context limit (percent values resolve against model.limit.context).
+            # No forced compression exists in DCP; the model must act on nudges.
             # "/dcp manual" re-enables manual compression per session.
             "opencode/dcp.jsonc".text = ''
               {
@@ -577,8 +578,8 @@ in
                   "enabled": false
                 },
                 "compress": {
-                  "maxContextLimit": 500000,
-                  "minContextLimit": 250000
+                  "maxContextLimit": "50%",
+                  "minContextLimit": "25%"
                 }
               }
             '';

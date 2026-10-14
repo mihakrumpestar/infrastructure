@@ -3,5 +3,5 @@
 Automated install:
 
 ```sh
-nix run github:mihakrumpestar/pve-autoinstall -- <file.nix>
+nix run github:mihakrumpestar/pve-autoinstall -- ../infrastructure-secrets/secrets/pve.nix
 ```
