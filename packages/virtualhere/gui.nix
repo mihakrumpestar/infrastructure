@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
   name = "virtualhere-client-gui";
   src = fetchurl {
     url = "https://www.virtualhere.com/sites/default/files/usbclient/vhuit64";
-    hash = "sha256-sFQBcgKMUPebTi8lVQ8RyOn05NLmPUj59+D1XP+J7tU=";
+    hash = "sha256-8zl9pDpK13PL3TUGreSnYJRgUXnn6gKdJvlOkqvjvvE=";
   };
 
   nativeBuildInputs = [
