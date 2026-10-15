@@ -164,10 +164,11 @@
                   bootstrap_expect = 1;
                 };
 
-                # Task stats collection is off by default; without it the
-                # client never queries driver TaskStats and the UI shows no
-                # CPU/memory utilization.
-                telemetry.publish_allocation_metrics = true;
+                telemetry = {
+                  prometheus_metrics = true; # /v1/metrics?format=prometheus
+                  publish_allocation_metrics = true; # Minimum for Nomad UI to show stats
+                  publish_node_metrics = true;
+                };
 
                 client = {
                   enabled = true;
@@ -182,12 +183,26 @@
 
                 # Rootful podman driver on the default rootful socket. Since
                 # Nomad 1.10 this block is required or the plugin is silently
-                # skipped. Keep its config empty: the driver defaults already
-                # match (rootful socket, recover_stopped = false,
-                # gc.container = true), and the driver rejects unknown keys.
+                # skipped. The driver rejects unknown keys.
                 # raw_exec is enabled below when enableRawExec is on.
                 plugin = {
-                  "nomad-driver-podman".config = { };
+                  "nomad-driver-podman".config = {
+                    extra_labels = [
+                      "job_name"
+                      "job_id"
+                      "task_group_name"
+                      "task_name"
+                      "namespace"
+                      "node_name"
+                      "node_id"
+                    ];
+                    logging = {
+                      driver = "journald";
+                      options = {
+                        tag = ''{{index .Config.Labels "com.hashicorp.nomad.namespace"}}/{{index .Config.Labels "com.hashicorp.nomad.job_name"}}/{{index .Config.Labels "com.hashicorp.nomad.task_group_name"}}/{{index .Config.Labels "com.hashicorp.nomad.task_name"}}'';
+                      };
+                    };
+                  };
                 }
                 // lib.optionalAttrs cfg.enableRawExec {
                   raw_exec.config.enabled = true;
