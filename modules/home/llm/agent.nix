@@ -472,9 +472,10 @@ in
             ## Multi-Agent Patterns
 
             Use these agents and skills for structured review and verification:
-            - `@council`: Run multiple reviewers in parallel and synthesize. Use for high-stakes decisions - reviewing architecture for correctness, security, and operability.`
-            - `@advisor`: Quiet decision-point reviewer. Use when you want a second opinion`
-            - `@checker`: Verify implementation against spec, run tests, check edge cases`
+
+            - `@council`: Run multiple reviewers in parallel and synthesize. Use for high-stakes decisions - reviewing architecture for correctness, security, and operability.
+            - `@advisor`: Quiet decision-point reviewer. Use when you want a second opinion
+            - `@checker`: Verify implementation against spec, run tests, check edge cases
             - `@oracle`: Architecture and debugging specialist.
             - `@orchestrator`: Multi-agent orchestrator that delegates to specialists.
           '';

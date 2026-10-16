@@ -226,7 +226,7 @@
                 enable = true;
                 pkiBundle = "/var/lib/sbctl";
                 autoGenerateKeys.enable = true;
-                configurationLimit = mkIf tpm2PcrlockEnabled 8; # systemd-pcrlock has a strict limit to 8
+                configurationLimit = mkIf tpm2PcrlockEnabled 4; # systemd-pcrlock enforces a strict max of 4 ESP generations
 
                 # If you don't auto-enroll, run:
                 # sbctl create-keys
