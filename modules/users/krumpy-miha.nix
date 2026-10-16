@@ -1,4 +1,9 @@
-{ home, inputs, ... }:
+{
+  den,
+  home,
+  inputs,
+  ...
+}:
 let
   data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
 in
@@ -18,6 +23,8 @@ in
       home.clipboard
       home.autostart
       home.scripts
+
+      den.aspects.dev-dns
     ];
 
     homeManager = _: {
