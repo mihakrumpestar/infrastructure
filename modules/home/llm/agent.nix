@@ -256,7 +256,7 @@ in
               godoc = {
                 type = "local";
                 command = [
-                  "go"
+                  "${pkgs.go}/bin/go"
                   "run"
                   "github.com/mrjoshuak/godoc-mcp@latest"
                 ];
@@ -266,7 +266,7 @@ in
               nixos = {
                 type = "local";
                 command = [
-                  "nix"
+                  "${pkgs.nix}/bin/nix"
                   "run"
                   "github:utensils/mcp-nixos"
                   "--"
@@ -276,7 +276,7 @@ in
               "pdf-reader" = {
                 type = "local";
                 command = [
-                  "bunx"
+                  "${pkgs.bun}/bin/bunx"
                   "@sylphx/pdf-reader-mcp"
                 ];
                 enabled = true;
@@ -307,7 +307,7 @@ in
               xactions = {
                 type = "local";
                 command = [
-                  "bunx"
+                  "${pkgs.bun}/bin/bunx"
                   "xactions-mcp"
                 ];
                 enabled = false;
@@ -427,33 +427,32 @@ in
           context = ''
             # MANDATORY RULES
 
-            **constantly/always**:
+            Be proactive and apply anything else related to this not mentioned here. Apply principles broadly.
+
+            Constantly/always:
 
             - seek, evaluate and follow dry, kiss, yagni and best coding principles.
             - use, edit and create shared functions, logics, tests and configurables that will be re-used later on. build and think in blocks and modules.
             - fully refractor and cleanup.
             - verify everything is unified and working together.
             - delegate work to agents to avoid overwhelming your context.
-            - use research agents with exa and scrapling for anything you are not 100% sure.
+            - use research agents with exa for anything you are not 100% sure.
             - awknowledge, analyze, evaluate and act all findings, reproduce if possible, no assumptions allowed. even for low impact ones.
             - use one single source of truth, for everything.
             - implement everything at the lowest choking point.
-            - expose as many settings, signals, actions and customization as possible for everything we build.
             - seek, evaluate and act on gaps and improvements for your workflows and the app we are building. everything must be ultra modular, resiliant, reliable, agnostic and dynamic
             - use, create and maintain broad, deterministic, mechanical, dynamic and intelligent tests, each issues/findings should ideally be found by tests next time.
-            - seek, use, create and maintain proper documentations. keep track of your progress, issues encountered, etc.
 
             - DO NOT use em dashes or other standalone dashes.
             - READ-ONLY for git: run only read git operations yourself. Do NOT run write git operations. When writing is needed, give the user the exact commands to run so he applies them manually.
+            - it is absolutely important to fix, modify or remove current code/behaviour for new features/implementations, instead of leaving things as they are and working aroung them
 
-            **never/avoid**:
+            Never/avoid:
 
             - use static configurables inside the codebase.
             - apply band aids or workarounds. 
-            - over engineer unless required.
+            - over engineer.
             - create similar or duplicate logics, consts, vars and functs.
-
-            **be proactive and apply anything else related to this not mentioned here. apply principles broadly.**
 
             ## MCP tools
 
@@ -464,19 +463,19 @@ in
             - `context7`: any other docs
             - `exa` or `webset`: get search results or queary web
             - `gh_grep`: search real code examples across public GitHub repositories
-            - `browser-harness-js`: browser automation via CDP (use the cdp skill). The CLI drives the user's Chrome; the REPL server auto-starts on first call and keeps one persistent session. The user starts Chrome with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
+            - `browser-harness-js`: browser automation via CDP (use the cdp skill). The CLI drives the user's Chrome; the REPL server auto-starts on first call and keeps one persistent session. When task is not one-shot, always reuse session to minimize startup time and churn. The user starts Chrome with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
             - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
-            - `codebase-memory-mcp`: code knowledge graph (projects auto-index on first connect; verify with list_projects/index_status), prefer search_graph/trace_path/get_architecture over grep for structural questions
+            - `codebase-memory-mcp`: code knowledge graph, prefer search_graph/trace_path/get_architecture over grep for structural questions and always use it in codebases as it helps finding connections 
             - `docs-mcp-server`: whenever user tells you to use it
             - `writeragent`: MCP for LibreOffice suite
 
             ## Multi-Agent Patterns
 
             Use these agents and skills for structured review and verification:
-            - `@council`: Run multiple reviewers in parallel and synthesize. Use for high-stakes decisions: `@council review this architecture for correctness, security, and operability.`
-            - `@advisor`: Quiet decision-point reviewer. Use when you want a second opinion: `@advisor review this approach.`
-            - `@checker`: Verify implementation against spec, run tests, check edge cases: `@checker verify the auth module against the spec.`
-            - `@oracle`: Architecture and debugging specialist from oh-my-opencode-slim.
+            - `@council`: Run multiple reviewers in parallel and synthesize. Use for high-stakes decisions - reviewing architecture for correctness, security, and operability.`
+            - `@advisor`: Quiet decision-point reviewer. Use when you want a second opinion`
+            - `@checker`: Verify implementation against spec, run tests, check edge cases`
+            - `@oracle`: Architecture and debugging specialist.
             - `@orchestrator`: Multi-agent orchestrator that delegates to specialists.
           '';
 

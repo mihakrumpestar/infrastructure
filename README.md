@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-10,803 non-blank lines, comments included and Markdown excluded.
+10,802 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -41,12 +41,12 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | modules/den.nix  |     110 |
 | modules/hosts    |     496 |
 | modules/system   |   2,236 |
-| modules/home     |   4,668 |
+| modules/home     |   4,667 |
 | modules/users    |     201 |
-| modules (total)  |   7,711 |
+| modules (total)  |   7,710 |
 | packages (total) |   2,235 |
 | lib (total)      |     739 |
-| **Total**        |  10,803 |
+| **Total**        |  10,802 |
 
 </details>
 <!-- FAST_END -->
