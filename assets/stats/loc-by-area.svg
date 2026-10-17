@@ -1046,8 +1046,8 @@ z
    </g>
    <g id="patch_9">
     <path d="M 93.750937 45.136813 
-L 247.914482 45.136813 
-L 247.914482 34.731718 
+L 248.881631 45.136813 
+L 248.881631 34.731718 
 L 93.750937 34.731718 
 z
 " clip-path="url(#p4f550c6e6d)" style="fill: #0e7490"/>
@@ -1384,13 +1384,13 @@ z
     </g>
    </g>
    <g id="text_22">
-    <!-- 2,391 -->
-    <g style="fill: #1f2328" transform="translate(251.914482 42.142274) scale(0.085 -0.085)">
+    <!-- 2,406 -->
+    <g style="fill: #1f2328" transform="translate(252.881631 42.142274) scale(0.085 -0.085)">
      <use xlink:href="#DejaVuSans-Bold-15"/>
      <use xlink:href="#DejaVuSans-Bold-f" transform="translate(69.578125 0)"/>
-     <use xlink:href="#DejaVuSans-Bold-16" transform="translate(107.5625 0)"/>
-     <use xlink:href="#DejaVuSans-Bold-1c" transform="translate(177.140625 0)"/>
-     <use xlink:href="#DejaVuSans-Bold-14" transform="translate(246.71875 0)"/>
+     <use xlink:href="#DejaVuSans-Bold-17" transform="translate(107.5625 0)"/>
+     <use xlink:href="#DejaVuSans-Bold-13" transform="translate(177.140625 0)"/>
+     <use xlink:href="#DejaVuSans-Bold-19" transform="translate(246.71875 0)"/>
     </g>
    </g>
    <g id="text_23">
