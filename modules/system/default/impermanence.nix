@@ -22,6 +22,12 @@
             description = "Enable fully impermanent mode - only persist bare minimum (machine-id and SSH host keys)";
           };
 
+          retentionDays = mkOption {
+            type = types.ints.positive;
+            default = 30;
+            description = "Delete impermanence snapshots older than this many days.";
+          };
+
           files = mkOption {
             type = types.listOf types.str;
             default = [ ];
@@ -120,48 +126,57 @@
 
             wipeScript = ''
               set -euo pipefail
-              mkdir -p /btrfs_root
-              mount ${btrfsDevice} /btrfs_root
 
-              # Move old root and home to old_roots with timestamp
-              mkdir -p /btrfs_root/old_roots
+              readonly btrfsBin="${btrfs-progs}/bin/btrfs"
+              readonly snapshotRoot=/btrfs_root
+
+              # The device node may not exist yet when this unit is queued.
+              for _ in {1..50}; do
+                [[ -e "${btrfsDevice}" ]] && break
+                sleep 0.2
+              done
+              if [[ ! -e "${btrfsDevice}" ]]; then
+                echo "impermanence: ${btrfsDevice} did not appear" >&2
+                exit 1
+              fi
+
+              mkdir -p "$snapshotRoot"
+              # Always use the top-level subvolume, regardless of the default subvolume.
+              mount -o subvolid=5 "${btrfsDevice}" "$snapshotRoot"
+              trap 'umount "$snapshotRoot" 2>/dev/null || true' EXIT
+
+              timestamp=$(date "+%Y-%m-%d_%H:%M:%S")
+              mkdir -p "$snapshotRoot/old_roots"
               for subvol in root home; do
-                if [[ -e /btrfs_root/$subvol ]]; then
-                  timestamp=$(date "+%Y-%m-%d_%H:%M:%S")
-                  mv /btrfs_root/$subvol "/btrfs_root/old_roots/$subvol-$timestamp"
+                if [[ -e "$snapshotRoot/$subvol" ]]; then
+                  mv "$snapshotRoot/$subvol" "$snapshotRoot/old_roots/$subvol-$timestamp"
                 fi
               done
 
-              # Create fresh root and home subvolumes
-              ${btrfs-progs}/bin/btrfs subvolume create /btrfs_root/root
-              ${btrfs-progs}/bin/btrfs subvolume create /btrfs_root/home
+              "$btrfsBin" subvolume create "$snapshotRoot/root"
+              "$btrfsBin" subvolume create "$snapshotRoot/home"
 
-              # Cleanup old roots older than 30 days
-              delete_subvolume_recursively() {
-                while IFS=' ' read -r _ _ _ _ _ _ _ _ subvol; do
-                  [[ -n "$subvol" ]] && delete_subvolume_recursively "/btrfs_root/$subvol"
-                done < <("${btrfs-progs}/bin/btrfs" subvolume list -o "$1" 2>/dev/null)
-                "${btrfs-progs}/bin/btrfs" subvolume delete "$1" 2>/dev/null || true
-              }
-
-              cutoff_date=$(date -d "30 days ago" +%s)
-              for old_root in /btrfs_root/old_roots/*; do
+              cutoff_date=$(date -d "${toString cfg.retentionDays} days ago" +%s)
+              deleted=0
+              for old_root in "$snapshotRoot"/old_roots/*; do
                 [[ -d "$old_root" ]] || continue
-                # Extract timestamp from name (format: subvol-YYYY-MM-DD_HH:MM:SS)
                 name="''${old_root##*/}"
-                if [[ "$name" =~ ^[a-z]+-([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}:[0-9]{2}:[0-9]{2})$ ]]; then
-                  backup_date="''${BASH_REMATCH[1]}"
+                [[ "$name" =~ ^[a-z]+-([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}:[0-9]{2}:[0-9]{2})$ ]] || continue
+                # tr avoids parameter-expansion escaping pitfalls inside Nix strings.
+                snapshot_date=$(tr '_' ' ' <<< "''${BASH_REMATCH[1]}")
+                backup_epoch=$(date -d "$snapshot_date" +%s 2>/dev/null) || continue
+                (( backup_epoch < cutoff_date )) || continue
+                if "$btrfsBin" subvolume delete -R "$old_root"; then
+                  deleted=$((deleted + 1))
                 else
-                  continue
-                fi
-                # Replace underscore with space for date parsing
-                backup_epoch=$(date -d "$${backup_date/_/ }" +%s 2>/dev/null) || continue
-                if [[ "$backup_epoch" -lt "$cutoff_date" ]]; then
-                  delete_subvolume_recursively "$old_root"
+                  echo "impermanence: failed to delete $old_root" >&2
                 fi
               done
+              echo "impermanence: removed $deleted snapshot(s) older than ${toString cfg.retentionDays} days"
 
-              umount /btrfs_root
+              if ! umount "$snapshotRoot"; then
+                echo "impermanence: failed to unmount $snapshotRoot" >&2
+              fi
             '';
           in
           mkIf cfg.enable {
@@ -180,10 +195,13 @@
                     "cryptsetup.target"
                     btrfsDeviceUnit # btrfsDeviceUnit is required to make sure block device was available before service starts
                   ];
-                  wants = [ btrfsDeviceUnit ];
+                  requires = [ btrfsDeviceUnit ];
                   before = [ "sysroot.mount" ];
                   unitConfig.DefaultDependencies = false;
-                  serviceConfig.Type = "oneshot";
+                  serviceConfig = {
+                    Type = "oneshot";
+                    RemainAfterExit = true;
+                  };
                   script = wipeScript;
                 };
               };
