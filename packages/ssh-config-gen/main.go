@@ -391,15 +391,17 @@ func splitList(value string) []string {
 	return out
 }
 
+// derivePubkey returns the OpenSSH public key line for a private key. An
+// unencrypted key is parsed directly, and the passphrase is only tried when
+// that fails. An entry's Password field is not necessarily the key's passphrase
+// (it may be set for an unrelated reason), and ParseRawPrivateKeyWithPassphrase
+// rejects an unencrypted key outright ("ssh: key is not password protected").
+// ParseRawPrivateKey reports an encrypted key with a PassphraseMissingError
+// before doing any crypto, so this order is both correct and cheap.
 func derivePubkey(raw []byte, passphrase string) (string, error) {
-	var (
-		key any
-		err error
-	)
-	if passphrase != "" {
+	key, err := ssh.ParseRawPrivateKey(raw)
+	if err != nil && passphrase != "" {
 		key, err = ssh.ParseRawPrivateKeyWithPassphrase(raw, []byte(passphrase))
-	} else {
-		key, err = ssh.ParseRawPrivateKey(raw)
 	}
 	if err != nil {
 		return "", err
