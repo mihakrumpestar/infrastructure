@@ -246,6 +246,58 @@ func TestDerivePubkey(t *testing.T) {
 	}
 }
 
+// TestDerivePubkeyPassphraseHandling guards the regression where an entry whose
+// Password field is set for an unrelated reason (so a passphrase is supplied)
+// but whose attached key is unencrypted was dropped: the passphrase parser
+// rejects an unencrypted key, so the unencrypted parse must be attempted first.
+func TestDerivePubkeyPassphraseHandling(t *testing.T) {
+	_, key, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	plainBlock, err := ssh.MarshalPrivateKey(key, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	plainPEM := pem.EncodeToMemory(plainBlock)
+
+	encBlock, err := ssh.MarshalPrivateKeyWithPassphrase(key, "", []byte("s3cret"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	encPEM := pem.EncodeToMemory(encBlock)
+
+	cases := []struct {
+		name       string
+		pem        []byte
+		passphrase string
+		wantErr    bool
+	}{
+		{"unencrypted/no passphrase", plainPEM, "", false},
+		{"unencrypted/with passphrase", plainPEM, "irrelevant", false},
+		{"encrypted/correct passphrase", encPEM, "s3cret", false},
+		{"encrypted/wrong passphrase", encPEM, "nope", true},
+		{"encrypted/no passphrase", encPEM, "", true},
+	}
+	for _, tc := range cases {
+		pub, err := derivePubkey(tc.pem, tc.passphrase)
+		if tc.wantErr {
+			if err == nil {
+				t.Errorf("%s: expected an error, got %q", tc.name, pub)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("%s: %v", tc.name, err)
+			continue
+		}
+		if !strings.HasPrefix(pub, "ssh-ed25519 ") {
+			t.Errorf("%s: got %q", tc.name, pub)
+		}
+	}
+}
+
 func TestCliArg(t *testing.T) {
 	cases := map[string]string{
 		"plain":         "plain",

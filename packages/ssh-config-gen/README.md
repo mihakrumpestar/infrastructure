@@ -86,7 +86,7 @@ Supported remotes are scp-like `[user@]<alias>:path` with any user; the alias ho
 
 ### The private key
 
-Attach the OpenSSH private key to the entry (**Advanced** -> **Attachments**), and set the SSH Agent tab to use that attachment. If the key file itself is passphrase-protected, put the passphrase in the entry's **Password** field; the tool uses it to derive the public key.
+Attach the OpenSSH private key to the entry (**Advanced** -> **Attachments**), and set the SSH Agent tab to use that attachment. If the key file itself is passphrase-protected, put the passphrase in the entry's **Password** field; the tool uses it to derive the public key. An unencrypted key is parsed directly, so a **Password** set for an unrelated reason does not break derivation.
 
 ## Home Manager / NixOS setup
 
@@ -200,7 +200,7 @@ Every run prunes stale outputs: `.pub` files that are no longer produced are rem
 - **`ssh-copy-id` needs `-f`.** The tool writes only public keys, so `ssh-copy-id -i <pub> host` fails its private-key check. Use `ssh-copy-id -f -i <pub> host`, or drop `-i` to use the agent's keys.
 - **`~/.ssh/config` include ordering.** Home Manager renders `Include` first, and OpenSSH is first-match-wins, so generated `Host` blocks shadow hand-written blocks for the same host. Do not define the same host in both places.
 - **One source of truth for `allowed_signers`.** If another module also writes `programs.git.settings.gpg.ssh.allowedSignersFile`, pick one owner. Set `git.enable = true` here only if you have removed the other definition.
-- **Key passphrase.** The entry's Password field is assumed to be the private key's passphrase. Non-OpenSSH key formats (`.ppk`, PKCS#12) are not supported.
+- **Key passphrase.** When the attached key is encrypted, the entry's Password field is used as its passphrase; an unencrypted key is parsed directly, so a Password set for an unrelated reason is harmless. Non-OpenSSH key formats (`.ppk`, PKCS#12) are not supported.
 - **Challenge-response needs no button press for unattended use.** If the YubiKey/OnlyKey slot requires a touch, a run cannot complete without one. Set the slot to "button press not required" (YubiKey: program without `-t`) if you want `service.watch` to run unattended; otherwise refresh from the tray so the touch happens on your terms.
 - **Do not put secrets in `passwordCommand`.** The value is stored in the world-readable Nix store and the unit file. Reference a secret path instead.
 

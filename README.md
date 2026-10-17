@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-10,963 non-blank lines, comments included and Markdown excluded.
+11,013 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -44,9 +44,9 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | modules/home     |   4,667 |
 | modules/users    |     207 |
 | modules (total)  |   7,871 |
-| packages (total) |   2,235 |
+| packages (total) |   2,285 |
 | lib (total)      |     739 |
-| **Total**        |  10,963 |
+| **Total**        |  11,013 |
 
 </details>
 <!-- FAST_END -->
