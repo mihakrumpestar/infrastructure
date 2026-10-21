@@ -1,17 +1,71 @@
-@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"); /* only needed once */
-
 /*
-#sidebar, #sidebar-header, #bookmarksPanel, #bookmarks-view, #history-panel, #historyTree {
-      background: var(--chrome-background-color) !important;
-      color: var(--chrome-color) !important;
-    }
-*/
+ * Sidebery sidebar integration, based on the current upstream snippet:
+ * https://github.com/mbnuqw/sidebery/blob/v5/README.md#how-to-hide-native-tabs
+ *
+ * Covers both markup generations so this keeps working when Firefox enables
+ * the sidebar revamp. LibreWolf 156 ships sidebar.revamp = false, so the
+ * pre-revamp selectors are the ones actually in effect today.
+ */
 
-#TabsToolbar, #sidebar-header /*, #sidebar-splitter*/ {
-  display: none;
+/* Sidebar header, revamp (#sidebar-panel-header) and pre-revamp (#sidebar-header) */
+#sidebar-panel-header,
+#sidebar-header {
+  display: none !important;
 }
 
-/* Completely (almost) hide in fullscreen */
+/* Hide the native horizontal tab strip.
+ * The upstream snippet keeps the toolbar container and hides its children so
+ * window dragging and window controls keep working. On Linux the titlebar is
+ * native, so hiding the whole toolbar is also safe; that variant is commented
+ * out at the bottom if the container ever leaves an empty strip. */
+#TabsToolbar > * {
+  display: none !important;
+}
+
+/* Revamp sidebar shell: launcher, native vertical tabs, launcher splitter.
+ * These elements do not exist with sidebar.revamp = false. */
+#sidebar-main,
+#sidebar-container,
+#sidebar-launcher-splitter {
+  display: none !important;
+}
+
+/* Let Sidebery sit flush: no padding, border or rounding from the sidebar box */
+#sidebar-box {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+#sidebar-box #sidebar {
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+}
+
+#sidebar-splitter {
+  --splitter-width: 3px !important;
+  min-width: var(--splitter-width) !important;
+  width: var(--splitter-width) !important;
+  padding: 0 !important;
+  margin: 0 calc(-1 * var(--splitter-width) + 1px) 0 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Blend the top window border into the nav-bar */
+#nav-bar {
+  border-color: transparent !important;
+}
+
+/* Sidebery controls its own width, this only removes the hard limits */
+#sidebar {
+  min-width: 10px !important;
+  max-width: none !important;
+}
+
+/* Almost completely hide the sidebar in fullscreen */
 #main-window[inFullscreen] #appcontent {
   margin-left: 1px;
 }
@@ -20,12 +74,12 @@
   width: 1px !important;
 }
 
-#sidebar {
-  min-width: 10px !important;
-  max-width: none !important;
-}
-
-/* Disable "Bookmark this page" button in the location bar */
+/* Disable the "Bookmark this page" button in the location bar */
 #star-button-box {
   display: none !important;
 }
+
+/* Fallback for the tab strip: use this instead of the #TabsToolbar > * rule
+ * above if an empty toolbar strip remains visible.
+ * #TabsToolbar { display: none !important; }
+ */

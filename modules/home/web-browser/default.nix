@@ -116,9 +116,7 @@
                   # "name" = "ID";
                   "ublock-origin" = "uBlock0@raymondhill.net";
                   "darkreader" = "addon@darkreader.org";
-                  "gitowl" = "gitowl@gitowl.dev";
                   "imagus" = "{00000f2a-7cde-4f20-83ed-434fcb420d71}";
-                  "medium-parser" = "medium-parser@example.com";
                   "tabliss" = "extension@tabliss.io";
                   "traduzir-paginas-web" = "{036a55b4-5e72-4d05-a06c-cba2dfcc134a}";
                   "nicothin-space" = "{22b0eca1-8c02-4c0d-a5d7-6604ddd9836e}";
@@ -134,8 +132,6 @@
                   "karakeep" = "addon@karakeep.app";
                   "unpaywall" = "{f209234a-76f0-4735-9920-eb62507a54cd}";
                   "enhancer-for-youtube" = "enhancerforyoutube@maximerf.addons.mozilla.org";
-                  "wappalyzer" = "wappalyzer@crunchlabz.com";
-                  "spoof-timezone" = "{55f61747-c3d3-4425-97f9-dfc19a0be23c}";
                   "qr-code-2" = "{9c0bf749-dacb-426c-8f70-882832dc6853}";
                   "addy_io" = "browser-extension@anonaddy";
                 };
