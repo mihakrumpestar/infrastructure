@@ -11,7 +11,8 @@
   },
   "files.associations": {
     "devbox.json": "jsonc",
-    "*.tpl": "hcl"
+    "*.tpl": "hcl",
+    "*.yaml.gotmpl": "go-template" // joelhill.go-template
   },
   "diffEditor.ignoreTrimWhitespace": false,
   "notebook.lineNumbers": "on",

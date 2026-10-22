@@ -140,6 +140,7 @@
 
                 # Go
                 golang.go
+                joelhill.go-template # Go template syntax for *.yaml.gotmpl
 
                 # Python
                 detachhead.basedpyright
