@@ -1,0 +1,991 @@
+package main
+
+import (
+	"bytes"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/xml"
+	"errors"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"keepass-config-gen/internal/gen"
+	"keepass-config-gen/internal/keepass"
+	"keepass-config-gen/internal/remmina"
+)
+
+const xmlPassword = "XML-PASSWORD-MUST-NOT-LEAK"
+
+var (
+	uuidWorkstation = []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0, 0, 0, 0, 0, 0, 0, 1}
+	uuidJump        = []byte{0xde, 0xad, 0xbe, 0xef, 0x11, 0x22, 0x33, 0x44, 0, 0, 0, 0, 0, 0, 0, 2}
+	uuidIgnored     = []byte{0xaa, 0xbb, 0xcc, 0xdd, 0x55, 0x66, 0x77, 0x88, 0, 0, 0, 0, 0, 0, 0, 3}
+)
+
+type xmlEntryFixture struct {
+	uuid     []byte
+	title    string
+	username string
+	hosts    string
+}
+
+type fixture struct {
+	dir       string
+	xmlPath   string
+	dataDir   string
+	stateFile string
+	logFile   string
+	callLog   string
+	svc       *fakeService
+	o         options
+}
+
+type fakeService struct {
+	errs        map[string]error
+	visible     map[string]bool
+	visibleErrs map[string]error
+	calls       []string
+	files       map[string]string
+}
+
+func newFakeService() *fakeService {
+	return &fakeService{
+		errs:        make(map[string]error),
+		visible:     make(map[string]bool),
+		visibleErrs: make(map[string]error),
+		files:       make(map[string]string),
+	}
+}
+
+func (s *fakeService) SetProfile(entryUUID, filename string) error {
+	s.calls = append(s.calls, filename)
+	if err := s.errs[entryUUID]; err != nil {
+		return err
+	}
+	s.files[entryUUID] = filename
+	return nil
+}
+
+func (s *fakeService) Visible(entryUUID string) (bool, error) {
+	if err := s.visibleErrs[entryUUID]; err != nil {
+		return false, err
+	}
+	if visible, ok := s.visible[entryUUID]; ok {
+		return visible, nil
+	}
+	return true, nil
+}
+
+func writeTestFile(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func xmlEscape(value string) string {
+	var builder bytes.Buffer
+	_ = xml.EscapeText(&builder, []byte(value))
+	return builder.String()
+}
+
+func buildXML(entries ...xmlEntryFixture) string {
+	var builder strings.Builder
+	builder.WriteString("<KeePassFile><Root><Group><Name>Root</Name>")
+	for _, entry := range entries {
+		builder.WriteString("<Entry><UUID>")
+		builder.WriteString(base64.StdEncoding.EncodeToString(entry.uuid))
+		builder.WriteString("</UUID>")
+		values := []struct{ key, value string }{
+			{"Title", entry.title},
+			{"UserName", entry.username},
+			{"Password", xmlPassword},
+		}
+		if entry.hosts != "" {
+			values = append(values, struct{ key, value string }{"remmina_hosts", entry.hosts})
+		}
+		for _, item := range values {
+			builder.WriteString("<String><Key>" + item.key + "</Key><Value>" + xmlEscape(item.value) + "</Value></String>")
+		}
+		builder.WriteString("</Entry>")
+	}
+	builder.WriteString("</Group></Root></KeePassFile>")
+	return builder.String()
+}
+
+func fakeCLI(t *testing.T, dir, xmlPath string) (script, callLog string) {
+	t.Helper()
+	script = filepath.Join(dir, "keepassxc-cli")
+	callLog = filepath.Join(dir, "calls")
+	body := fmt.Sprintf("#!/bin/sh\nprintf '%%s\\n' \"$*\" >> %q\ncase \"$1\" in\nexport) cat %q ;;\nesac\n", callLog, xmlPath)
+	if err := os.WriteFile(script, []byte(body), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	return script, callLog
+}
+
+func setupFixture(t *testing.T, entries ...xmlEntryFixture) *fixture {
+	t.Helper()
+	dir := t.TempDir()
+	xmlPath := filepath.Join(dir, "db.xml")
+	writeTestFile(t, xmlPath, buildXML(entries...))
+	script, callLog := fakeCLI(t, dir, xmlPath)
+
+	dbPath := filepath.Join(dir, "db.kdbx")
+	writeTestFile(t, dbPath, "fake database")
+
+	f := &fixture{
+		dir:       dir,
+		xmlPath:   xmlPath,
+		dataDir:   filepath.Join(dir, "profiles"),
+		stateFile: filepath.Join(dir, "state"),
+		logFile:   filepath.Join(dir, "log"),
+		callLog:   callLog,
+		svc:       newFakeService(),
+	}
+	f.o = options{
+		Options: keepass.Options{
+			Database:   dbPath,
+			CLI:        script,
+			NoPassword: true,
+		},
+		OutputDir:   f.dataDir,
+		RemminaPref: filepath.Join(dir, "remmina.pref"),
+		Prefix:      "keepass_",
+		StateFile:   f.stateFile,
+		LogFile:     f.logFile,
+	}
+	return f
+}
+
+func standardEntries() []xmlEntryFixture {
+	return []xmlEntryFixture{
+		{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10 group=Lab quality=9"},
+		{uuidJump, "Jump Host", "default", `name="Jump Box" server=jump.example.com protocol=VNC username=bob`},
+		{uuidIgnored, "Ignored", "nobody", ""},
+	}
+}
+
+func uuidHex(raw []byte) string { return hex.EncodeToString(raw) }
+
+func profilePaths(f *fixture) (workstation, jump string) {
+	return filepath.Join(f.dataDir, "keepass_workstation-"+uuidHex(uuidWorkstation)+".remmina"),
+		filepath.Join(f.dataDir, "keepass_jump_host-"+uuidHex(uuidJump)+".remmina")
+}
+
+func expectedWorkstation() string {
+	return "# Generated by remmina-config-gen. Do not edit by hand.\n" +
+		"[remmina]\n" +
+		"name=Workstation\n" +
+		"protocol=RDP\n" +
+		"server=192.0.2.10\n" +
+		"username=alice\n" +
+		"password=.\n" +
+		"group=Lab\n" +
+		"quality=9\n"
+}
+
+func expectedJump() string {
+	return "# Generated by remmina-config-gen. Do not edit by hand.\n" +
+		"[remmina]\n" +
+		"name=Jump Box\n" +
+		"protocol=VNC\n" +
+		"server=jump.example.com\n" +
+		"username=bob\n" +
+		"password=.\n"
+}
+
+func captureStream(t *testing.T, stream **os.File, fn func() error) (string, error) {
+	t.Helper()
+	original := *stream
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	*stream = writer
+	runErr := fn()
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	*stream = original
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = reader.Close()
+	return string(data), runErr
+}
+
+func captureStdout(t *testing.T, fn func() error) (string, error) {
+	t.Helper()
+	return captureStream(t, &os.Stdout, fn)
+}
+
+func captureStderr(t *testing.T, fn func() error) (string, error) {
+	t.Helper()
+	return captureStream(t, &os.Stderr, fn)
+}
+
+func assertNoSecret(t *testing.T, path, secret string) {
+	t.Helper()
+	err := filepath.WalkDir(path, func(file string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		data, err := os.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		if strings.Contains(string(data), secret) {
+			t.Errorf("%s contains the database password", file)
+		}
+		return nil
+	})
+	if err != nil && !os.IsNotExist(err) {
+		t.Fatal(err)
+	}
+}
+
+func TestGenerateEndToEnd(t *testing.T) {
+	f := setupFixture(t, standardEntries()...)
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+
+	workstationPath, jumpPath := profilePaths(f)
+	for path, want := range map[string]string{
+		workstationPath: expectedWorkstation(),
+		jumpPath:        expectedJump(),
+	} {
+		got, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(got) != want {
+			t.Errorf("%s:\n%s\nwant:\n%s", path, got, want)
+		}
+		if strings.Contains(string(got), xmlPassword) || strings.Contains(string(got), "must-not-leak") {
+			t.Errorf("%s contains a password", path)
+		}
+		if strings.Count(string(got), "password=") != 1 {
+			t.Errorf("%s has more than one password key:\n%s", path, got)
+		}
+	}
+
+	if len(f.svc.calls) != 2 {
+		t.Fatalf("SetProfile calls = %d, want 2", len(f.svc.calls))
+	}
+	for uuid, path := range map[string]string{
+		uuidHex(uuidWorkstation): workstationPath,
+		uuidHex(uuidJump):        jumpPath,
+	} {
+		if f.svc.files[uuid] != path {
+			t.Errorf("SetProfile(%s) = %q, want %q", uuid, f.svc.files[uuid], path)
+		}
+	}
+
+	state, err := os.ReadFile(f.stateFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(strings.TrimRight(string(state), "\n"), "\n")
+	if len(lines) != 4 {
+		t.Fatalf("state lines = %d, want 4:\n%s", len(lines), state)
+	}
+	if lines[0] != "v1" {
+		t.Errorf("state version = %q, want v1", lines[0])
+	}
+	if len(lines[1]) != 64 {
+		t.Errorf("state key = %q, want 64 hex characters", lines[1])
+	}
+	if lines[2] != workstationPath || lines[3] != jumpPath {
+		t.Errorf("state paths = %v", lines[2:])
+	}
+
+	// A second run must produce byte-identical profiles.
+	first, _ := os.ReadFile(workstationPath)
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	second, _ := os.ReadFile(workstationPath)
+	if !bytes.Equal(first, second) {
+		t.Fatal("generated profile is not deterministic")
+	}
+}
+
+func TestGenerateRejectsInvalidHosts(t *testing.T) {
+	cases := map[string]struct {
+		hosts string
+		want  string
+	}{
+		"inline password": {"server=host password=nope", "password"},
+		"missing server":  {"group=Lab", "no server"},
+		"two lines":       {"server=a\nserver=b", "exactly 1"},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Host", "user", tc.hosts})
+			err := generateWith(f.o, f.svc)
+			if err == nil || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("error = %v, want %q", err, tc.want)
+			}
+			if len(f.svc.calls) != 0 {
+				t.Fatalf("SetProfile called for an invalid profile")
+			}
+			if entries, _ := os.ReadDir(f.dataDir); len(entries) != 0 {
+				t.Fatalf("profiles written for an invalid entry: %v", entries)
+			}
+		})
+	}
+}
+
+func TestGenerateLockedDoesNotWrite(t *testing.T) {
+	f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10"})
+	f.svc.errs[uuidHex(uuidWorkstation)] = remmina.ErrLocked
+
+	err := generateWith(f.o, f.svc)
+	if err == nil || !strings.Contains(err.Error(), "unlock KeePassXC") {
+		t.Fatalf("error = %v", err)
+	}
+	path, _ := profilePaths(f)
+	if _, statErr := os.Stat(path); !os.IsNotExist(statErr) {
+		t.Fatalf("profile was written while locked: %v", statErr)
+	}
+	if _, statErr := os.Stat(f.stateFile); !os.IsNotExist(statErr) {
+		t.Fatalf("state was written while locked: %v", statErr)
+	}
+}
+
+func TestGenerateNotFoundSkipsAndKeepsState(t *testing.T) {
+	f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10"})
+	f.svc.errs[uuidHex(uuidWorkstation)] = remmina.ErrNotFound
+
+	stderr, err := captureStderr(t, func() error { return generateWith(f.o, f.svc) })
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+	path, _ := profilePaths(f)
+	if _, statErr := os.Stat(path); !os.IsNotExist(statErr) {
+		t.Fatalf("profile was written for a missing entry: %v", statErr)
+	}
+	if _, statErr := os.Stat(f.stateFile); !os.IsNotExist(statErr) {
+		t.Fatalf("state was written for an incomplete run: %v", statErr)
+	}
+	for _, want := range []string{"not in the exposed Secret Service group", "wrote 0 profiles", "1 skipped"} {
+		if !strings.Contains(stderr, want) {
+			t.Errorf("stderr missing %q:\n%s", want, stderr)
+		}
+	}
+}
+
+func TestCheckDetectsDrift(t *testing.T) {
+	f := setupFixture(t, standardEntries()...)
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	workstationPath, _ := profilePaths(f)
+
+	check := f.o
+	check.Check = true
+	f.svc.calls = nil
+	if err := generateWith(check, f.svc); err != nil {
+		t.Fatalf("check on fresh output: %v", err)
+	}
+	if len(f.svc.calls) != 0 {
+		t.Fatalf("--check called SetProfile")
+	}
+
+	writeTestFile(t, workstationPath, "mutated")
+	if err := generateWith(check, f.svc); !errors.Is(err, gen.ErrChanged) {
+		t.Fatalf("check with mutated profile = %v, want errChanged", err)
+	}
+
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	stale := filepath.Join(f.dataDir, "keepass_stale-00000000.remmina")
+	writeTestFile(t, stale, "stale")
+	if err := generateWith(check, f.svc); !errors.Is(err, gen.ErrChanged) {
+		t.Fatalf("check with stale managed file = %v, want errChanged", err)
+	}
+
+	if err := os.Remove(workstationPath); err != nil {
+		t.Fatal(err)
+	}
+	if err := generateWith(check, f.svc); !errors.Is(err, gen.ErrChanged) {
+		t.Fatalf("check with missing profile = %v, want errChanged", err)
+	}
+
+	// A normal run restores the profile and prunes the stale one.
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(stale); !os.IsNotExist(err) {
+		t.Fatalf("stale managed file was not pruned: %v", err)
+	}
+}
+
+func TestIfChangedSkipsAndRegeneratesMissingFile(t *testing.T) {
+	f := setupFixture(t, standardEntries()...)
+	f.o.IfChanged = true
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(f.callLog)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	after, err := os.ReadFile(f.callLog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(before, after) {
+		t.Fatalf("keepassxc-cli was called on an unchanged database:\nbefore:\n%s\nafter:\n%s", before, after)
+	}
+
+	workstationPath, _ := profilePaths(f)
+	if err := os.Remove(workstationPath); err != nil {
+		t.Fatal(err)
+	}
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(workstationPath); err != nil {
+		t.Fatalf("missing profile was not regenerated: %v", err)
+	}
+	afterRegenerate, err := os.ReadFile(f.callLog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Equal(after, afterRegenerate) {
+		t.Fatal("keepassxc-cli was not called after a profile disappeared")
+	}
+}
+
+func TestPruneOnlyManagedFiles(t *testing.T) {
+	f := setupFixture(t, standardEntries()...)
+	if err := os.MkdirAll(f.dataDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	stale := filepath.Join(f.dataDir, "keepass_stale-00000000.remmina")
+	foreign := filepath.Join(f.dataDir, "other-00000000.remmina")
+	notes := filepath.Join(f.dataDir, "notes.txt")
+	prefixedNotes := filepath.Join(f.dataDir, "keepass_notes.txt")
+	for _, path := range []string{stale, foreign, notes, prefixedNotes} {
+		writeTestFile(t, path, "keep")
+	}
+	if err := os.MkdirAll(filepath.Join(f.dataDir, "keepass_dir.remmina"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(stale); !os.IsNotExist(err) {
+		t.Fatalf("stale managed file was not pruned: %v", err)
+	}
+	for _, path := range []string{foreign, notes, prefixedNotes, filepath.Join(f.dataDir, "keepass_dir.remmina")} {
+		if _, err := os.Stat(path); err != nil {
+			t.Errorf("%s was removed: %v", path, err)
+		}
+	}
+}
+
+func TestPrintAndSecretNeverLeaks(t *testing.T) {
+	f := setupFixture(t, standardEntries()...)
+	printOpts := f.o
+	printOpts.ToStdout = true
+
+	stdout, err := captureStdout(t, func() error { return generateWith(printOpts, f.svc) })
+	if err != nil {
+		t.Fatalf("print: %v", err)
+	}
+	for _, want := range []string{
+		"# keepass_workstation-" + uuidHex(uuidWorkstation) + ".remmina",
+		"# keepass_jump_host-" + uuidHex(uuidJump) + ".remmina",
+		"password=.",
+	} {
+		if !strings.Contains(stdout, want) {
+			t.Errorf("stdout missing %q:\n%s", want, stdout)
+		}
+	}
+	if strings.Contains(stdout, xmlPassword) {
+		t.Fatal("stdout contains the database password")
+	}
+	if len(f.svc.calls) != 0 {
+		t.Fatal("--print called SetProfile")
+	}
+	if entries, _ := os.ReadDir(f.dataDir); len(entries) != 0 {
+		t.Fatalf("--print wrote files: %v", entries)
+	}
+	if _, err := os.Stat(f.stateFile); !os.IsNotExist(err) {
+		t.Fatalf("--print wrote state: %v", err)
+	}
+
+	stderr, err := captureStderr(t, func() error { return generateWith(f.o, f.svc) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(stderr, xmlPassword) {
+		t.Fatal("stderr contains the database password")
+	}
+	assertNoSecret(t, f.dataDir, xmlPassword)
+	assertNoSecret(t, f.stateFile, xmlPassword)
+	if _, err := os.Stat(f.logFile); err == nil {
+		assertNoSecret(t, f.logFile, xmlPassword)
+	}
+}
+
+func TestGenerateRejectsUnsafePrefix(t *testing.T) {
+	cases := map[string]string{
+		"parent traversal": "../escaped_",
+		"nested path":      "sub/keepass_",
+		"absolute path":    "/abs",
+		"dot dot":          "..",
+	}
+	for name, prefix := range cases {
+		t.Run(name, func(t *testing.T) {
+			f := setupFixture(t, standardEntries()...)
+			f.o.Prefix = prefix
+			err := generateWith(f.o, f.svc)
+			if err == nil {
+				t.Fatalf("prefix %q was accepted", prefix)
+			}
+			if len(f.svc.calls) != 0 {
+				t.Fatalf("SetProfile called for an unsafe prefix: %v", f.svc.calls)
+			}
+			var profiles []string
+			walkErr := filepath.WalkDir(f.dir, func(path string, entry fs.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+				if !entry.IsDir() && strings.HasSuffix(path, ".remmina") {
+					profiles = append(profiles, path)
+				}
+				return nil
+			})
+			if walkErr != nil {
+				t.Fatal(walkErr)
+			}
+			if len(profiles) != 0 {
+				t.Fatalf("profiles written for unsafe prefix %q: %v", prefix, profiles)
+			}
+		})
+	}
+
+	f := setupFixture(t, standardEntries()...)
+	f.o.Prefix = "custom_"
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatalf("valid prefix rejected: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(f.dataDir, "custom_workstation-"+uuidHex(uuidWorkstation)+".remmina")); err != nil {
+		t.Fatalf("valid prefix profile missing: %v", err)
+	}
+}
+
+func TestGenerateRejectsDuplicateProfilePath(t *testing.T) {
+	f := setupFixture(t,
+		xmlEntryFixture{uuidWorkstation, "Same", "alice", "server=a"},
+		xmlEntryFixture{uuidWorkstation, "Same", "bob", "server=b"},
+	)
+	err := generateWith(f.o, f.svc)
+	if err == nil || !strings.Contains(err.Error(), "same profile path") || !strings.Contains(err.Error(), "Same") {
+		t.Fatalf("error = %v, want duplicate path conflict", err)
+	}
+	if len(f.svc.calls) != 0 {
+		t.Fatalf("SetProfile called before duplicate detection: %v", f.svc.calls)
+	}
+	if entries, readErr := os.ReadDir(f.dataDir); readErr == nil && len(entries) != 0 {
+		t.Fatalf("profiles written despite duplicate path: %v", entries)
+	}
+}
+
+func TestGenerateKeepsEntriesWithSharedUUIDPrefix(t *testing.T) {
+	uuidA := []byte{1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	uuidB := []byte{1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2}
+	f := setupFixture(t,
+		xmlEntryFixture{uuidA, "Shared", "alice", "server=a"},
+		xmlEntryFixture{uuidB, "Shared", "bob", "server=b"},
+	)
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	for _, uuid := range [][]byte{uuidA, uuidB} {
+		path := filepath.Join(f.dataDir, "keepass_shared-"+uuidHex(uuid)+".remmina")
+		if _, err := os.Stat(path); err != nil {
+			t.Errorf("profile %s missing: %v", path, err)
+		}
+	}
+	if len(f.svc.calls) != 2 {
+		t.Fatalf("SetProfile calls = %d, want 2", len(f.svc.calls))
+	}
+}
+
+func TestIfChangedDoesNotBypassCheckOrPrint(t *testing.T) {
+	f := setupFixture(t, standardEntries()...)
+	f.o.IfChanged = true
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	workstationPath, _ := profilePaths(f)
+
+	check := f.o
+	check.Check = true
+	writeTestFile(t, workstationPath, "mutated")
+	if err := generateWith(check, f.svc); !errors.Is(err, gen.ErrChanged) {
+		t.Fatalf("--if-changed --check = %v, want errChanged", err)
+	}
+
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	printOpts := f.o
+	printOpts.ToStdout = true
+	f.svc.calls = nil
+	stdout, err := captureStdout(t, func() error { return generateWith(printOpts, f.svc) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(stdout, "password=.") {
+		t.Fatalf("--if-changed --print produced no profiles:\n%s", stdout)
+	}
+	if len(f.svc.calls) != 0 {
+		t.Fatal("--if-changed --print called SetProfile")
+	}
+}
+
+func TestIncompleteRunForcesRegeneration(t *testing.T) {
+	f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10"})
+	f.o.IfChanged = true
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	callsAfterSuccess := len(f.svc.calls)
+	if !gen.FileExists(f.stateFile) {
+		t.Fatal("complete run did not write state")
+	}
+
+	// Change the database so --if-changed does not short-circuit before the
+	// transient Secret Service failure can be observed.
+	info, err := os.Stat(f.o.Database)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(f.o.Database, info.ModTime().Add(time.Second), info.ModTime().Add(time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	f.svc.errs[uuidHex(uuidWorkstation)] = remmina.ErrNotFound
+	if _, err := captureStderr(t, func() error { return generateWith(f.o, f.svc) }); err != nil {
+		t.Fatal(err)
+	}
+	if gen.FileExists(f.stateFile) {
+		t.Fatal("incomplete run left the previous state in place")
+	}
+
+	delete(f.svc.errs, uuidHex(uuidWorkstation))
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.svc.calls) <= callsAfterSuccess {
+		t.Fatalf("recovery run did not call SetProfile again: before=%d after=%d", callsAfterSuccess, len(f.svc.calls))
+	}
+	if !gen.FileExists(f.stateFile) {
+		t.Fatal("recovery run did not restore state")
+	}
+}
+
+func TestFailedServiceCallLeavesNoStateAndRetries(t *testing.T) {
+	f := setupFixture(t, standardEntries()...)
+	f.o.IfChanged = true
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	if !gen.FileExists(f.stateFile) {
+		t.Fatal("initial run did not write state")
+	}
+	callsAfterSuccess := len(f.svc.calls)
+
+	// Change the database so --if-changed does not short-circuit before the
+	// transient failure can be observed.
+	info, err := os.Stat(f.o.Database)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(f.o.Database, info.ModTime().Add(time.Second), info.ModTime().Add(time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	f.svc.errs[uuidHex(uuidJump)] = errors.New("denied")
+
+	err = generateWith(f.o, f.svc)
+	if err == nil || !strings.Contains(err.Error(), "denied") {
+		t.Fatalf("error = %v, want the service failure", err)
+	}
+	if len(f.svc.calls) != callsAfterSuccess+2 {
+		t.Fatalf("SetProfile calls = %d, want the first success and the failure", len(f.svc.calls))
+	}
+	if gen.FileExists(f.stateFile) {
+		t.Fatal("failed service call left the previous state behind")
+	}
+
+	delete(f.svc.errs, uuidHex(uuidJump))
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	if !gen.FileExists(f.stateFile) {
+		t.Fatal("retry did not write state")
+	}
+	if len(f.svc.calls) != callsAfterSuccess+4 {
+		t.Fatalf("retry did not call SetProfile for every entry: %d calls", len(f.svc.calls))
+	}
+}
+
+func TestIncompleteTitleChangePreservesOldProfile(t *testing.T) {
+	f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Old Title", "alice", "server=192.0.2.10"})
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	oldPath := filepath.Join(f.dataDir, "keepass_old_title-"+uuidHex(uuidWorkstation)+".remmina")
+	if !gen.FileExists(oldPath) {
+		t.Fatal("old profile was not written")
+	}
+
+	writeTestFile(t, f.xmlPath, buildXML(xmlEntryFixture{
+		uuidWorkstation, "New Title", "alice", "server=192.0.2.10",
+	}))
+	// Change the database so --if-changed does not short-circuit before the
+	// transient Secret Service failure can be observed.
+	info, err := os.Stat(f.o.Database)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(f.o.Database, info.ModTime().Add(time.Second), info.ModTime().Add(time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	f.svc.errs[uuidHex(uuidWorkstation)] = remmina.ErrNotFound
+	if _, err := captureStderr(t, func() error { return generateWith(f.o, f.svc) }); err != nil {
+		t.Fatal(err)
+	}
+
+	if !gen.FileExists(oldPath) {
+		t.Fatal("incomplete run pruned the old profile")
+	}
+	newPath := filepath.Join(f.dataDir, "keepass_new_title-"+uuidHex(uuidWorkstation)+".remmina")
+	if gen.FileExists(newPath) {
+		t.Fatal("incomplete run wrote the new profile")
+	}
+	if gen.FileExists(f.stateFile) {
+		t.Fatal("incomplete run wrote state")
+	}
+}
+
+func TestCheckUsesSecretServiceVisibility(t *testing.T) {
+	f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10"})
+	check := f.o
+	check.Check = true
+	uuid := uuidHex(uuidWorkstation)
+
+	f.svc.visible[uuid] = false
+	if err := generateWith(check, f.svc); err != nil {
+		t.Fatalf("check with an unexposed entry: %v", err)
+	}
+	if len(f.svc.calls) != 0 {
+		t.Fatal("--check called SetProfile")
+	}
+
+	f.svc.visible[uuid] = true
+	if err := generateWith(check, f.svc); !errors.Is(err, gen.ErrChanged) {
+		t.Fatalf("check with a visible entry = %v, want errChanged", err)
+	}
+
+	f.svc.visibleErrs[uuid] = errors.New("locked")
+	if err := generateWith(check, f.svc); err == nil || !strings.Contains(err.Error(), "visibility") {
+		t.Fatalf("check visibility error = %v", err)
+	}
+
+	// An existing profile for an entry that later becomes unexposed is kept by
+	// a normal run, so --check must not report it as stale.
+	delete(f.svc.visibleErrs, uuid)
+	f.svc.visible[uuid] = true
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	f.svc.visible[uuid] = false
+	if err := generateWith(check, f.svc); err != nil {
+		t.Fatalf("check with a preserved unexposed profile: %v", err)
+	}
+}
+
+func TestCheckSkipsStaleDetectionWhenEntryInvisible(t *testing.T) {
+	uuid := uuidHex(uuidWorkstation)
+	check := func(f *fixture) error {
+		opts := f.o
+		opts.Check = true
+		return generateWith(opts, f.svc)
+	}
+
+	t.Run("title change keeps old profile", func(t *testing.T) {
+		f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Old Title", "alice", "server=192.0.2.10"})
+		if err := generateWith(f.o, f.svc); err != nil {
+			t.Fatal(err)
+		}
+		oldPath := filepath.Join(f.dataDir, "keepass_old_title-"+uuid+".remmina")
+		if !gen.FileExists(oldPath) {
+			t.Fatal("old profile was not written")
+		}
+		writeTestFile(t, f.xmlPath, buildXML(xmlEntryFixture{
+			uuidWorkstation, "New Title", "alice", "server=192.0.2.10",
+		}))
+		f.svc.visible[uuid] = false
+		if err := check(f); err != nil {
+			t.Fatalf("check with an invisible renamed entry: %v", err)
+		}
+		if !gen.FileExists(oldPath) {
+			t.Fatal("check removed the old profile")
+		}
+	})
+
+	t.Run("unrelated stale file is ignored", func(t *testing.T) {
+		f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10"})
+		if err := generateWith(f.o, f.svc); err != nil {
+			t.Fatal(err)
+		}
+		stale := filepath.Join(f.dataDir, "keepass_stale-00000000.remmina")
+		writeTestFile(t, stale, "stale")
+		f.svc.visible[uuid] = false
+		if err := check(f); err != nil {
+			t.Fatalf("check with an invisible entry and a stale file: %v", err)
+		}
+	})
+
+	t.Run("visible entries still detect stale files", func(t *testing.T) {
+		f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10"})
+		if err := generateWith(f.o, f.svc); err != nil {
+			t.Fatal(err)
+		}
+		writeTestFile(t, filepath.Join(f.dataDir, "keepass_stale-00000000.remmina"), "stale")
+		f.svc.visible[uuid] = true
+		if err := check(f); !errors.Is(err, gen.ErrChanged) {
+			t.Fatalf("check with a visible entry and a stale file = %v, want errChanged", err)
+		}
+	})
+}
+
+func TestCheckToleratesUnavailableSecretService(t *testing.T) {
+	f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10"})
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	uuid := uuidHex(uuidWorkstation)
+	f.svc.visibleErrs[uuid] = remmina.ErrUnavailable
+
+	check := f.o
+	check.Check = true
+	stderr, err := captureStderr(t, func() error { return generateWith(check, f.svc) })
+	if err != nil {
+		t.Fatalf("check without a Secret Service: %v", err)
+	}
+	if !strings.Contains(stderr, "Secret Service unavailable") {
+		t.Fatalf("check did not warn about the missing service:\n%s", stderr)
+	}
+
+	f.svc.visibleErrs[uuid] = remmina.ErrLocked
+	if err := generateWith(check, f.svc); err == nil || !strings.Contains(err.Error(), "visibility") {
+		t.Fatalf("check with a locked service = %v, want an error", err)
+	}
+}
+
+func TestUUIDRequiredInEveryMode(t *testing.T) {
+	cases := map[string]struct {
+		uuid []byte
+	}{
+		"empty UUID":        {nil},
+		"wrong-length UUID": {[]byte{1, 2, 3, 4}},
+	}
+	modes := map[string]func(options) options{
+		"print": func(o options) options { o.ToStdout = true; return o },
+		"check": func(o options) options { o.Check = true; return o },
+	}
+	for caseName, tc := range cases {
+		for modeName, mode := range modes {
+			t.Run(caseName+"/"+modeName, func(t *testing.T) {
+				f := setupFixture(t, xmlEntryFixture{tc.uuid, "Host", "user", "server=192.0.2.10"})
+				err := generateWith(mode(f.o), f.svc)
+				if err == nil || !strings.Contains(err.Error(), "UUID") {
+					t.Fatalf("error = %v, want a UUID error", err)
+				}
+				if len(f.svc.calls) != 0 {
+					t.Fatalf("SetProfile called with an invalid UUID: %v", f.svc.calls)
+				}
+			})
+		}
+	}
+}
+
+func TestIfChangedIncludesDatabasePath(t *testing.T) {
+	f := setupFixture(t, xmlEntryFixture{uuidWorkstation, "Workstation", "alice", "server=192.0.2.10"})
+	f.o.IfChanged = true
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(f.callLog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(f.o.Database)
+	if err != nil {
+		t.Fatal(err)
+	}
+	secondDB := filepath.Join(f.dir, "second.kdbx")
+	writeTestFile(t, secondDB, "fake database")
+	if err := os.Chtimes(secondDB, info.ModTime(), info.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	if secondInfo, statErr := os.Stat(secondDB); statErr != nil || secondInfo.Size() != info.Size() {
+		t.Fatalf("second database does not share the fingerprint: %v", statErr)
+	}
+
+	f.o.Database = secondDB
+	if err := generateWith(f.o, f.svc); err != nil {
+		t.Fatal(err)
+	}
+	after, err := os.ReadFile(f.callLog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Equal(before, after) {
+		t.Fatal("switching databases with the same fingerprint skipped regeneration")
+	}
+}
+
+func TestInvalidLaterEntryDoesNotMutateEarlierOne(t *testing.T) {
+	f := setupFixture(t,
+		xmlEntryFixture{uuidWorkstation, "Valid", "alice", "server=192.0.2.10"},
+		xmlEntryFixture{uuidJump, "Invalid", "bob", "group=Lab"},
+	)
+	err := generateWith(f.o, f.svc)
+	if err == nil || !strings.Contains(err.Error(), "no server") {
+		t.Fatalf("error = %v, want invalid second entry", err)
+	}
+	if len(f.svc.calls) != 0 {
+		t.Fatalf("SetProfile called before all entries were validated: %v", f.svc.calls)
+	}
+	if entries, readErr := os.ReadDir(f.dataDir); readErr == nil && len(entries) != 0 {
+		t.Fatalf("profiles written for a partially invalid database: %v", entries)
+	}
+}

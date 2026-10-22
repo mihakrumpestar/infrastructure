@@ -110,7 +110,8 @@
             inputs.nix-index-database.homeModules.default
             inputs.agenix.homeManagerModules.default
             inputs.mutable-file.homeModules.default
-            inputs.ssh-config-gen.homeManagerModules.default
+            inputs.keepass-config-gen.homeManagerModules.ssh-config-gen
+            inputs.keepass-config-gen.homeManagerModules.remmina-config-gen
             (
               { osConfig, ... }:
               {

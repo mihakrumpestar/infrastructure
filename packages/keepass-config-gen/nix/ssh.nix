@@ -7,25 +7,17 @@
 let
   cfg = config.programs.ssh-config-gen;
 
-  tool = pkgs.callPackage ./package.nix { };
+  credentials = import ./credentials.nix { inherit config lib pkgs; };
 
-  # Unattended regeneration (the systemd service) needs a credential that does
-  # not require a terminal.
-  # A key file or YubiKey is not sufficient on its own: the database may also
-  # require a master password. Unattended unlock needs either an explicit
-  # password source or a declaration that no password is required.
-  hasCredential = cfg.noPassword || cfg.passwordCommand != null || cfg.passwordFile != null;
+  inherit (credentials)
+    mkOptions
+    hasCredential
+    systemdPath
+    absolutePath
+    credentialArgs
+    ;
 
-  # systemd path units do not expand ~; use %h for the user's home.
-  systemdPath = path: if lib.hasPrefix "~/" path then "%h/${lib.removePrefix "~/" path}" else path;
-
-  # git wants an absolute path for allowedSignersFile.
-  absolutePath =
-    path:
-    if lib.hasPrefix "~/" path then
-      "${config.home.homeDirectory}/${lib.removePrefix "~/" path}"
-    else
-      path;
+  tool = pkgs.callPackage ../package.nix { subPackage = "ssh-config-gen"; };
 
   # Empty values disable the corresponding output in the tool.
   allowedSignersArg = lib.optionalString cfg.allowedSigners.enable cfg.allowedSigners.path;
@@ -51,37 +43,18 @@ let
     # directory events never trigger re-authentication.
     "--if-changed"
   ]
-  ++ lib.optional (cfg.keyfile != null) "--keyfile ${lib.escapeShellArg cfg.keyfile}"
-  ++ lib.optional (cfg.yubikey != null) "--yubikey ${lib.escapeShellArg cfg.yubikey}"
-  ++ lib.optional cfg.noPassword "--no-password"
-  ++ lib.optional (
-    cfg.passwordCommand != null
-  ) "--password-command ${lib.escapeShellArg cfg.passwordCommand}"
-  ++ lib.optional (cfg.passwordFile != null) "--password-file ${lib.escapeShellArg cfg.passwordFile}"
+  ++ credentialArgs cfg
   ++ lib.optional (cfg.agentSocket != null) "--agent-socket ${lib.escapeShellArg cfg.agentSocket}";
 in
 {
-  options.programs.ssh-config-gen = {
+  options.programs.ssh-config-gen = mkOptions // {
     enable = lib.mkEnableOption "KeePassXC-driven ssh config generation";
 
     package = lib.mkOption {
       type = lib.types.package;
       default = tool;
-      defaultText = lib.literalExpression "pkgs.callPackage ./package.nix { }";
+      defaultText = lib.literalExpression ''pkgs.callPackage ../package.nix { subPackage = "ssh-config-gen"; }'';
       description = "The ssh-config-gen package to use.";
-    };
-
-    database = lib.mkOption {
-      type = lib.types.str;
-      default = "~/Passwords.kdbx";
-      description = "KeePassXC .kdbx database to read.";
-    };
-
-    keepassxcCli = lib.mkOption {
-      type = lib.types.str;
-      default = "${pkgs.keepassxc}/bin/keepassxc-cli";
-      defaultText = lib.literalExpression "\${pkgs.keepassxc}/bin/keepassxc-cli";
-      description = "keepassxc-cli binary used to read the database.";
     };
 
     output = lib.mkOption {
@@ -136,36 +109,6 @@ in
       type = lib.types.nullOr lib.types.str;
       default = null;
       description = "Optional IdentityAgent socket to emit in every generated Host block.";
-    };
-
-    keyfile = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "KeePassXC key file, if the database uses one.";
-    };
-
-    yubikey = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "YubiKey/OnlyKey slot[:serial] for challenge-response unlocking (e.g. \"2\" or \"2:7370001\").";
-    };
-
-    noPassword = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Set when the database has no master password (challenge-response/key-file only).";
-    };
-
-    passwordCommand = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "Command that prints the database master password.";
-    };
-
-    passwordFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "File containing the database master password.";
     };
 
     includeInSshConfig = lib.mkOption {
@@ -231,7 +174,7 @@ in
         programs.git.settings.include.path = "${cfg.git.identitiesDir}/include.conf";
       })
 
-      (lib.mkIf (cfg.service.enable && hasCredential) (
+      (lib.mkIf (cfg.service.enable && hasCredential cfg) (
         lib.mkMerge [
           {
             # Deliberately never enabled at default.target. A run may need an
@@ -273,7 +216,7 @@ in
         ]
       ))
 
-      (lib.mkIf (cfg.tray.enable && hasCredential) {
+      (lib.mkIf (cfg.tray.enable && hasCredential cfg) {
         systemd.user.services.ssh-config-gen-tray = {
           Unit = {
             Description = "ssh-config-gen tray";

@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-11,072 non-blank lines, comments included and Markdown excluded.
+14,939 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -38,15 +38,15 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | Component        |   Lines |
 |:-----------------|--------:|
 | flake.nix        |     118 |
-| modules/den.nix  |     110 |
+| modules/den.nix  |     111 |
 | modules/hosts    |     496 |
-| modules/system   |   2,406 |
+| modules/system   |   2,412 |
 | modules/home     |   4,711 |
-| modules/users    |     207 |
-| modules (total)  |   7,930 |
-| packages (total) |   2,285 |
+| modules/users    |     214 |
+| modules (total)  |   7,944 |
+| packages (total) |   6,138 |
 | lib (total)      |     739 |
-| **Total**        |  11,072 |
+| **Total**        |  14,939 |
 
 </details>
 <!-- FAST_END -->
@@ -154,9 +154,9 @@ flowchart LR
         input_plasma_manager["plasma-manager"]:::input
         input_stylix["stylix"]:::input
         local_consul_cni["./packages/consul-cni"]:::local
+        local_keepass_config_gen["./packages/keepass-config-gen"]:::local
         local_mutable_file["./lib/mutable-file"]:::local
         local_opencode_plugins["./lib/opencode-plugins"]:::local
-        local_ssh_config_gen["./packages/ssh-config-gen"]:::local
         local_virtualhere["./packages/virtualhere"]:::local
     end
 
@@ -324,9 +324,9 @@ flowchart LR
     input_plasma_manager --> flake
     input_stylix --> flake
     local_consul_cni --> flake
+    local_keepass_config_gen --> flake
     local_mutable_file --> flake
     local_opencode_plugins --> flake
-    local_ssh_config_gen --> flake
     local_virtualhere --> flake
     opt_docker --> opt_container_runtime
     opt_nomad --> opt_podman

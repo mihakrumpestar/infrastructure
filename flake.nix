@@ -95,8 +95,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    ssh-config-gen = {
-      url = "./packages/ssh-config-gen";
+    keepass-config-gen = {
+      url = "./packages/keepass-config-gen";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

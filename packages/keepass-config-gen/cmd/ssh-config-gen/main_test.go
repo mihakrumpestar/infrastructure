@@ -9,6 +9,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -17,6 +18,9 @@ import (
 	"testing"
 
 	"golang.org/x/crypto/ssh"
+
+	"keepass-config-gen/internal/gen"
+	"keepass-config-gen/internal/keepass"
 )
 
 func TestParseHosts(t *testing.T) {
@@ -70,14 +74,6 @@ func TestParseHostsSkipsInvalidLines(t *testing.T) {
 	}
 }
 
-func TestTokenizeHonoursQuotes(t *testing.T) {
-	got := tokenize(`host ProxyCommand="ssh -W %h:%p jump" User=root`)
-	want := []string{"host", "ProxyCommand=ssh -W %h:%p jump", "User=root"}
-	if !slices.Equal(got, want) {
-		t.Fatalf("got %#v, want %#v", got, want)
-	}
-}
-
 func TestExplicitIdentity(t *testing.T) {
 	withIdentity := hostEntry{options: [][2]string{{"IdentityFile", "~/.ssh/id"}}}
 	withoutIdentity := hostEntry{options: [][2]string{{"User", "root"}}}
@@ -101,110 +97,6 @@ func TestBuildBlock(t *testing.T) {
 	}, "\n")
 	if got != want {
 		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
-	}
-}
-
-func TestSanitise(t *testing.T) {
-	cases := map[string]string{
-		"My Host.two": "My_Host.two",
-		"":            "key",
-		"***":         "key",
-	}
-	for input, want := range cases {
-		if got := sanitise(input); got != want {
-			t.Errorf("sanitise(%q) = %q, want %q", input, got, want)
-		}
-	}
-}
-
-func TestSplitList(t *testing.T) {
-	got := splitList("a@example.com, b@example.com\nc@example.com\n")
-	want := []string{"a@example.com", "b@example.com", "c@example.com"}
-	if !slices.Equal(got, want) {
-		t.Fatalf("got %#v, want %#v", got, want)
-	}
-}
-
-func TestDbFingerprintChanges(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "db.kdbx")
-	if err := os.WriteFile(path, []byte("a"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	first, err := dbFingerprint(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte("bb"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	second, err := dbFingerprint(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if first == second {
-		t.Fatalf("fingerprint did not change: %q", first)
-	}
-}
-
-func TestArgvPlacesOptionsAfterSubcommand(t *testing.T) {
-	o := options{cli: "keepassxc-cli", yubikey: "2", noPassword: true}
-	got := o.argv("export", "-f", "xml", "/db")
-	want := []string{"export", "-y", "2", "--no-password", "-f", "xml", "/db"}
-	if !slices.Equal(got, want) {
-		t.Fatalf("got %#v, want %#v", got, want)
-	}
-	got = o.argv("attachment-export", "--stdout", "/db", "/Entry", "id_ed25519")
-	want = []string{"attachment-export", "-y", "2", "--no-password", "--stdout", "/db", "/Entry", "id_ed25519"}
-	if !slices.Equal(got, want) {
-		t.Fatalf("got %#v, want %#v", got, want)
-	}
-}
-
-func TestPruneIdentities(t *testing.T) {
-	dir := t.TempDir()
-	keepPath := filepath.Join(dir, "keep-12345678.pub")
-	stalePath := filepath.Join(dir, "stale-12345678.pub")
-	otherPath := filepath.Join(dir, "notes.txt")
-	for _, path := range []string{keepPath, stalePath, otherPath} {
-		if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if err := pruneDir(dir, map[string]bool{keepPath: true}, ".pub"); err != nil {
-		t.Fatal(err)
-	}
-	if !fileExists(keepPath) {
-		t.Error("kept .pub was removed")
-	}
-	if fileExists(stalePath) {
-		t.Error("stale .pub was not removed")
-	}
-	if !fileExists(otherPath) {
-		t.Error("non-.pub file was removed")
-	}
-}
-
-// TestParseXMLPaths guards that entry paths exclude the root group's name, which
-// is what keepassxc-cli expects.
-func TestParseXMLPaths(t *testing.T) {
-	const doc = `<KeePassFile><Root><Group><Name>Root</Name>` +
-		`<Entry><String><Key>Title</Key><Value>top</Value></String></Entry>` +
-		`<Group><Name>Sub</Name>` +
-		`<Entry><String><Key>Title</Key><Value>nested</Value></String></Entry>` +
-		`</Group></Group></Root></KeePassFile>`
-
-	entries, err := parseXML([]byte(doc))
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := map[string]string{"top": "/top", "nested": "/Sub/nested"}
-	if len(entries) != len(want) {
-		t.Fatalf("got %d entries, want %d", len(entries), len(want))
-	}
-	for _, entry := range entries {
-		if want[entry.title] != entry.path {
-			t.Errorf("entry %q path = %q, want %q", entry.title, entry.path, want[entry.title])
-		}
 	}
 }
 
@@ -298,41 +190,23 @@ func TestDerivePubkeyPassphraseHandling(t *testing.T) {
 	}
 }
 
-func TestCliArg(t *testing.T) {
-	cases := map[string]string{
-		"plain":         "plain",
-		"has space":     `"has space"`,
-		`has"quote`:     `"has\"quote"`,
-		`both " and sp`: `"both \" and sp"`,
-	}
-	for input, want := range cases {
-		if got := cliArg(input); got != want {
-			t.Errorf("cliArg(%q) = %q, want %q", input, got, want)
-		}
-	}
-}
-
-func TestAttachmentKey(t *testing.T) {
-	if got := attachmentKey("/Entry", "id_ed25519"); got != "/Entry\x00id_ed25519" {
-		t.Fatalf("got %q", got)
-	}
-}
-
 func TestStateKeyChangesWithOptions(t *testing.T) {
 	base := options{
-		output:           "out",
-		identitiesDir:    "ids",
-		allowedSigners:   "signers",
-		gitIdentitiesDir: "git",
-		agentSocket:      "sock",
+		Options:          keepass.Options{Database: "db"},
+		Output:           "out",
+		IdentitiesDir:    "ids",
+		AllowedSigners:   "signers",
+		GitIdentitiesDir: "git",
+		AgentSocket:      "sock",
 	}
 	key := stateKey(base, "fp")
 	if stateKey(base, "fp") != key {
 		t.Fatal("state key not stable for identical options")
 	}
 	for name, o := range map[string]options{
-		"output":      {output: "other", identitiesDir: "ids", allowedSigners: "signers", gitIdentitiesDir: "git", agentSocket: "sock"},
-		"agentSocket": {output: "out", identitiesDir: "ids", allowedSigners: "signers", gitIdentitiesDir: "git", agentSocket: "other"},
+		"database":    {Options: keepass.Options{Database: "other"}, Output: "out", IdentitiesDir: "ids", AllowedSigners: "signers", GitIdentitiesDir: "git", AgentSocket: "sock"},
+		"output":      {Options: keepass.Options{Database: "db"}, Output: "other", IdentitiesDir: "ids", AllowedSigners: "signers", GitIdentitiesDir: "git", AgentSocket: "sock"},
+		"agentSocket": {Options: keepass.Options{Database: "db"}, Output: "out", IdentitiesDir: "ids", AllowedSigners: "signers", GitIdentitiesDir: "git", AgentSocket: "other"},
 	} {
 		if stateKey(o, "fp") == key {
 			t.Errorf("%s: state key did not change", name)
@@ -436,15 +310,17 @@ esac
 	allowedSigners := filepath.Join(dir, "allowed_signers")
 	gitIdentitiesDir := filepath.Join(dir, "git-identities")
 	o := options{
-		database:         dbPath,
-		cli:              script,
-		noPassword:       true,
-		output:           output,
-		identitiesDir:    identitiesDir,
-		allowedSigners:   allowedSigners,
-		stateFile:        filepath.Join(dir, "state"),
-		gitIdentitiesDir: gitIdentitiesDir,
-		ifChanged:        true,
+		Options: keepass.Options{
+			Database:   dbPath,
+			CLI:        script,
+			NoPassword: true,
+		},
+		Output:           output,
+		IdentitiesDir:    identitiesDir,
+		AllowedSigners:   allowedSigners,
+		StateFile:        filepath.Join(dir, "state"),
+		GitIdentitiesDir: gitIdentitiesDir,
+		IfChanged:        true,
 	}
 
 	if err := generate(o); err != nil {
@@ -460,7 +336,7 @@ esac
 			t.Errorf("config missing %q:\n%s", want, config)
 		}
 	}
-	if fileExists(stale) {
+	if gen.FileExists(stale) {
 		t.Error("stale .pub was not pruned")
 	}
 	signers, err := os.ReadFile(allowedSigners)
@@ -493,7 +369,7 @@ esac
 			t.Errorf("include.conf missing %q:\n%s", want, include)
 		}
 	}
-	if fileExists(filepath.Join(gitIdentitiesDir, "*.example.com")) {
+	if gen.FileExists(filepath.Join(gitIdentitiesDir, "*.example.com")) {
 		t.Error("git identity emitted for a wildcard host alias")
 	}
 	if strings.Contains(string(include), "*.example.com") {
@@ -515,20 +391,231 @@ esac
 	if string(before) != string(after) {
 		t.Fatalf("call log changed on unchanged database:\nbefore:\n%s\nafter:\n%s", before, after)
 	}
-	if !fileExists(filepath.Join(gitIdentitiesDir, "include.conf")) {
+	if !gen.FileExists(filepath.Join(gitIdentitiesDir, "include.conf")) {
 		t.Error("include.conf was removed by the --if-changed run")
 	}
 
+	state, err := os.ReadFile(o.StateFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		"v1", output, allowedSigners,
+		filepath.Join(gitIdentitiesDir, "gh"),
+		filepath.Join(gitIdentitiesDir, "include.conf"),
+	} {
+		if !strings.Contains(string(state), want) {
+			t.Errorf("state is missing %q:\n%s", want, state)
+		}
+	}
+	for _, key := range []string{filepath.Join(identitiesDir, "workstation-")} {
+		if !strings.Contains(string(state), key) {
+			t.Errorf("state is missing pubkey %q:\n%s", key, state)
+		}
+	}
+
 	// --check must detect a mutated generated identity.
-	if err := os.WriteFile(filepath.Join(gitIdentitiesDir, "gh"), []byte("[user]\n  name = Mutated\n"), 0o644); err != nil {
+	identityPath := filepath.Join(gitIdentitiesDir, "gh")
+	if err := os.WriteFile(identityPath, []byte("[user]\n  name = Mutated\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	checkOpts := o
-	checkOpts.ifChanged = false
-	checkOpts.check = true
-	if err := generate(checkOpts); !errors.Is(err, errChanged) {
+	checkOpts.IfChanged = false
+	checkOpts.Check = true
+	if err := generate(checkOpts); !errors.Is(err, gen.ErrChanged) {
 		t.Fatalf("check with mutated identity: got %v, want errChanged", err)
 	}
+
+	// --if-changed must not bypass --check.
+	checkIfChanged := checkOpts
+	checkIfChanged.IfChanged = true
+	if err := generate(checkIfChanged); !errors.Is(err, gen.ErrChanged) {
+		t.Fatalf("--if-changed --check = %v, want errChanged", err)
+	}
+
+	// --if-changed must not bypass --print either.
+	printOpts := o
+	printOpts.ToStdout = true
+	stdout, err := captureStdout(t, func() error { return generate(printOpts) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(stdout, "Host ws") {
+		t.Fatalf("--if-changed --print produced no config:\n%s", stdout)
+	}
+
+	// Restore the mutated identity and verify stale generated files are drift.
+	writeOpts := o
+	writeOpts.IfChanged = false
+	if err := generate(writeOpts); err != nil {
+		t.Fatal(err)
+	}
+	stalePub := filepath.Join(identitiesDir, "stale-00000000.pub")
+	if err := os.WriteFile(stalePub, []byte("stale"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := generate(checkOpts); !errors.Is(err, gen.ErrChanged) {
+		t.Fatalf("check with stale .pub = %v, want errChanged", err)
+	}
+	if err := os.Remove(stalePub); err != nil {
+		t.Fatal(err)
+	}
+	staleIdentity := filepath.Join(gitIdentitiesDir, "old")
+	if err := os.WriteFile(staleIdentity, []byte("[user]\n  name = Old\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := generate(checkOpts); !errors.Is(err, gen.ErrChanged) {
+		t.Fatalf("check with stale git identity = %v, want errChanged", err)
+	}
+}
+
+func captureStdout(t *testing.T, fn func() error) (string, error) {
+	t.Helper()
+	original := os.Stdout
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stdout = writer
+	runErr := fn()
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	os.Stdout = original
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = reader.Close()
+	return string(data), runErr
+}
+
+func TestStateWrittenOnlyForCompleteRuns(t *testing.T) {
+	const header = `<KeePassFile><Root><Group><Name>Root</Name>`
+	const footer = `</Group></Root></KeePassFile>`
+
+	t.Run("missing key leaves no state", func(t *testing.T) {
+		dir := t.TempDir()
+		xmlPath := filepath.Join(dir, "db.xml")
+		doc := header +
+			`<Entry><String><Key>Title</Key><Value>host</Value></String>` +
+			`<String><Key>ssh_hosts</Key><Value>h User=u</Value></String></Entry>` +
+			footer
+		if err := os.WriteFile(xmlPath, []byte(doc), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		script := filepath.Join(dir, "keepassxc-cli")
+		body := fmt.Sprintf("#!/bin/sh\ncase \"$1\" in\nexport) cat %q ;;\nesac\n", xmlPath)
+		if err := os.WriteFile(script, []byte(body), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		dbPath := filepath.Join(dir, "db.kdbx")
+		if err := os.WriteFile(dbPath, []byte("fake"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+
+		o := options{
+			Options:       keepass.Options{Database: dbPath, CLI: script, NoPassword: true},
+			Output:        filepath.Join(dir, "config"),
+			IdentitiesDir: filepath.Join(dir, "identities"),
+			StateFile:     filepath.Join(dir, "state"),
+			IfChanged:     true,
+		}
+		if _, err := captureStderr(t, func() error { return generate(o) }); err != nil {
+			t.Fatal(err)
+		}
+		if gen.FileExists(o.StateFile) {
+			t.Fatal("a run with a missing key wrote state")
+		}
+	})
+
+	t.Run("wildcard alias warning writes state", func(t *testing.T) {
+		dir := t.TempDir()
+		_, key, err := ed25519.GenerateKey(rand.Reader)
+		if err != nil {
+			t.Fatal(err)
+		}
+		block, err := ssh.MarshalPrivateKey(key, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		keyPath := filepath.Join(dir, "id_ed25519")
+		if err := os.WriteFile(keyPath, pem.EncodeToMemory(block), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		xmlPath := filepath.Join(dir, "db.xml")
+		doc := header +
+			`<Entry><String><Key>Title</Key><Value>wildcard</Value></String>` +
+			`<String><Key>ssh_hosts</Key><Value>*.example.com User=deploy git.name=W git.email=w@example.com</Value></String>` +
+			`<String><Key>ssh_sign</Key><Value>w@example.com</Value></String>` +
+			`<Binary><Key>id_ed25519</Key><Value Ref="0"/></Binary></Entry>` +
+			footer
+		if err := os.WriteFile(xmlPath, []byte(doc), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		script := filepath.Join(dir, "keepassxc-cli")
+		body := fmt.Sprintf(`#!/bin/sh
+case "$1" in
+export) cat %q ;;
+open)
+	while IFS= read -r line; do
+		case "$line" in
+		attachment-export*)
+			set -- $line
+			cat %q > "$4"
+			;;
+		esac
+	done
+	;;
+esac
+`, xmlPath, keyPath)
+		if err := os.WriteFile(script, []byte(body), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		dbPath := filepath.Join(dir, "db.kdbx")
+		if err := os.WriteFile(dbPath, []byte("fake"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+
+		o := options{
+			Options:       keepass.Options{Database: dbPath, CLI: script, NoPassword: true},
+			Output:        filepath.Join(dir, "config"),
+			IdentitiesDir: filepath.Join(dir, "identities"),
+			StateFile:     filepath.Join(dir, "state"),
+			IfChanged:     true,
+		}
+		stderr, err := captureStderr(t, func() error { return generate(o) })
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(stderr, "safe filename") {
+			t.Fatalf("wildcard warning missing:\n%s", stderr)
+		}
+		if !gen.FileExists(o.StateFile) {
+			t.Fatal("a wildcard alias warning suppressed state")
+		}
+	})
+}
+
+func captureStderr(t *testing.T, fn func() error) (string, error) {
+	t.Helper()
+	original := os.Stderr
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stderr = writer
+	runErr := fn()
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	os.Stderr = original
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = reader.Close()
+	return string(data), runErr
 }
 
 func TestGitInclude(t *testing.T) {
@@ -544,5 +631,89 @@ func TestGitInclude(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Errorf("gitInclude missing %q:\n%s", want, got)
 		}
+	}
+}
+
+// TestRelevantEntries guards the filtering that keeps non-opted-in entries from
+// triggering attachment exports.
+func TestRelevantEntries(t *testing.T) {
+	entries := []keepass.Entry{
+		{Title: "host", Fields: map[string]string{"ssh_hosts": "a"}},
+		{Title: "sign", Fields: map[string]string{"ssh_sign": "me@example.com"}},
+		{Title: "legacy", Fields: map[string]string{"ssh-host": "b"}},
+		{Title: "unrelated", Fields: map[string]string{"note": "x"}},
+	}
+	got := relevantEntries(entries)
+	if len(got) != 3 {
+		t.Fatalf("got %d relevant entries, want 3: %#v", len(got), got)
+	}
+	var titles []string
+	for _, entry := range got {
+		titles = append(titles, entry.Title)
+	}
+	if !slices.Equal(titles, []string{"host", "sign", "legacy"}) {
+		t.Fatalf("got titles %v", titles)
+	}
+}
+
+func TestValidIdentityFilename(t *testing.T) {
+	valid := []string{"github", "git.example.com", "a-b_c"}
+	for _, name := range valid {
+		if !validIdentityFilename(name) {
+			t.Errorf("validIdentityFilename(%q) rejected a safe name", name)
+		}
+	}
+	invalid := []string{
+		"", ".", "..", "../evil", "a/b", `a\b`, "include.conf", "*.example.com", "a b",
+		`a"b`, "a#b", "a;b", "a\nb", "a\tb",
+	}
+	for _, name := range invalid {
+		if validIdentityFilename(name) {
+			t.Errorf("validIdentityFilename(%q) accepted an unsafe name", name)
+		}
+	}
+}
+
+func TestRenderSkipsUnsafeGitIdentityFilename(t *testing.T) {
+	_, key, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	block, err := ssh.MarshalPrivateKey(key, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	entry := keepass.Entry{
+		Path:        "/unsafe",
+		Title:       "unsafe",
+		Attachments: []string{"id_ed25519"},
+		Fields: map[string]string{
+			"ssh_hosts": "../evil User=git git.name=N git.email=e@example.com",
+			"ssh_sign":  "me@example.com",
+		},
+	}
+	attachments := map[string][]byte{
+		keepass.AttachmentKey(entry.Path, "id_ed25519"): pem.EncodeToMemory(block),
+	}
+	_, _, pubkeys, identities, skipped, incomplete, _, _ := render(
+		[]keepass.Entry{entry}, attachments, "", options{IdentitiesDir: t.TempDir()},
+	)
+	if len(pubkeys) != 1 {
+		t.Fatalf("pubkeys = %v, want one derived key", pubkeys)
+	}
+	if len(identities) != 0 {
+		t.Fatalf("unsafe identity filename was used: %v", identities)
+	}
+	if incomplete {
+		t.Fatal("a wildcard alias warning marked the run incomplete")
+	}
+	found := false
+	for _, warning := range skipped {
+		if strings.Contains(warning, "safe filename") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("skipped = %v, want a safe filename warning", skipped)
 	}
 }

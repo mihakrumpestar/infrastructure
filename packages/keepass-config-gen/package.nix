@@ -1,10 +1,16 @@
-# KeePassXC-driven OpenSSH config generator, inspired by https://github.com/jmylchreest/rosec
-{ lib, buildGoModule }:
+# KeePassXC-driven configuration generators, inspired by https://github.com/jmylchreest/rosec
+{
+  lib,
+  buildGoModule,
+  subPackage,
+}:
 buildGoModule {
-  pname = "ssh-config-gen";
+  pname = subPackage;
   version = "0.1.0";
 
   src = ./.;
+
+  subPackages = [ "cmd/${subPackage}" ];
 
   vendorHash = "sha256-XqWR8Qhww1PzCUxSFoOf80gdtJNimecFx33t9fyUt7c=";
 
@@ -14,10 +20,10 @@ buildGoModule {
   ];
 
   meta = {
-    description = "Generate an OpenSSH config fragment and allowed_signers file from a KeePassXC database";
+    description = "Generate configuration from a KeePassXC database";
     homepage = "https://github.com/mihakrumpestar/infrastructure";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
-    mainProgram = "ssh-config-gen";
+    mainProgram = subPackage;
   };
 }
