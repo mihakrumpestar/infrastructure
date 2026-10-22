@@ -61,8 +61,9 @@ sops exec-file --no-fifo .env 'docker-compose -f docker-compose.yml --env-file {
 ## SSH
 
 ```sh
- ssh-keygen -t ed25519 -C "<comment>" -f ~/Desktop/ssh_key.pem
+ ssh-keygen -t ed25519 -C "<comment>" -f ~/Desktop/ssh_key.pem && rm ~/Desktop/ssh_key.pem.pub
 # space (' ') at start prevents it from being saved in history
+# ssh-keygen always writes the public key alongside it, so drop the .pub to keep only the private key
 
 # remove all ssh keys
 ssh-add -D

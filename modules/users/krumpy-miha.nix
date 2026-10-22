@@ -6,6 +6,7 @@
 }:
 let
   data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
+  keepassDatabase = "~/Documents/digital-identity/KeePass.kdbx";
 in
 {
   den.aspects.krumpy-miha = {
@@ -30,10 +31,17 @@ in
     homeManager = _: {
       programs.ssh-config-gen = {
         enable = true;
-        database = "~/Documents/digital-identity/KeePass.kdbx";
+        database = keepassDatabase;
         yubikey = "1";
         noPassword = true;
         git.enable = true;
+      };
+
+      programs.remmina-config-gen = {
+        enable = true;
+        database = keepassDatabase;
+        yubikey = "1";
+        noPassword = true;
       };
     };
     nixos =

@@ -436,6 +436,22 @@
         "url": "ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git"
       }
     },
+    "keepass-config-gen": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./packages/keepass-config-gen",
+        "type": "path"
+      },
+      "original": {
+        "path": "./packages/keepass-config-gen",
+        "type": "path"
+      },
+      "parent": []
+    },
     "lanzaboote": {
       "inputs": {
         "crane": "crane",
@@ -833,6 +849,7 @@
         "impermanence": "impermanence",
         "import-tree": "import-tree",
         "infrastructure-secrets": "infrastructure-secrets",
+        "keepass-config-gen": "keepass-config-gen",
         "lanzaboote": "lanzaboote",
         "llm-agents": "llm-agents",
         "mattpocock-skills": "mattpocock-skills",
@@ -846,7 +863,6 @@
         "openchamber": "openchamber",
         "opencode-plugins": "opencode-plugins",
         "plasma-manager": "plasma-manager",
-        "ssh-config-gen": "ssh-config-gen",
         "stylix": "stylix",
         "virtualhere": "virtualhere"
       }
@@ -871,22 +887,6 @@
         "repo": "rust-overlay",
         "type": "github"
       }
-    },
-    "ssh-config-gen": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "path": "./packages/ssh-config-gen",
-        "type": "path"
-      },
-      "original": {
-        "path": "./packages/ssh-config-gen",
-        "type": "path"
-      },
-      "parent": []
     },
     "stylix": {
       "inputs": {
