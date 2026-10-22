@@ -12,7 +12,8 @@
   "files.associations": {
     "devbox.json": "jsonc",
     "*.tpl": "hcl",
-    "*.yaml.gotmpl": "go-template" // joelhill.go-template
+    "*.yaml.gotmpl": "go-template", // joelhill.go-template
+    "*.yml.gotmpl": "go-template"
   },
   "diffEditor.ignoreTrimWhitespace": false,
   "notebook.lineNumbers": "on",
