@@ -12,8 +12,9 @@
   "files.associations": {
     "devbox.json": "jsonc",
     "*.tpl": "hcl",
-    "*.yaml.gotmpl": "go-template", // joelhill.go-template
-    "*.yml.gotmpl": "go-template"
+    "*.yaml.gotmpl": "goyaml", // xembly.gomplate: YAML + Go template, both delimiters
+    "*.yml.gotmpl": "goyaml",
+    "*.toml.gotmpl": "toml" // TOML via even-better-toml; xembly injects Go template
   },
   "diffEditor.ignoreTrimWhitespace": false,
   "notebook.lineNumbers": "on",
