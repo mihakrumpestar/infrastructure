@@ -15,6 +15,90 @@
             sha256 = "09jp99vcafj83d4s5p8d9f2k2znv96ig9awhr4mdn4qnx8081qdy";
           };
         };
+        gomplate-delimiter-patch = pkgs.writeText "patch-gomplate-delimiters.py" ''
+          import copy
+          import plistlib
+          import sys
+
+          path = sys.argv[1]
+          with open(path, "rb") as grammar_file:
+              grammar = plistlib.load(grammar_file)
+
+          patterns = grammar["patterns"]
+          if any(pattern.get("begin") == r"\[\[" for pattern in patterns):
+              raise SystemExit(0)
+
+          template = next(
+              (pattern for pattern in patterns if pattern.get("begin") == r"\{\{"),
+              None,
+          )
+          if template is None:
+              raise SystemExit(f"no {{{{ }}}} pattern in {path}")
+
+          square = copy.deepcopy(template)
+          square["begin"] = r"\[\["
+          square["end"] = r"\]\]"
+          patterns.append(square)
+
+          grammar["foldingStartMarker"] = r"(?:\{\{|\[\[)\s*(?:if|with|range)\b"
+          grammar["foldingStopMarker"] = r"(?:\{\{|\[\[)\s*(?:else|end)\b"
+
+          with open(path, "wb") as grammar_file:
+              plistlib.dump(grammar, grammar_file)
+        '';
+        # xembly's Go-template injection lists YAML, JSON, CSS and others but
+        # not TOML. Add it so *.toml.gotmpl keeps TOML highlighting while still
+        # highlighting the Go template actions. The file association lives in
+        # vscode-settings.jsonc.
+        gomplate-toml-injection-patch = pkgs.writeText "patch-gomplate-toml-injection.py" ''
+          import json
+          import sys
+
+          package_path, injection_path = sys.argv[1], sys.argv[2]
+
+          with open(package_path) as package_file:
+              package = json.load(package_file)
+
+          for grammar in package["contributes"]["grammars"]:
+              if grammar.get("scopeName") == "gomplate.injection":
+                  inject_to = grammar.setdefault("injectTo", [])
+                  if "source.toml" not in inject_to:
+                      inject_to.append("source.toml")
+                  break
+          else:
+              raise SystemExit(f"no gomplate.injection grammar in {package_path}")
+
+          with open(package_path, "w") as package_file:
+              json.dump(package, package_file, indent=2)
+              package_file.write("\n")
+
+          with open(injection_path) as injection_file:
+              injection = json.load(injection_file)
+
+          selector = injection["injectionSelector"]
+          if "L:source.toml" not in selector:
+              injection["injectionSelector"] = selector + ", L:source.toml"
+
+          with open(injection_path, "w") as injection_file:
+              json.dump(injection, injection_file, indent=2)
+              injection_file.write("\n")
+        '';
+        # goyaml embeds YAML plus Go template; patch its grammar for the custom
+        # [[ ]] delimiters used by the Nomad templates.
+        xembly-gomplate = pkgs.vscode-marketplace.xembly.gomplate.overrideAttrs (old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.python3 ];
+          postInstall = (old.postInstall or "") + ''
+            extension="$out/share/vscode/extensions/xembly.gomplate"
+            chmod u+w "$extension/package.json" \
+              "$extension/syntaxes/gomplate-injection.tmLanguage.json" \
+              "$extension/syntaxes/gomplate.tmLanguage"
+            python3 ${gomplate-delimiter-patch} \
+              "$extension/syntaxes/gomplate.tmLanguage"
+            python3 ${gomplate-toml-injection-patch} \
+              "$extension/package.json" \
+              "$extension/syntaxes/gomplate-injection.tmLanguage.json"
+          '';
+        });
         # Unofficial patches:
         # - oauth-linux: official builds gate protocol-URL handling behind
         #   __WIN32__, so OAuth callbacks are dropped on Linux
@@ -140,7 +224,8 @@
 
                 # Go
                 golang.go
-                joelhill.go-template # Go template syntax for *.yaml.gotmpl and *.yml.gotmpl
+                # goyaml embeds YAML plus Go template; not on Open VSX
+                xembly-gomplate
 
                 # Python
                 detachhead.basedpyright
