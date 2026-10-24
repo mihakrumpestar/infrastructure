@@ -83,6 +83,11 @@
 
     consul-cni.url = "./packages/consul-cni";
 
+    github-desktop = {
+      url = "./packages/github-desktop";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     mutable-file.url = "./lib/mutable-file";
 
     opencode-plugins = {

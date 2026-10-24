@@ -185,11 +185,11 @@
     },
     "den": {
       "locked": {
-        "lastModified": 1792591525,
-        "narHash": "sha256-AhhXShXJreBCrf6WZWGvzlhMawL7d7FLJu28iqZsjjs=",
+        "lastModified": 1792618207,
+        "narHash": "sha256-iBpvVBVBnynNWW9sLX5oKVigXU28oO2oiMPXgcLO1HI=",
         "owner": "denful",
         "repo": "den",
-        "rev": "cc236ea21a44969e424cf45a4aba7dffa798ba9b",
+        "rev": "0f7675b0b789eabe1a62f8a31b5323a7ad3ca5c4",
         "type": "github"
       },
       "original": {
@@ -347,6 +347,22 @@
         "type": "github"
       }
     },
+    "github-desktop": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./packages/github-desktop",
+        "type": "path"
+      },
+      "original": {
+        "path": "./packages/github-desktop",
+        "type": "path"
+      },
+      "parent": []
+    },
     "gnome-shell": {
       "flake": false,
       "locked": {
@@ -371,11 +387,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1792605213,
-        "narHash": "sha256-J73EBU30r2hXvHCcBtaigQDAIu/GGPYk1nc6P9THcmg=",
+        "lastModified": 1792818371,
+        "narHash": "sha256-yhEZAzZRNvzYpoAlyFY3wM75V9BmkIXJIueof8S5gOg=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "ab97a5d09e0f2aa7339cfd35ec5824fd6653e27c",
+        "rev": "2cd3234928f60bbff695a7ee56115ef7799c47cd",
         "type": "github"
       },
       "original": {
@@ -484,11 +500,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1792577217,
-        "narHash": "sha256-YRvnXVnyZGr6+v118Lb4pTtzLzeJet2Y69qf00katjQ=",
+        "lastModified": 1792832837,
+        "narHash": "sha256-9roACN0TYCVsoyaQvXl4LKIWGoBCdzxVSEO9JSM1td8=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "4c0e549dab7167b1fe7433af15adf892a299fb83",
+        "rev": "688d92a2d0396506e8cde81f0bb63dec7e6d64db",
         "type": "github"
       },
       "original": {
@@ -515,11 +531,11 @@
     },
     "multiverse": {
       "locked": {
-        "lastModified": 1792535154,
-        "narHash": "sha256-QgDLdz8f3MTBTRlw2uitW4FaqkF3Unwkh2LqdF4Fvog=",
+        "lastModified": 1792776719,
+        "narHash": "sha256-PeS3ZPTAcGQo4pV+RdIqnAnwaKdBsTrs4/CahOHDEhg=",
         "owner": "fzakaria",
         "repo": "nixpkgs-multiverse",
-        "rev": "87a1fa4d6fc08f86c39839ed7944e045f80e04f9",
+        "rev": "69df70a6dd7d2c86c33bf93b12e28d556839dcfe",
         "type": "github"
       },
       "original": {
@@ -569,11 +585,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792555615,
-        "narHash": "sha256-hgkjMS7s4GRhZiHAgzF1UHFrXwu+2dcBohgF57Wrgps=",
+        "lastModified": 1792814758,
+        "narHash": "sha256-/H/C/u02zqXvCKFivR1p7KOEqyzYRyQNnd4lhiIG1Fw=",
         "owner": "nix-community",
         "repo": "nix-vscode-extensions",
-        "rev": "2a46f9d8fac507c47e8a659d5a4e91676d06273c",
+        "rev": "f46e69a408c2775827719ab2b61b4d4453f92b22",
         "type": "github"
       },
       "original": {
@@ -696,11 +712,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792604848,
-        "narHash": "sha256-x+12DTu6Mv+O54z2dXX9HSlG9kGVB4wThnbXGIiHzGg=",
+        "lastModified": 1792832708,
+        "narHash": "sha256-3UTJSGXL36D0mmbeqK++XUzRjqMgO5y9HG2Ey08feIk=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "95239f103ec0fd4def1c32645ee09e39e07d52e9",
+        "rev": "9ba9c31e1176d40ff11427c77798fff190392904",
         "type": "github"
       },
       "original": {
@@ -742,11 +758,11 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1792576135,
-        "narHash": "sha256-l0+x1+L0hTDLFdvGYlu4zueOLuEeHY9Gh0juK/c9fOk=",
+        "lastModified": 1792748885,
+        "narHash": "sha256-Wya85aqM1w5Fwuy8wsCgWHff+rfGn6JfzFVsbGd5nQw=",
         "owner": "karaolidis",
         "repo": "nix-obsidian-extensions",
-        "rev": "1f8a886a19f65318ecae70f09ed083fd5a7a71c1",
+        "rev": "0e9c71fb37494dbcbfe19d21cb11803d5ba39413",
         "type": "github"
       },
       "original": {
@@ -845,6 +861,7 @@
         "consul-cni": "consul-cni",
         "den": "den",
         "disko": "disko",
+        "github-desktop": "github-desktop",
         "home-manager": "home-manager",
         "impermanence": "impermanence",
         "import-tree": "import-tree",

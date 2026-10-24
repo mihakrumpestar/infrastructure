@@ -148,8 +148,8 @@ let
   opencodePluginPins = {
     # Safety gate: blocks destructive commands and secret access
     cc-safety-net = {
-      version = "2.6.16";
-      hash = "sha256-SWBMu+BwkN8s3Ar38Cc55HNXss1/va2RXLxb7P0Xz1Q=";
+      version = "2.6.19";
+      hash = "sha256-DBRAfiVBCmKKTSNBl/gC8bUJiNXWHl6xsumtXMU5jto=";
     };
 
     # Dynamic context pruning (DCP): prunes/compresses stale context.
@@ -195,7 +195,7 @@ in
             compaction.prune = false;
 
             # Hide built-in free model providers; only our gateway models are selectable
-            enabled_providers = [ "gateway" ];
+            #enabled_providers = [ "gateway" ];
 
             # Provider configuration
             # Docs: https://opencode.ai/config.json
@@ -238,13 +238,6 @@ in
                 enabled = true;
                 headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
               };
-              gh = {
-                type = "remote";
-                url = "{env:GATEWAY_API_BASE}/mcp/gh";
-                enabled = true;
-                headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
-              };
-
               # Public remote MCPs (no auth)
               gh_grep = {
                 type = "remote";
@@ -444,7 +437,7 @@ in
             - use, create and maintain broad, deterministic, mechanical, dynamic and intelligent tests, each issues/findings should ideally be found by tests next time.
 
             - DO NOT use em dashes or other standalone dashes.
-            - READ-ONLY for git: run only read git operations yourself. Do NOT run write git operations. When writing is needed, give the user the exact commands to run so he applies them manually.
+            - READ-ONLY for git, gh and cf: run only read operations. Write operations have to be specifically confirmed and autorized by user. Never run write actions by yourself.
             - it is absolutely important to fix, modify or remove current code/behaviour for new features/implementations, instead of leaving things as they are and working aroung them
 
             Never/avoid:
@@ -452,6 +445,7 @@ in
             - use static configurables inside the codebase.
             - apply band aids or workarounds. 
             - over engineer.
+            - word-wrap markdown.
             - create similar or duplicate logics, consts, vars and functs.
 
             ## MCP tools
@@ -468,6 +462,12 @@ in
             - `codebase-memory-mcp`: code knowledge graph, prefer search_graph/trace_path/get_architecture over grep for structural questions and always use it in codebases as it helps finding connections 
             - `docs-mcp-server`: whenever user tells you to use it
             - `writeragent`: MCP for LibreOffice suite
+
+            ## CLI tools
+
+            - `gh`: GitHub CLI: Use `gh` subcommands or `gh api` for GitHub state instead of unauthenticated HTTP calls.
+            - `cf`: Cloudflare CLI: Profiles are bound per directory under `~/Projects` (work vs personal), so run `cf` from the project root and let the binding select the profile; pass `--profile <name>` only to override it for one command. Discover the command surface with `cf tools` and `cf <group> --help`, and search Cloudflare docs with `cf docs search "<query>"`. `cf` is beta and some Wrangler commands are not implemented yet.
+            - our projects should be using devenv and go-task
 
             ## Multi-Agent Patterns
 
@@ -525,14 +525,13 @@ in
         # bun comes from nixpkgs, so the upstream bun self-installer never
         # triggers.
 
-        # Experimental Code Mode: MCP schemas (gh alone ~32k tokens) collapsed
-        # behind one sandboxed `execute` tool. Revert by removing this var;
-        # opencode v2 offers per-server codemode instead.
+        # Experimental Code Mode: MCP schemas (the remote servers alone run to
+        # tens of thousands of tokens) collapsed behind one sandboxed `execute`
+        # tool. Revert by removing this var; opencode v2 offers per-server
+        # codemode instead.
         home.sessionVariables.OPENCODE_EXPERIMENTAL_CODE_MODE = "1";
 
         home.packages = [
-          pkgs.opencode-desktop
-
           # Code intelligence MCP server; on PATH for the CLI (index/config/
           # query). MCP entry lives in settings.mcp above.
           pkgs.codebase-memory-mcp

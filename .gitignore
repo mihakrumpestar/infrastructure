@@ -5,6 +5,7 @@ __pycache__
 
 # Nix build
 **/result
+pve-result/
 
 # Generated statistics
 generated/
