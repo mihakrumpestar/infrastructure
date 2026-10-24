@@ -10,6 +10,12 @@ tasks:
       - deadnix --fail
       - statix check
 
+  pve:
+    desc: Run all PVE pyinfra deploys (baseline and PVE-mods); add "-- --dry" to preview
+    dir: pve
+    cmds:
+      - pyinfra deploy/inventory.py deploy/deploy.py {{.CLI_ARGS}}
+
   update:
     desc: Update everything
     cmds:

@@ -1,0 +1,11 @@
+# Managed by pve/deploy/baseline/deploy.py.
+# Minimal PVE 9 sshd config. Drop-ins load at the end so the settings above win.
+
+PermitRootLogin prohibit-password
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+UsePAM yes
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+Include /etc/ssh/sshd_config.d/*.conf

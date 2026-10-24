@@ -437,7 +437,7 @@ in
             - use, create and maintain broad, deterministic, mechanical, dynamic and intelligent tests, each issues/findings should ideally be found by tests next time.
 
             - DO NOT use em dashes or other standalone dashes.
-            - READ-ONLY for git, gh and cf: run only read operations. Write operations have to be specifically confirmed and autorized by user. Never run write actions by yourself.
+            - READ-ONLY for git, gh and cf: run only read operations. Write operations have to be specifically confirmed and autorized by user. Never run write actions by yourself. You may however stage files that need to be for nix.
             - it is absolutely important to fix, modify or remove current code/behaviour for new features/implementations, instead of leaving things as they are and working aroung them
 
             Never/avoid:
@@ -465,7 +465,7 @@ in
 
             ## CLI tools
 
-            - `gh`: GitHub CLI: Use `gh` subcommands or `gh api` for GitHub state instead of unauthenticated HTTP calls.
+            - `gh`: GitHub CLI: Use `gh` subcommands or `gh api` for GitHub state instead of unauthenticated HTTP calls. For ssh protocol, use host based on `~/.ssh/config.d/keepass.conf`, not the default github.com, as we use ssh agent auth based on host.
             - `cf`: Cloudflare CLI: Profiles are bound per directory under `~/Projects` (work vs personal), so run `cf` from the project root and let the binding select the profile; pass `--profile <name>` only to override it for one command. Discover the command surface with `cf tools` and `cf <group> --help`, and search Cloudflare docs with `cf docs search "<query>"`. `cf` is beta and some Wrangler commands are not implemented yet.
             - our projects should be using devenv and go-task
 

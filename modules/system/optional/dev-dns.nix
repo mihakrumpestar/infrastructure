@@ -1,30 +1,19 @@
 { ... }:
 {
-  # Local, non-declarative dev DNS for quick iteration.
+  # Local, non-declarative dev DNS.
   #
-  # dnsmasq sits in front of the app-facing resolver: glibc apps query it
-  # first, it answers any `address=/<domain>/<ip>` override (a domain and all
-  # its subdomains) and forwards everything else to the systemd-resolved stub.
-  # resolved still owns per-link routing, so usual DHCP DNS and NetBird
-  # split DNS keep working. The only thing you edit day to day is one mutable,
-  # non-store file:
+  # dnsmasq is the app-facing resolver: it answers address=/<domain>/<ip>
+  # overrides and forwards everything else to the systemd-resolved stub, so
+  # per-link DHCP and NetBird split DNS still work.
   #
-  #   sudo nano /var/lib/dev-dns/addresses.conf
-  #
+  # Edit /var/lib/dev-dns/addresses.conf:
   #   address=/infra.example.com/127.0.0.1
   #   address=/vm.internal/10.0.0.42
   #
-  # dnsmasq does not re-read conf-dir on SIGHUP, so a systemd path unit
-  # restarts it when the file changes (validated first, so a typo cannot take
-  # DNS down). Edits survive reboots because /var/lib is persisted.
-  #
-  # Notes:
-  #  - dnsmasq 2.86+ forwards non-matching record types for an `address=`
-  #    domain upstream. Add `local=/<domain>/` next to an override if you do
-  #    not want AAAA/other types to leak (e.g. when overriding a real name).
-  #  - Apps that bypass the system resolver (browsers with DoH, `resolvectl
-  #    query`, which uses the D-Bus API) will not see these overrides. Verify
-  #    with `getent hosts` or `dig`.
+  # A path unit validates and restarts dnsmasq on change.
+  # dnsmasq 2.86+ forwards other record types for address= domains; add
+  # local=/<domain>/ to stop AAAA leaking. DoH clients and `resolvectl query`
+  # bypass these overrides; verify with `getent hosts` or `dig`.
   den.aspects.dev-dns = {
     nixos =
       {
@@ -38,6 +27,8 @@
         cfg = config.my.devDns;
         addressDir = dirOf cfg.addressFile;
         seedFile = pkgs.writeText "dev-dns-seed.conf" cfg.seed;
+        # resolved stub: dnsmasq upstream and NetBird DNS-manager signal.
+        resolvedStub = "127.0.0.53";
       in
       {
         options.my.devDns = {
@@ -45,9 +36,8 @@
             type = types.str;
             default = "127.0.0.1";
             description = ''
-              Loopback address dnsmasq binds on port 53. Port 53 is required:
-              /etc/resolv.conf cannot express a port. Pick an address other
-              than 127.0.0.1 or resolved's 127.0.0.53/54 to avoid collisions.
+              Loopback address dnsmasq binds on port 53 (resolv.conf cannot
+              express a port). Must not be resolved's 127.0.0.53/54.
             '';
           };
 
@@ -69,14 +59,9 @@
           seed = mkOption {
             type = types.lines;
             default = ''
-              # Local dev DNS overrides. A name and every subdomain resolve to the IP.
-              # Format: address=/<domain>/<ip>
+              # address=/<domain>/<ip> resolves the domain and all subdomains.
               # address=/app.example.com/127.0.0.1
-              # address=/vm.internal/10.0.0.42
-              #
-              # dnsmasq 2.86+ forwards other record types (e.g. AAAA) upstream for
-              # an address= domain. Add a matching local= line to keep it local:
-              # local=/app.example.com/
+              # Add local=/<domain>/ to stop other record types leaking upstream.
             '';
             description = "Initial contents of the address file, written only if it does not exist.";
           };
@@ -88,12 +73,19 @@
               assertion = hasPrefix "/" cfg.addressFile;
               message = "my.devDns.addressFile must be an absolute path, got \"${cfg.addressFile}\"";
             }
+            {
+              assertion = cfg.listenAddress != resolvedStub;
+              message = "my.devDns.listenAddress must not be ${resolvedStub}: dnsmasq forwards non-overridden queries to the systemd-resolved stub on that address.";
+            }
+            {
+              assertion = config.services.resolved.enable;
+              message = "my.devDns requires systemd-resolved: dnsmasq forwards non-overridden queries to its stub at ${resolvedStub}.";
+            }
           ];
 
-          # Wildcard-capable resolver in front of everything. It never reads
-          # /etc/resolv.conf (which now points at itself) and forwards every
-          # non-overridden query to the systemd-resolved stub, which keeps
-          # per-link corporate and NetBird split DNS intact.
+          # Wildcard resolver in front of everything. no-resolv plus the
+          # resolved stub upstream avoids a loop and keeps per-link and
+          # NetBird split DNS intact.
           services.dnsmasq = {
             enable = true;
             resolveLocalQueries = false; # true would add 127.0.0.1 as an upstream (loop)
@@ -101,23 +93,24 @@
               listen-address = cfg.listenAddress;
               bind-interfaces = true;
               no-resolv = true;
-              server = [ "127.0.0.53" ];
+              server = [ resolvedStub ];
               conf-dir = "${addressDir},*.conf";
               local-ttl = 30;
             };
           };
 
-          # Point the app-facing resolver at dnsmasq. Port 53 is required:
-          # /etc/resolv.conf cannot express a port.
+          # dnsmasq first (resolv.conf cannot express port 53).
+          # The stub must stay listed: NetBird only selects its systemd-resolved
+          # backend when the stub is in resolv.conf or nss-resolve precedes dns.
+          # Otherwise it tries to rewrite this read-only file, so peer DNS dies.
           environment.etc."resolv.conf".source = mkForce (
             pkgs.writeText "resolv.conf" ''
               nameserver ${cfg.listenAddress}
+              nameserver ${resolvedStub}
             ''
           );
 
-          # NixOS puts nss-resolve before files/dns with [!UNAVAIL=return], so
-          # glibc would bypass dnsmasq. Reorder so glibc uses dns (dnsmasq)
-          # first; keep the other systemd/avahi nss modules.
+          # glibc must hit dnsmasq, not nss-resolve, so put dns first.
           system.nssDatabases.hosts = mkForce [
             "files"
             "mymachines"
@@ -133,8 +126,7 @@
             "C ${cfg.addressFile} 0644 root root - ${seedFile}"
           ];
 
-          # A missing conf-dir is fatal to dnsmasq's preStart `--test`, so create
-          # it first (mkBefore) and order after tmpfiles.
+          # dnsmasq --test fails on a missing conf-dir; create it first.
           systemd.services.dnsmasq = {
             preStart = mkBefore "mkdir -p ${addressDir}";
             after = [ "systemd-tmpfiles-setup.service" ];
