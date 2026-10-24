@@ -10,11 +10,13 @@
     gitleaks
   ];
 
-  # Python for scripts/flake_stats.py (tabulate and matplotlib imports).
+  # Python for scripts/flake_stats.py (tabulate and matplotlib imports) and
+  # the PVE deploys (pyinfra).
   languages.python = {
     enable = true;
     package = pkgs.python313.withPackages (ps: [
       ps.matplotlib
+      ps.pyinfra
       ps.tabulate
     ]);
   };

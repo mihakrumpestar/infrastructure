@@ -146,6 +146,7 @@
           git
           git-filter-repo
           # Authenticated once with:
+          # gh auth status
           # gh auth login
           github-cli
 
