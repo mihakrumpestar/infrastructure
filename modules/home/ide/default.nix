@@ -99,32 +99,21 @@
               "$extension/syntaxes/gomplate-injection.tmLanguage.json"
           '';
         });
-        # Unofficial patches:
-        # - oauth-linux: official builds gate protocol-URL handling behind
-        #   __WIN32__, so OAuth callbacks are dropped on Linux
-        # - keyring-adoption: adopt accounts from the system keychain on
-        #   fresh machines (zero-click sign-in across PCs sharing a keyring)
-        # - disable-background-fetch: gate all automatic fetches behind
-        #   GITHUB_DESKTOP_DISABLE_BACKGROUND_FETCH (set by the wrapper below)
-        github-desktop-patched = pkgs.github-desktop.overrideAttrs (old: {
-          patches = (old.patches or [ ]) ++ [
-            ./github-desktop-oauth-linux.patch
-            ./github-desktop-keyring-adoption.patch
-            ./github-desktop-disable-background-fetch.patch
-          ];
-        });
-
-        # Stop automatic background fetches without touching the session
-        # environment; override per-launch with
-        # GITHUB_DESKTOP_DISABLE_BACKGROUND_FETCH=0.
-        github-desktop-local = pkgs.symlinkJoin {
-          name = "github-desktop-local-wrapped";
-          paths = [ github-desktop-patched ];
+        # Cloudflare's `cf` stores OAuth credentials encrypted with a key kept
+        # in the OS keyring. On Linux that backend is `secret-tool`, which is
+        # not part of cf's runtime PATH, and keyring use is opt-in via env.
+        cf-keyring = pkgs.symlinkJoin {
+          name = "cf-keyring";
+          paths = [ pkgs.cf ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
-            wrapProgram $out/bin/github-desktop \
-              --set-default GITHUB_DESKTOP_DISABLE_BACKGROUND_FETCH 1
+            for binary in cf cloudflare; do
+              wrapProgram $out/bin/$binary \
+                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.libsecret ]} \
+                --set-default CLOUDFLARE_AUTH_USE_KEYRING true
+            done
           '';
+          meta.mainProgram = "cf";
         };
       in
       {
@@ -156,8 +145,17 @@
           # Git
           git
           git-filter-repo
+          # Authenticated once with:
+          # gh auth login
           github-cli
-          github-desktop-local
+
+          # Cloudflare, usage examples:
+          # cf auth create work        # interactive sign-in, also creates the profile
+          # cf auth create personal
+          # cf auth activate work ~/Projects/work
+          # cf auth activate personal ~/Projects/personal
+          # cf auth list
+          cf-keyring
 
           yaak # TODO: test
           scc
@@ -290,27 +288,6 @@
           ".config/VSCodium/User/settings.json".source = ./vscode-settings.jsonc;
           ".vscode-oss/argv.json".source = ./vscode-argv.jsonc;
         };
-
-        # Switch GitHub CLI authentication profile via secret-service
-        programs.zsh.initContent = ''
-          gh-auth() {
-            if [[ $# -eq 0 ]]; then
-              echo "Usage: gh-auth <profile>"
-              return 1
-            fi
-            local profile="$1"
-            local secret_name="gh-cli-''${profile}"
-            local token
-            token=$(secret-tool lookup UserName "$secret_name" 2>/dev/null) || true
-            if [[ -z "$token" ]]; then
-              echo "Error: Secret '$secret_name' not found in secret-service" >&2
-              return 1
-            fi
-            export GH_TOKEN="$token"
-            export GITHUB_TOKEN="$token"
-            echo "GH_TOKEN and GITHUB_TOKEN set for profile '$profile'"
-          }
-        '';
       };
   };
 }

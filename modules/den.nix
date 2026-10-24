@@ -81,6 +81,10 @@
           inputs.llm-agents.overlays.shared-nixpkgs
           (_: prev: {
             consul-cni = inputs.consul-cni.packages.${prev.stdenv.hostPlatform.system}.default;
+            github-desktop = inputs.github-desktop.packages.${prev.stdenv.hostPlatform.system}.default;
+            # The weekly nixpkgs input predates cf; multiverse's store-path
+            # index serves the Hydra-built package without evaluating nixpkgs.
+            cf = inputs.multiverse.legacyPackages.${prev.stdenv.hostPlatform.system}.fast.latest.cf;
           })
           # Replace nixpkgs opencode with v2 from llm-agents once they support no auth serve
           (final: _: {
