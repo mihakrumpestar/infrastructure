@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-15,060 non-blank lines, comments included and Markdown excluded.
+14,979 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -41,12 +41,12 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | modules/den.nix  |     119 |
 | modules/hosts    |     495 |
 | modules/system   |   2,400 |
-| modules/home     |   4,607 |
+| modules/home     |   4,526 |
 | modules/users    |     214 |
-| modules (total)  |   7,835 |
+| modules (total)  |   7,754 |
 | packages (total) |   6,358 |
 | lib (total)      |     739 |
-| **Total**        |  15,060 |
+| **Total**        |  14,979 |
 
 </details>
 <!-- FAST_END -->
@@ -209,7 +209,6 @@ flowchart LR
         home_kiosk_browser["kiosk-browser"]:::aspect
         home_llm_agent["llm/agent"]:::aspect
         home_llm["llm"]:::aspect
-        home_llm_gateway["llm/gateway"]:::aspect
         home_llm_mcp["llm/mcp"]:::aspect
         home_llm_ui["llm/ui"]:::aspect
         home_note_taking["note-taking"]:::aspect
@@ -269,7 +268,6 @@ flowchart LR
     flake --> den
     home_kiosk_browser --> home_web_browser_policies
     home_llm --> home_llm_agent
-    home_llm --> home_llm_gateway
     home_llm --> home_llm_mcp
     home_llm --> home_llm_ui
     home_storage --> home_storage_bisync

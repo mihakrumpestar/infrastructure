@@ -161,7 +161,7 @@ let
 
     # 7-agent orchestration suite (orchestrator, council, etc.)
     oh-my-opencode-slim = {
-      version = "3.0.5";
+      version = "3.0.6";
       hash = null;
     };
   };
