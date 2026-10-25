@@ -115,6 +115,7 @@
                   # Get ID using about:debugging#/runtime/this-firefox
                   # "name" = "ID";
                   "ublock-origin" = "uBlock0@raymondhill.net";
+                  "flagfox" = "{1018e4d6-728f-4b20-ad56-37578a4de76b}";
                   "darkreader" = "addon@darkreader.org";
                   "imagus" = "{00000f2a-7cde-4f20-83ed-434fcb420d71}";
                   "tabliss" = "extension@tabliss.io";

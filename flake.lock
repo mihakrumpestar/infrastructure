@@ -704,6 +704,27 @@
         "type": "github"
       }
     },
+    "nomadx": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792875947,
+        "narHash": "sha256-aEnNiE8w+Td/TN/TYmeko6gphhJrwWkDHBEU/ZzWmhY=",
+        "ref": "main",
+        "rev": "4531c01d759fb6242adc2a6c4bd414e3de727da2",
+        "revCount": 3,
+        "type": "git",
+        "url": "ssh://git@github-personal/mihakrumpestar/nomadx.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "ssh://git@github-personal/mihakrumpestar/nomadx.git"
+      }
+    },
     "nur": {
       "inputs": {
         "flake-parts": "flake-parts_2",
@@ -875,6 +896,7 @@
         "nix-index-database": "nix-index-database",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs_5",
+        "nomadx": "nomadx",
         "nur": "nur",
         "obsidian-extensions": "obsidian-extensions",
         "openchamber": "openchamber",

@@ -147,7 +147,7 @@
 
           services.nomad = {
             enable = true;
-            package = pkgs.nomad_2_0;
+            package = pkgs.nomad;
 
             # Rootful agent: rootful podman socket + CNI NET_ADMIN.
             dropPrivileges = false;

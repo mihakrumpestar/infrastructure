@@ -85,6 +85,10 @@
             # The weekly nixpkgs input predates cf; multiverse's store-path
             # index serves the Hydra-built package without evaluating nixpkgs.
             cf = inputs.multiverse.legacyPackages.${prev.stdenv.hostPlatform.system}.fast.latest.cf;
+            # Fleet tooling from the nomadx pin: the agent package and the
+            # CLI, available everywhere as pkgs.nomad / pkgs.nomadx.
+            nomad = inputs.nomadx.packages.${prev.stdenv.hostPlatform.system}.nomad;
+            nomadx = inputs.nomadx.packages.${prev.stdenv.hostPlatform.system}.nomadx;
           })
           # Replace nixpkgs opencode with v2 from llm-agents once they support no auth serve
           (final: _: {

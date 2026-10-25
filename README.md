@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-15,054 non-blank lines, comments included and Markdown excluded.
+15,064 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     122 |
-| modules/den.nix  |     115 |
-| modules/hosts    |     496 |
+| flake.nix        |     128 |
+| modules/den.nix  |     119 |
+| modules/hosts    |     495 |
 | modules/system   |   2,404 |
-| modules/home     |   4,606 |
+| modules/home     |   4,607 |
 | modules/users    |     214 |
-| modules (total)  |   7,835 |
+| modules (total)  |   7,839 |
 | packages (total) |   6,358 |
 | lib (total)      |     739 |
-| **Total**        |  15,054 |
+| **Total**        |  15,064 |
 
 </details>
 <!-- FAST_END -->
@@ -148,6 +148,7 @@ flowchart LR
         input_nix_index_database["nix-index-database"]:::input
         input_nix_vscode_extensions["nix-vscode-extensions"]:::input
         input_nixpkgs["nixpkgs"]:::input
+        input_nomadx["nomadx"]:::input
         input_nur["nur"]:::input
         input_obsidian_extensions["obsidian-extensions"]:::input
         input_openchamber["openchamber"]:::input
@@ -288,7 +289,6 @@ flowchart LR
     host_personal_laptop --> opt_virtualization
     host_personal_laptop --> type_client
     host_personal_vps_02 --> host_personal_vps_02_hardware
-    host_personal_vps_02 --> opt_consul
     host_personal_vps_02 --> opt_nomad
     host_personal_vps_02 --> type_server
     host_personal_vps_02 --> type_vm_guest
@@ -319,6 +319,7 @@ flowchart LR
     input_nix_index_database --> flake
     input_nix_vscode_extensions --> flake
     input_nixpkgs --> flake
+    input_nomadx --> flake
     input_nur --> flake
     input_obsidian_extensions --> flake
     input_openchamber --> flake

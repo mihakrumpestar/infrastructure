@@ -9,7 +9,6 @@ in
       den.aspects.server
       den.aspects.vm-guest
       den.aspects.nomad
-      den.aspects.consul
     ];
     nixos =
       { lib, ... }:

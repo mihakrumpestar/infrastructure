@@ -79,6 +79,13 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    # Fleet tooling: pins the Nomad package used by the agents and the
+    # job schema consumed by the nomadx CLI.
+    nomadx = {
+      url = "git+ssh://git@github-personal/mihakrumpestar/nomadx.git?ref=main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Local
 
     consul-cni.url = "./packages/consul-cni";
