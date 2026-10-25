@@ -138,13 +138,6 @@
         };
 
         config = lib.mkIf cfg.enable {
-          # Packs bind-mount their state from /mnt/containers/<pack>/<group>/<task>.
-          # Persist it across the impermanence wipe: the directories (and the
-          # service data) must exist on every boot, because a restored system-job
-          # allocation does not re-run its prestart storage hook, and the Podman
-          # driver refuses a bind mount whose source is missing.
-          my.impermanence.directories = [ "/mnt/containers" ];
-
           services.nomad = {
             enable = true;
             package = pkgs.nomad;

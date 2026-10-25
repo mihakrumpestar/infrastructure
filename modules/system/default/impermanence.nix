@@ -84,9 +84,13 @@
             defaultDirectories = minimumDirectories ++ [
               "/var/log"
               "/etc/NetworkManager/system-connections"
-              "/var/lib"
+
               # Simplified setup, list of subdirs that really need to persist in "/var/lib":
               # bluetooth, systemd, auto-cryptenroll, sbctl, docker, pcrlock.d, etc.
+              "/var/lib"
+
+              # Data for multiple purposes (orchestrator, etc.)
+              "/mnt/data"
             ];
 
             defaultUserFiles = [
