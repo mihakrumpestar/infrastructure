@@ -13,7 +13,9 @@ set -o pipefail
 error_exit() {
     # Guard with || true: notify-send can fail outside an X session (e.g.
     # pre-login catch-up at boot). We must still exit 1 so systemd restarts.
-    DISPLAY=:0 notify-send -u critical -t 9999999 "Dead mens switch upload failed" "$1" || true
+    # Failure alerts expire after 5 min: long enough to notice, short enough
+    # to not pin a stale error on screen forever.
+    DISPLAY=:0 notify-send -u critical -t 300000 "Dead mens switch upload failed" "$1" || true
     exit 1
 }
 trap 'error_exit "An error occurred on line $LINENO."' ERR
