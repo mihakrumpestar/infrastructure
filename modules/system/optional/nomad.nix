@@ -51,6 +51,30 @@
           bind = if cfg.exposedInterfaces == [ ] then "127.0.0.1" else "0.0.0.0";
           advertise = port: "127.0.0.1:${toString port}";
         };
+
+        # Nomad's own DefaultConfig preemption values. default_scheduler_config
+        # is copied as a whole into the persisted scheduler config at
+        # bootstrap, so every leaf must be present or it is zeroed.
+        defaultSchedulerConfig = {
+          scheduler_algorithm = "binpack";
+          memory_oversubscription_enabled = true;
+          preemption_config = {
+            system_scheduler_enabled = true;
+            sysbatch_scheduler_enabled = false;
+            batch_scheduler_enabled = false;
+            service_scheduler_enabled = false;
+          };
+        };
+
+        # Only non-zero leaves are emitted: client.reserved defaults to zero for
+        # every resource Nomad fingerprints.
+        reservedSettings = lib.filterAttrs (_: value: value != 0 && value != "") {
+          cpu = cfg.reserved.cpu;
+          memory = cfg.reserved.memory;
+          disk = cfg.reserved.disk;
+          cores = cfg.reserved.cores;
+          reserved_ports = cfg.reserved.ports;
+        };
       in
       {
         options.my.nomad = {
@@ -68,6 +92,54 @@
             type = lib.types.str;
             default = "dc1";
             description = "Nomad datacenter name (default 'dc1').";
+          };
+
+          memoryOversubscription = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Enable the scheduler's memory oversubscription, Nomad's
+              overprovisioning path: a task may exceed its soft memory
+              reservation (resources.memory) up to resources.memory_max while
+              the client still has spare memory. Jobs must set memory_max to
+              benefit; without it, memory stays a hard limit.
+
+              Nomad only reads default_scheduler_config when it bootstraps an
+              empty cluster. On an already bootstrapped cluster, run:
+              `nomad operator scheduler set-config -memory-oversubscription=true`
+            '';
+          };
+
+          reserved = {
+            cpu = lib.mkOption {
+              type = lib.types.ints.unsigned;
+              default = 500;
+              description = "CPU bandwidth in MHz kept out of Nomad's allocatable capacity (client.reserved.cpu).";
+            };
+
+            memory = lib.mkOption {
+              type = lib.types.ints.unsigned;
+              default = 512;
+              description = "Memory in MB kept out of Nomad's allocatable capacity (client.reserved.memory).";
+            };
+
+            disk = lib.mkOption {
+              type = lib.types.ints.unsigned;
+              default = 0;
+              description = "Disk in MB kept out of Nomad's allocatable capacity (client.reserved.disk).";
+            };
+
+            cores = lib.mkOption {
+              type = lib.types.str;
+              default = "";
+              description = "CPU cpuset reserved for the host, e.g. \"0-1\" (client.reserved.cores).";
+            };
+
+            ports = lib.mkOption {
+              type = lib.types.str;
+              default = "";
+              description = "Comma-separated ports/ranges reserved on every fingerprinted interface (client.reserved.reserved_ports).";
+            };
           };
 
           disabledDrivers = lib.mkOption {
@@ -162,6 +234,9 @@
                 server = {
                   enabled = true;
                   bootstrap_expect = 1;
+                }
+                // lib.optionalAttrs cfg.memoryOversubscription {
+                  default_scheduler_config = defaultSchedulerConfig;
                 };
 
                 telemetry = {
@@ -179,6 +254,9 @@
                 }
                 // lib.optionalAttrs (cfg.disabledDrivers != [ ]) {
                   options."driver.denylist" = lib.concatStringsSep "," cfg.disabledDrivers;
+                }
+                // lib.optionalAttrs (reservedSettings != { }) {
+                  reserved = reservedSettings;
                 };
 
                 # Rootful podman driver on the default rootful socket. Since
