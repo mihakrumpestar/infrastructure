@@ -175,6 +175,24 @@ in
         pkgs,
         ...
       }:
+      let
+        anymd = pkgs.writeShellApplication {
+          name = "anymd";
+          runtimeInputs = [ pkgs.bun ];
+          text = ''
+            exec bunx @sylphx/anymd "$@"
+          '';
+        };
+
+        # It is in nixpkgs, but out-of-date
+        tokscale = pkgs.writeShellApplication {
+          name = "tokscale";
+          runtimeInputs = [ pkgs.bun ];
+          text = ''
+            exec bunx @tokscale/cli "$@"
+          '';
+        };
+      in
       {
         age.secrets."llm_agent.env" = {
           file = "${secretsDir}/secrets/users/krumpy-miha/llm_agent.env.age";
@@ -266,12 +284,9 @@ in
                 ];
                 enabled = true;
               };
-              "pdf-reader" = {
+              anymd = {
                 type = "local";
-                command = [
-                  "${pkgs.bun}/bin/bunx"
-                  "@sylphx/pdf-reader-mcp"
-                ];
+                command = [ "${anymd}/bin/anymd" ];
                 enabled = true;
               };
               # Code intelligence: per-project tree-sitter knowledge graph
@@ -458,7 +473,7 @@ in
             - `exa` or `webset`: get search results or queary web
             - `gh_grep`: search real code examples across public GitHub repositories
             - `browser-harness-js`: browser automation via CDP (use the cdp skill). The CLI drives the user's Chrome; the REPL server auto-starts on first call and keeps one persistent session. When task is not one-shot, always reuse session to minimize startup time and churn. The user starts Chrome with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
-            - `pdf-reader`: read PDF documents (DO NOT USE the build in "read" tool to read PDFs as it does not actually support them)
+            - `anymd`: read and convert PDF, Office, EPUB, HTML/URLs, images (OCR), and audio/video to Markdown
             - `codebase-memory-mcp`: code knowledge graph, prefer search_graph/trace_path/get_architecture over grep for structural questions and always use it in codebases as it helps finding connections 
             - `docs-mcp-server`: whenever user tells you to use it
             - `writeragent`: MCP for LibreOffice suite
@@ -532,6 +547,12 @@ in
         home.sessionVariables.OPENCODE_EXPERIMENTAL_CODE_MODE = "1";
 
         home.packages = [
+          # Document conversion CLI, same bunx package as the anymd MCP above.
+          anymd
+
+          # Token usage and cost tracker dashboard.
+          tokscale
+
           # Code intelligence MCP server; on PATH for the CLI (index/config/
           # query). MCP entry lives in settings.mcp above.
           pkgs.codebase-memory-mcp
