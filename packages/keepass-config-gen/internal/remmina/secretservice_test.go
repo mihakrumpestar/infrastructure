@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/godbus/dbus/v5"
+
+	"keepass-config-gen/internal/secretservice"
 )
 
 type fakeBus struct {
@@ -17,12 +19,14 @@ type fakeBus struct {
 	getErr      error
 	lockErr     error
 	searchErr   error
+	itemsErr    error
 	getAttrsErr error
 	setErr      error
 
 	searches map[dbus.ObjectPath]map[string]string
 	current  map[dbus.ObjectPath]map[string]string
 	attrs    map[dbus.ObjectPath]map[string]string
+	secret   string
 	setCalls int
 }
 
@@ -70,6 +74,17 @@ func (b *fakeBus) SetAttributes(item dbus.ObjectPath, attributes map[string]stri
 	return nil
 }
 
+// Items satisfies secretservice.Bus. Remmina never enumerates.
+func (b *fakeBus) Items(collection dbus.ObjectPath) ([]dbus.ObjectPath, error) {
+	if b.itemsErr != nil {
+		return nil, b.itemsErr
+	}
+	return b.items[collection], nil
+}
+
+// client wraps a fake bus the way DBusService does for the real one.
+func client(b *fakeBus) *secretservice.Client { return secretservice.New(b) }
+
 func TestSetProfileSuccess(t *testing.T) {
 	collection := dbus.ObjectPath("/org/freedesktop/secrets/collection/login")
 	item := dbus.ObjectPath("/org/freedesktop/secrets/collection/login/1")
@@ -77,7 +92,7 @@ func TestSetProfileSuccess(t *testing.T) {
 		collections: []dbus.ObjectPath{collection},
 		items:       map[dbus.ObjectPath][]dbus.ObjectPath{collection: {item}},
 	}
-	if err := setProfile(b, "0123456789abcdef", "/data/keepass_host-01234567.remmina"); err != nil {
+	if err := setProfile(client(b), "0123456789abcdef", "/data/keepass_host-01234567.remmina"); err != nil {
 		t.Fatal(err)
 	}
 	if got := b.searches[collection]["Uuid"]; got != "0123456789abcdef" {
@@ -104,7 +119,7 @@ func TestSetProfileSkipsMatchingAttributes(t *testing.T) {
 			item: {"filename": "/data/p.remmina", "key": "password", "xdg:schema": "org.remmina.Password"},
 		},
 	}
-	if err := setProfile(b, "uuid", "/data/p.remmina"); err != nil {
+	if err := setProfile(client(b), "uuid", "/data/p.remmina"); err != nil {
 		t.Fatal(err)
 	}
 	if b.setCalls != 0 {
@@ -122,7 +137,7 @@ func TestSetProfileUpdatesChangedAttributes(t *testing.T) {
 			item: {"filename": "/data/old.remmina", "key": "password", "xdg:schema": "org.remmina.Password"},
 		},
 	}
-	if err := setProfile(b, "uuid", "/data/new.remmina"); err != nil {
+	if err := setProfile(client(b), "uuid", "/data/new.remmina"); err != nil {
 		t.Fatal(err)
 	}
 	if b.attrs[item]["filename"] != "/data/new.remmina" {
@@ -138,7 +153,7 @@ func TestSetProfileGetAttributesFailure(t *testing.T) {
 		items:       map[dbus.ObjectPath][]dbus.ObjectPath{collection: {item}},
 		getAttrsErr: errors.New("denied"),
 	}
-	err := setProfile(b, "uuid", "/data/p.remmina")
+	err := setProfile(client(b), "uuid", "/data/p.remmina")
 	if err == nil || !strings.Contains(err.Error(), "cannot read attributes") {
 		t.Fatalf("error = %v", err)
 	}
@@ -153,7 +168,7 @@ func TestSetProfileLocked(t *testing.T) {
 		collections: []dbus.ObjectPath{collection},
 		locked:      map[dbus.ObjectPath]bool{collection: true},
 	}
-	if err := setProfile(b, "uuid", "/data/p.remmina"); !errors.Is(err, ErrLocked) {
+	if err := setProfile(client(b), "uuid", "/data/p.remmina"); !errors.Is(err, ErrLocked) {
 		t.Fatalf("error = %v, want ErrLocked", err)
 	}
 	if len(b.attrs) != 0 {
@@ -164,7 +179,7 @@ func TestSetProfileLocked(t *testing.T) {
 func TestSetProfileNotFound(t *testing.T) {
 	collection := dbus.ObjectPath("/c")
 	b := &fakeBus{collections: []dbus.ObjectPath{collection}}
-	if err := setProfile(b, "uuid", "/data/p.remmina"); !errors.Is(err, ErrNotFound) {
+	if err := setProfile(client(b), "uuid", "/data/p.remmina"); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("error = %v, want ErrNotFound", err)
 	}
 }
@@ -177,7 +192,7 @@ func TestSetProfileSetAttributesFailure(t *testing.T) {
 		items:       map[dbus.ObjectPath][]dbus.ObjectPath{collection: {item}},
 		setErr:      errors.New("denied"),
 	}
-	err := setProfile(b, "uuid", "/data/p.remmina")
+	err := setProfile(client(b), "uuid", "/data/p.remmina")
 	if err == nil || !strings.Contains(err.Error(), "cannot set attributes") || !strings.Contains(err.Error(), "denied") {
 		t.Fatalf("error = %v", err)
 	}
@@ -187,10 +202,10 @@ func TestSetProfileSetAttributesFailure(t *testing.T) {
 }
 
 func TestSetProfileUnavailable(t *testing.T) {
-	if err := setProfile(&fakeBus{}, "uuid", "/data/p.remmina"); !errors.Is(err, ErrUnavailable) {
+	if err := setProfile(client(&fakeBus{}), "uuid", "/data/p.remmina"); !errors.Is(err, ErrUnavailable) {
 		t.Fatalf("empty collections: %v, want ErrUnavailable", err)
 	}
-	if err := setProfile(&fakeBus{getErr: errors.New("no bus")}, "uuid", "/data/p.remmina"); !errors.Is(err, ErrUnavailable) {
+	if err := setProfile(client(&fakeBus{getErr: errors.New("no bus")}), "uuid", "/data/p.remmina"); !errors.Is(err, ErrUnavailable) {
 		t.Fatalf("get error: %v, want ErrUnavailable", err)
 	}
 }
@@ -207,7 +222,7 @@ func TestSetProfileUsesUnlockedCollection(t *testing.T) {
 			unlocked: {item},
 		},
 	}
-	if err := setProfile(b, "uuid", "/data/p.remmina"); err != nil {
+	if err := setProfile(client(b), "uuid", "/data/p.remmina"); err != nil {
 		t.Fatal(err)
 	}
 	if _, ok := b.attrs[dbus.ObjectPath("/locked/1")]; ok {
@@ -245,7 +260,7 @@ func TestDBusServiceInjectedBus(t *testing.T) {
 		collections: []dbus.ObjectPath{collection},
 		items:       map[dbus.ObjectPath][]dbus.ObjectPath{collection: {item}},
 	}
-	svc := &DBusService{dial: func() (bus, func(), error) {
+	svc := &DBusService{dial: func() (secretservice.Bus, func(), error) {
 		return fake, func() {}, nil
 	}}
 	if err := svc.SetProfile("uuid", "/data/p.remmina"); err != nil {
@@ -263,7 +278,7 @@ func TestVisible(t *testing.T) {
 		collections: []dbus.ObjectPath{collection},
 		items:       map[dbus.ObjectPath][]dbus.ObjectPath{collection: {item}},
 	}
-	got, err := visible(b, "uuid")
+	got, err := visible(client(b), "uuid")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -271,7 +286,7 @@ func TestVisible(t *testing.T) {
 		t.Fatal("visible returned false for a matching item")
 	}
 
-	missing, err := visible(&fakeBus{collections: []dbus.ObjectPath{collection}}, "uuid")
+	missing, err := visible(client(&fakeBus{collections: []dbus.ObjectPath{collection}}), "uuid")
 	if err != nil {
 		t.Fatalf("missing entry: %v", err)
 	}
@@ -287,10 +302,10 @@ func TestVisibleLockedWhenMatchMayBeHidden(t *testing.T) {
 		collections: []dbus.ObjectPath{locked, unlocked},
 		locked:      map[dbus.ObjectPath]bool{locked: true},
 	}
-	if _, err := visible(b, "uuid"); !errors.Is(err, ErrLocked) {
+	if _, err := visible(client(b), "uuid"); !errors.Is(err, ErrLocked) {
 		t.Fatalf("error = %v, want ErrLocked", err)
 	}
-	if _, err := findItem(b, "uuid"); !errors.Is(err, ErrLocked) {
+	if _, err := client(b).FindOne(map[string]string{"Uuid": "uuid"}); !errors.Is(err, ErrLocked) {
 		t.Fatalf("findItem error = %v, want ErrLocked", err)
 	}
 }
@@ -305,13 +320,13 @@ func TestFindItemRejectsMultipleMatches(t *testing.T) {
 			second: {dbus.ObjectPath("/second/1")},
 		},
 	}
-	if _, err := findItem(b, "uuid"); err == nil || !strings.Contains(err.Error(), "multiple") {
+	if _, err := client(b).FindOne(map[string]string{"Uuid": "uuid"}); err == nil || !strings.Contains(err.Error(), "multiple") {
 		t.Fatalf("findItem error = %v, want multiple-match error", err)
 	}
-	if _, err := visible(b, "uuid"); err == nil || !strings.Contains(err.Error(), "multiple") {
+	if _, err := visible(client(b), "uuid"); err == nil || !strings.Contains(err.Error(), "multiple") {
 		t.Fatalf("visible error = %v, want multiple-match error", err)
 	}
-	if err := setProfile(b, "uuid", "/data/p.remmina"); err == nil || !strings.Contains(err.Error(), "multiple") {
+	if err := setProfile(client(b), "uuid", "/data/p.remmina"); err == nil || !strings.Contains(err.Error(), "multiple") {
 		t.Fatalf("setProfile error = %v, want multiple-match error", err)
 	}
 }

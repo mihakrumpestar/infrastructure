@@ -141,6 +141,7 @@
             inputs.mutable-file.homeModules.default
             inputs.keepass-config-gen.homeManagerModules.ssh-config-gen
             inputs.keepass-config-gen.homeManagerModules.remmina-config-gen
+            inputs.keepass-config-gen.homeManagerModules.gh-config-gen
             (
               { osConfig, ... }:
               {

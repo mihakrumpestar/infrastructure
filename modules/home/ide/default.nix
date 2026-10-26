@@ -145,7 +145,8 @@
           # Git
           git
           git-filter-repo
-          # Authenticated once with:
+          # Accounts and tokens come from KeePassXC via the Secret Service;
+          # gh-config-gen keeps ~/.config/gh/hosts.yml in sync with them
           # gh auth status
           # gh auth login
           github-cli

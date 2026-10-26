@@ -12,7 +12,7 @@ buildGoModule {
 
   subPackages = [ "cmd/${subPackage}" ];
 
-  vendorHash = "sha256-XqWR8Qhww1PzCUxSFoOf80gdtJNimecFx33t9fyUt7c=";
+  vendorHash = "sha256-oVVqV9SQwwxpT8jxC/EfVhgu8vgQRNI2WULLYdm8xV4=";
 
   ldflags = [
     "-s"

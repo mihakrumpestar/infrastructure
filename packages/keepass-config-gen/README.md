@@ -1,9 +1,10 @@
 # KeePassXC config generators
 
-Generate OpenSSH client config, SSH signing trust, per-host git identities, and Remmina RDP profiles from a KeePassXC database. The package ships two binaries:
+Generate OpenSSH client config, SSH signing trust, per-host git identities, Remmina RDP profiles, and GitHub CLI account metadata from a KeePassXC database. The package ships three binaries:
 
 - `ssh-config-gen`: OpenSSH config, public keys, `allowed_signers`, git identities.
 - `remmina-config-gen`: Remmina `.remmina` profiles, with the RDP password resolved from KeePassXC over Secret Service.
+- `gh-config-gen`: `~/.config/gh/hosts.yml`, reconciled with the tokens KeePassXC publishes over Secret Service.
 
 Neither tool writes private keys or RDP passwords to disk. SSH derives public keys only. Remmina writes `password=.` and lets Remmina fetch the password at connect time.
 
@@ -109,6 +110,7 @@ inputs.keepass-config-gen.url = "./packages/keepass-config-gen";
 # home-manager sharedModules
 inputs.keepass-config-gen.homeManagerModules.ssh-config-gen
 inputs.keepass-config-gen.homeManagerModules.remmina-config-gen
+inputs.keepass-config-gen.homeManagerModules.gh-config-gen
 ```
 
 ```nix
@@ -127,6 +129,10 @@ programs.remmina-config-gen = {
   database = "~/Passwords.kdbx";
   yubikey = "2";
   noPassword = true;
+};
+
+programs.gh-config-gen = {
+  enable = true;
 };
 ```
 
@@ -172,15 +178,31 @@ programs.remmina-config-gen = {
 | `service.watch` | `false` | Regenerate on database or `remmina.pref` change |
 | `tray.enable` | `true` | System tray icon |
 
-The service and tray require a non-interactive credential: `noPassword`, `passwordCommand`, or `passwordFile`. A key file or YubiKey alone is not enough.
+The service and tray require a non-interactive credential: `noPassword`, `passwordCommand`, or `passwordFile`. A key file or YubiKey alone is not enough. `gh-config-gen` is the exception: it never unlocks the database, it only reads what KeePassXC already publishes.
+
+### gh options
+
+| Option | Default | Purpose |
+|---|---|---|
+| `enable` | `false` | Install the CLI, the timer, and the tray |
+| `package` | built from this flake | Override the package |
+| `output` | `~/.config/gh/hosts.yml` | gh hosts file to reconcile. Must stay writable; `programs.gh.hosts` must stay empty |
+| `service.enable` | `true` | Install the reconciliation service and its timer |
+| `service.interval` | `15min` | How often to reconcile |
+| `service.tray.enable` | `true` | System tray icon |
+
+`gh-config-gen` reads only the `service` and `username` attributes of keyring items, so it cannot leak a token. Locked collections are skipped, never unlocked, so a run never prompts. A locked or absent keyring leaves the file untouched instead of emptying it.
+
+KeePassXC exposes no unlock signal, so a timer polls instead of watching the database: one metadata-only D-Bus query every 15 minutes, which is also what notices a newly synced or newly unlocked account.
 
 ### When it regenerates
 
-The services are on-demand and never start at login:
+The services are on-demand and never start the database unlock at boot:
 
 - Tray: left click or Refresh regenerates immediately.
 - `service.watch = true`: a systemd path unit runs it when the database changes. Remmina also watches `remmina.pref`.
 - Manually: `systemctl --user start ssh-config-gen` or `systemctl --user start remmina-config-gen`.
+- `gh-config-gen`: oneshot on a timer, every 15 minutes, plus an explicit tray refresh. It never unlocks the database.
 
 This keeps interactive or touch-requiring unlocks out of boot and activation.
 
@@ -209,7 +231,16 @@ remmina-config-gen --database ~/Passwords.kdbx --if-changed
 
 `--check` is read-only but queries Secret Service for exposed entries. If the service is unavailable, it warns and assumes every entry is visible. If KeePassXC is locked, it fails. `--if-changed` checks the fingerprint and that listed files exist; use `--check` or a tray refresh for content drift.
 
-Run `ssh-config-gen -h` or `remmina-config-gen -h` for all flags.
+GitHub CLI:
+
+```sh
+gh-config-gen --print
+gh-config-gen --check
+```
+
+An unavailable or locked keyring is a warning, not a failure: the hosts file is left untouched rather than emptied.
+
+Run `ssh-config-gen -h`, `remmina-config-gen -h`, or `gh-config-gen -h` for all flags.
 
 ## Generated files
 
@@ -221,10 +252,12 @@ Run `ssh-config-gen -h` or `remmina-config-gen -h` for all flags.
 | `~/.config/git/keepass-identities/<alias>` | Per-identity git config |
 | `~/.config/git/keepass-identities/include.conf` | `includeIf` fragment mapping SSH aliases to identities |
 | `<remmina datadir>/keepass_<slug>-<uuid>.remmina` | Remmina profiles with `password=.` |
+| `~/.config/gh/hosts.yml` | gh account metadata, rewritten from the keyring |
 | `~/.local/state/ssh-config-gen/db-state` | SSH last database/options fingerprint |
 | `~/.local/state/ssh-config-gen/log` | SSH tray last-run log |
 | `~/.local/state/remmina-config-gen/state` | Remmina fingerprint plus generated profile paths |
 | `~/.local/state/remmina-config-gen/log` | Remmina tray last-run log |
+| `~/.local/state/gh-config-gen/log` | gh-config-gen tray last-run log |
 
 Complete runs prune stale outputs: unused `.pub` files are removed, `allowed_signers` is rewritten, and old managed `.remmina` files are removed. Files without the configured prefix are never touched. A Remmina run that skips an entry does not prune: existing profiles are preserved and the state file is removed so the next run retries.
 
@@ -240,6 +273,8 @@ Complete runs prune stale outputs: unused `.pub` files are removed, `allowed_sig
 - **The Remmina entry must be exposed.** An entry outside the Secret Service group is skipped. Unlock KeePassXC before connecting. Leave `disablepasswordstoring` at `0`; enabling it can delete the KeePassXC entry.
 - **Remmina does not watch the profile directory.** New or removed profiles appear after a refresh or restart. A changed RDP password needs no regeneration. A changed `remmina_hosts` or title needs a refresh; a title change is pruned on the next complete run.
 - **`--print` and `--check` are read-only.** Remmina `--check` may query Secret Service for visibility; see the command examples for its offline and locked behaviour.
+- **`gh` needs the account in `hosts.yml`, not just the keyring.** That is the whole point of `gh-config-gen`. A token alone leaves `gh auth status` reporting "not logged in".
+- **Do not also set `programs.gh.hosts`.** It generates a read-only store symlink at the same path; the module asserts the two are not combined.
 
 ## Troubleshooting
 
@@ -250,6 +285,7 @@ Complete runs prune stale outputs: unused `.pub` files are removed, `allowed_sig
 - If Remmina logs that it cannot connect to a secrecy service, it started before KeePassXC's Secret Service was available. Its glibsecret plugin does not retry; restart Remmina after KeePassXC is running and unlocked.
 - If a profile contains `password=` instead of `password=.`, Remmina saved it without a Secret Service connection. Refresh from the tray or rerun the generator, then reconnect after restarting Remmina.
 - If the tray is missing, confirm the StatusNotifierItem widget is present in your panel and check `systemctl --user status ssh-config-gen-tray` or `systemctl --user status remmina-config-gen-tray`.
+- `gh auth status` says "not logged in" while `secret-tool search service gh:github.com` finds the token: `hosts.yml` is stale or missing. Run `gh-config-gen --print` to see the document it would write, then `systemctl --user start gh-config-gen`. Check that KeePassXC owns `org.freedesktop.secrets` and that the entry is in the exposed group.
 
 ## Development
 
@@ -259,9 +295,10 @@ nix shell nixpkgs#go -c go vet ./...
 nix shell nixpkgs#go -c go test ./...
 nix build 'path:.#ssh-config-gen'
 nix build 'path:.#remmina-config-gen'
+nix build 'path:.#gh-config-gen'
 ```
 
-Tests cover SSH parsing, key derivation, state and stale-file handling, an end-to-end SSH run against a fake CLI, Remmina datadir and `remmina_hosts` parsing, rendering and validation, pruning and state invalidation, check visibility and offline fallback, and the Secret Service flow with a fake bus. Tray tests cover private log permissions.
+Tests cover SSH parsing, key derivation, state and stale-file handling, an end-to-end SSH run against a fake CLI, Remmina datadir and `remmina_hosts` parsing, rendering and validation, pruning and state invalidation, check visibility and offline fallback, the Secret Service flow with a fake bus, and `hosts.yml` reconciliation: active-account precedence, orphan and inline-token users, preserved unknown keys, and idempotency. Tray tests cover private log permissions.
 
 ## Credits
 

@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-15,072 non-blank lines, comments included and Markdown excluded.
+16,645 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -38,15 +38,15 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | Component        |   Lines |
 |:-----------------|--------:|
 | flake.nix        |     131 |
-| modules/den.nix  |     140 |
+| modules/den.nix  |     141 |
 | modules/hosts    |     495 |
 | modules/system   |   2,481 |
-| modules/home     |   4,477 |
-| modules/users    |     214 |
-| modules (total)  |   7,807 |
-| packages (total) |   6,358 |
+| modules/home     |   4,478 |
+| modules/users    |     218 |
+| modules (total)  |   7,813 |
+| packages (total) |   7,925 |
 | lib (total)      |     776 |
-| **Total**        |  15,072 |
+| **Total**        |  16,645 |
 
 </details>
 <!-- FAST_END -->

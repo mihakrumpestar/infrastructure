@@ -43,6 +43,11 @@ in
         yubikey = "1";
         noPassword = true;
       };
+
+      # gh reads account metadata from ~/.config/gh/hosts.yml and the token from
+      # the Secret Service. KeePassXC publishes both, so accounts follow the
+      # database across machines instead of being re-authenticated per host.
+      programs.gh-config-gen.enable = true;
     };
     nixos =
       {
