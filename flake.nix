@@ -73,8 +73,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Upstream now ships a flake. The pinned ref is PR #5618 (v2.5.2 plus the
+    # corrected bunDeps hash), the newest fully buildable ref because no release
+    # tag has correct hashes yet. Move to the release tag once the PR merges.
     openchamber = {
-      url = "github:icebluerabbit/openchamber-flake/dev"; # Was zms-dev/openchamber-flake before
+      url = "github:openchamber/openchamber/a38c72e419ab5a3bc902af9bdc48de82c28a103c";
     };
 
     llm-agents.url = "github:numtide/llm-agents.nix";

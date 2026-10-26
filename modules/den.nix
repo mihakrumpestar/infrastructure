@@ -90,11 +90,32 @@
             nomad = inputs.nomadx.packages.${prev.stdenv.hostPlatform.system}.nomad;
             nomadx = inputs.nomadx.packages.${prev.stdenv.hostPlatform.system}.nomadx;
           })
-          # Replace nixpkgs opencode with v2 from llm-agents once they support no auth serve
-          (final: _: {
-            opencode = final.llm-agents.opencode;
-            opencode-desktop = final.llm-agents.opencode-desktop;
-          })
+          # llm-agents ships OpenCode v2 as `opencode2`, so rename the binary and
+          # mainProgram for the home-manager module and service. The old "no auth
+          # serve" blocker no longer exists: v2 `serve` always requires basic auth.
+          # The wrapper keeps the version in its name so lib.getVersion reports
+          # 2.1.4, which is what makes the home-manager module use v2 behaviour.
+          (
+            final: prev:
+            let
+              opencode2 = final.llm-agents.opencode2;
+            in
+            {
+              opencode =
+                prev.runCommand "opencode-${opencode2.version}"
+                  {
+                    inherit (opencode2) version;
+                    nativeBuildInputs = [ prev.makeWrapper ];
+                    meta = opencode2.meta // {
+                      mainProgram = "opencode";
+                    };
+                  }
+                  ''
+                    mkdir -p $out/bin
+                    makeWrapper ${opencode2}/bin/opencode2 $out/bin/opencode
+                  '';
+            }
+          )
         ];
 
         imports = [

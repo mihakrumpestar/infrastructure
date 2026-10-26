@@ -6,7 +6,12 @@
 {
   home.llm-ui = {
     homeManager =
-      { lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         source = inputs.openchamber.packages.${pkgs.stdenv.hostPlatform.system};
 
@@ -111,6 +116,8 @@
         };
 
         # Connect to the existing opencode service instead of starting its own.
+        # v2 serve always requires Basic auth, so the wrapper supplies the
+        # loopback password (openchamber captures it once at startup).
         # OpenChamber runs `git ls-remote` per remote on startup (active-branch
         # check), triggering SSH key prompts. Fail SSH fast and silently
         # instead; local git ops still work. Override per-launch with
@@ -123,6 +130,7 @@
             wrapProgram $out/bin/openchamber-desktop \
               --set-default OPENCODE_SKIP_START true \
               --set-default OPENCODE_HOST http://127.0.0.1:4096 \
+              --set-default OPENCODE_SERVER_PASSWORD ${config.my.llm.opencodeServerPassword} \
               --set-default GIT_SSH_COMMAND "ssh -o BatchMode=yes -o IdentityAgent=none -o ConnectTimeout=1"
           '';
         };
