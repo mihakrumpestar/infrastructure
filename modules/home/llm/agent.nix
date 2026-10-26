@@ -173,6 +173,12 @@ in
             path = "${config.home.homeDirectory}/.agenix/secrets/llm_agent.env";
           };
 
+          # OpenCode is driven through OpenChamber (home.llm-ui), which themes
+          # itself from its own settings.json, so the stylix opencode target
+          # would only add an unused stylix theme plus a cli.json just to point
+          # at it.
+          stylix.targets.opencode.enable = false;
+
           programs.opencode = {
             enable = true;
 
