@@ -1,5 +1,4 @@
 {
-  den,
   home,
   inputs,
   ...
@@ -24,8 +23,6 @@ in
       home.clipboard
       home.autostart
       home.scripts
-
-      den.aspects.dev-dns
     ];
 
     homeManager = _: {

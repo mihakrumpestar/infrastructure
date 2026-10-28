@@ -187,6 +187,8 @@ in
               update = "disable";
               default_agent = "orchestrator";
               model = "gateway/default";
+              websearch = false; # Using our own via MCP
+
               # Built-in compaction summarizes the older conversation and keeps a
               # recent verbatim tail. buffer reserves free tokens below the window,
               # so the 1M models compact at 450k instead of at the default

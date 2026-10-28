@@ -15,8 +15,32 @@
       let
         source = inputs.openchamber.packages.${pkgs.stdenv.hostPlatform.system};
 
-        # ~/.config/openchamber/settings.json. Re-asserted on each activation;
-        # UI changes revert on the next switch.
+        # The app's own settings registry: one source of truth for which key
+        # lives where, so nothing here needs a hand-kept second list. A key the
+        # registry does not know fails the eval instead of landing in the wrong
+        # file, where the app would drop it without a word.
+        registry = builtins.fromJSON (
+          builtins.readFile "${inputs.openchamber}/packages/web/server/lib/opencode/settings-registry.json"
+        );
+
+        # Only two files exist, so any other scope has no home; a dropped key
+        # would look applied and never be read.
+        scopeOf =
+          name:
+          let
+            scope = (registry.fields.${name} or { }).scope or null;
+          in
+          if
+            builtins.elem scope [
+              "instance"
+              "profile"
+            ]
+          then
+            scope
+          else
+            throw "openchamber: settings key '${name}' is missing or not instance/profile scoped";
+
+        # Re-asserted on each activation; UI changes revert on the next switch.
         settings = {
           # Theme
           useSystemTheme = false;
@@ -28,6 +52,7 @@
           defaultModel = "gateway/default";
           defaultAgent = "orchestrator";
           defaultFileViewerPreview = false;
+          desktopMinimizeToTrayEnabled = true;
 
           # Chat UI
           chatRenderMode = "live";
@@ -36,6 +61,7 @@
           wideChatLayoutEnabled = true;
           showSplitAssistantMessageActions = false;
           showReasoningTraces = true;
+          expandReasoningWhileStreaming = true;
           usageDisplayMode = "usage";
 
           # Notifications
@@ -62,15 +88,21 @@
           desktopLocalPort = 4097;
         };
 
-        settingsOverlay = pkgs.writeText "openchamber-settings-overlay.json" (
-          builtins.toJSON settings + "\n"
-        );
+        # The app keeps instance facts in settings.json and the profile in
+        # preferences.json, which wins where both have a key. Split by the
+        # registry's scope so each lands where it is read.
+        byScope = lib.groupBy scopeOf (builtins.attrNames settings);
+        overlayFor =
+          scope:
+          pkgs.writeText "openchamber-settings-${scope}-overlay.json" (
+            builtins.toJSON (lib.getAttrs (byScope.${scope} or [ ]) settings) + "\n"
+          );
+        instanceOverlay = overlayFor "instance";
+        profileOverlay = overlayFor "profile";
 
-        # openchamber atomically rewrites settings.json (tmp+rename), mixing
-        # preferences with runtime state (relay keys, projects, ...). HM can't
-        # own it, the app's rename replaces managed symlinks. Instead, this
-        # merges our prefs over the live file on each activation, leaving
-        # runtime state untouched. Never fails activation.
+        # The app rewrites both files (tmp+rename) with our prefs mixed into
+        # runtime state, so HM can't own them: the rename replaces symlinks.
+        # Merge our prefs over the live files on each activation instead.
         # https://github.com/openchamber/openchamber/issues/2182
         openchamber-settings-sync = pkgs.writeShellApplication {
           name = "openchamber-settings-sync";
@@ -80,38 +112,63 @@
             pkgs.diffutils
           ];
           text = ''
-            overlay="${settingsOverlay}"
+            instanceOverlay="${instanceOverlay}"
+            profileOverlay="${profileOverlay}"
 
-            # Mirrors the app's own data dir resolution (XDG is not honored).
             data_dir="''${OPENCHAMBER_DATA_DIR:-$HOME/.config/openchamber}"
-            settings_file="$data_dir/settings.json"
+            settings="$data_dir/settings.json"
+            prefs="$data_dir/preferences.json"
 
             install -d -m 700 "$data_dir"
 
-            if [ ! -e "$settings_file" ]; then
-              install -m 600 "$overlay" "$settings_file"
+            # Move src over dst at mode 600, only when the content changed.
+            commit() {
+              if cmp -s "$1" "$2"; then
+                rm -f "$1"
+              else
+                chmod 600 "$1"
+                mv "$1" "$2"
+              fi
+            }
+
+            # Never fail activation: leave the file as it was and move on.
+            bail() {
+              echo "openchamber-settings-sync: $1, leaving it unchanged" >&2
+              rm -f "$2"
+              exit 0
+            }
+
+            # Instance facts: our prefs over the app's runtime state. A file we
+            # cannot parse is moved aside rather than truncated: it still holds
+            # projects and window bounds worth keeping.
+            if [ -s "$settings" ] && ! jq -e . "$settings" >/dev/null 2>&1; then
+              mv "$settings" "$settings.corrupt"
+            fi
+            [ -s "$settings" ] || echo '{}' > "$settings"
+
+            jq --slurpfile o "$instanceOverlay" '. * $o[0]' "$settings" > "$settings.new" \
+              || bail "could not merge $settings" "$settings.new"
+            commit "$settings.new" "$settings"
+
+            # Profile: each key as { value, updatedAt }. An unchanged value keeps
+            # its stamp. A file we cannot parse is left alone: the app pauses
+            # profile writes on it, so replacing it would drop unreadable state.
+            if [ -s "$prefs" ] && ! jq -e '
+                type == "object" and .version == 1 and (.fields | type) == "object"
+              ' "$prefs" >/dev/null 2>&1
+            then
+              echo "openchamber-settings-sync: $prefs is not a version-1 document, leaving it unchanged" >&2
               exit 0
             fi
+            [ -s "$prefs" ] || echo '{"version":1,"fields":{}}' > "$prefs"
 
-            if ! jq empty "$settings_file" >/dev/null 2>&1; then
-              mv "$settings_file" "$settings_file.corrupt"
-              install -m 600 "$overlay" "$settings_file"
-              exit 0
-            fi
-
-            tmp="$(mktemp "$data_dir/settings.json.sync.XXXXXX")"
-            if ! jq --slurpfile prefs "$overlay" '. * $prefs[0]' "$settings_file" > "$tmp"; then
-              echo "openchamber-settings-sync: merge failed, leaving $settings_file unchanged" >&2
-              rm -f "$tmp"
-              exit 0
-            fi
-
-            if ! cmp -s "$tmp" "$settings_file"; then
-              chmod 600 "$tmp"
-              mv "$tmp" "$settings_file"
-            else
-              rm -f "$tmp"
-            fi
+            jq --slurpfile o "$profileOverlay" --argjson now "$(date +%s%3N)" '
+              .fields |= reduce ($o[0] | to_entries[]) as $e (.;
+                .[$e.key] = (if .[$e.key].value == $e.value
+                              then .[$e.key]
+                              else { value: $e.value, updatedAt: $now } end))
+            ' "$prefs" > "$prefs.new" || bail "could not merge $prefs" "$prefs.new"
+            commit "$prefs.new" "$prefs"
           '';
         };
 

@@ -2,7 +2,7 @@
 {
   den.aspects.docker = {
     nixos =
-      { ... }:
+      { pkgs, ... }:
       {
         imports = [ ./_container-runtime.nix ];
 
@@ -10,7 +10,6 @@
 
         virtualisation.docker = {
           enable = true;
-          storageDriver = "btrfs"; # All hosts use btrfs root; containerd overlayfs snapshotter is incompatible with btrfs
           daemon = {
             settings = {
               log-level = "warn"; # "debug"|"info"|"warn"|"error"|"fatal" (default "info")
@@ -20,6 +19,10 @@
             };
           };
         };
+
+        environment.systemPackages = with pkgs; [
+          lazydocker # TUI for Docker container management
+        ];
 
         # Add required users to group "docker"
       };

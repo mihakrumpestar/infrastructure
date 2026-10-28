@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-16,647 non-blank lines, comments included and Markdown excluded.
+16,558 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -40,13 +40,13 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | flake.nix        |     131 |
 | modules/den.nix  |     141 |
 | modules/hosts    |     495 |
-| modules/system   |   2,481 |
-| modules/home     |   4,480 |
-| modules/users    |     218 |
-| modules (total)  |   7,815 |
+| modules/system   |   2,340 |
+| modules/home     |   4,534 |
+| modules/users    |     216 |
+| modules (total)  |   7,726 |
 | packages (total) |   7,925 |
 | lib (total)      |     776 |
-| **Total**        |  16,647 |
+| **Total**        |  16,558 |
 
 </details>
 <!-- FAST_END -->
@@ -183,7 +183,6 @@ flowchart LR
         sys_style["style"]:::aspect
         opt_container_runtime["container-runtime"]:::aspect
         opt_consul["consul"]:::aspect
-        opt_dev_dns["dev-dns"]:::aspect
         opt_docker["docker"]:::aspect
         opt_nomad["nomad"]:::aspect
         opt_nvidia["nvidia"]:::aspect
@@ -356,7 +355,6 @@ flowchart LR
     user_krumpy_miha --> home_ssh
     user_krumpy_miha --> home_storage
     user_krumpy_miha --> home_web_browser
-    user_krumpy_miha --> opt_dev_dns
 
 ```
 <!-- DEPS_END -->

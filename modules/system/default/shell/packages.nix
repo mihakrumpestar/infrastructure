@@ -40,7 +40,6 @@
 
           # TUI: Terminal-UI
           lazygit # Git terminal UI
-          lazydocker # Docker container management, Portainer alternative
           lazyjournal
 
           # Archiving
