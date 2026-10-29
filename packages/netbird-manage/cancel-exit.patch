@@ -1,0 +1,455 @@
+diff --git a/internal/commands/accounts.go b/internal/commands/accounts.go
+index 295ae62..0bfec4c 100644
+--- a/internal/commands/accounts.go
++++ b/internal/commands/accounts.go
+@@ -406,8 +406,8 @@ func (s *Service) deleteAccount(accountID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("account", "", accountID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("account", "", accountID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err := s.Client.MakeRequest("DELETE", "/accounts/"+accountID, nil)
+diff --git a/internal/commands/dns.go b/internal/commands/dns.go
+index ea633e9..3d39564 100644
+--- a/internal/commands/dns.go
++++ b/internal/commands/dns.go
+@@ -454,8 +454,8 @@ func (s *Service) deleteDNSGroup(groupID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("DNS nameserver group", group.Name, groupID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("DNS nameserver group", group.Name, groupID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/dns/nameservers/"+groupID, nil)
+diff --git a/internal/commands/dns_zones.go b/internal/commands/dns_zones.go
+index bab11c7..33f8ce2 100644
+--- a/internal/commands/dns_zones.go
++++ b/internal/commands/dns_zones.go
+@@ -345,8 +345,8 @@ func (s *Service) deleteDNSZone(zoneID string) error {
+ 		"Enabled": fmt.Sprintf("%t", zone.Enabled),
+ 	}
+ 
+-	if !helpers.ConfirmSingleDeletion("DNS zone", zone.Name, zoneID, details) {
+-		return nil
++	if err := helpers.ConfirmSingleDeletion("DNS zone", zone.Name, zoneID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err := s.Client.MakeRequest("DELETE", "/dns/zones/"+zoneID, nil)
+@@ -524,8 +524,8 @@ func (s *Service) deleteDNSRecord(zoneID, recordID string) error {
+ 		"TTL":     fmt.Sprintf("%d", record.TTL),
+ 	}
+ 
+-	if !helpers.ConfirmSingleDeletion("DNS record", record.Name, recordID, details) {
+-		return nil
++	if err := helpers.ConfirmSingleDeletion("DNS record", record.Name, recordID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err := s.Client.MakeRequest("DELETE", "/dns/zones/"+zoneID+"/records/"+recordID, nil)
+diff --git a/internal/commands/groups.go b/internal/commands/groups.go
+index aae7853..590b2e0 100644
+--- a/internal/commands/groups.go
++++ b/internal/commands/groups.go
+@@ -321,8 +321,8 @@ func (s *Service) deleteGroup(groupIdentifier string) error {
+ 		"Resources": fmt.Sprintf("%d", group.ResourcesCount),
+ 	}
+ 
+-	if !helpers.ConfirmSingleDeletion("group", group.Name, group.ID, details) {
+-		return nil
++	if err := helpers.ConfirmSingleDeletion("group", group.Name, group.ID, details); err != nil {
++		return err
+ 	}
+ 
+ 	fmt.Printf("Deleting group '%s' (ID: %s)...\n", group.Name, group.ID)
+@@ -369,8 +369,8 @@ func (s *Service) deleteGroupsBatch(idList string) error {
+ 		return fmt.Errorf("no valid groups found to delete")
+ 	}
+ 
+-	if !helpers.ConfirmBulkDeletion("groups", itemList, len(groups)) {
+-		return nil
++	if err := helpers.ConfirmBulkDeletion("groups", itemList, len(groups)); err != nil {
++		return err
+ 	}
+ 
+ 	var succeeded, failed int
+@@ -655,8 +655,8 @@ func (s *Service) deleteUnusedGroups() error {
+ 		groupList[i] = fmt.Sprintf("%s (ID: %s)", group.Name, group.ID)
+ 	}
+ 
+-	if !helpers.ConfirmBulkDeletion("groups", groupList, len(unusedGroups)) {
+-		return nil
++	if err := helpers.ConfirmBulkDeletion("groups", groupList, len(unusedGroups)); err != nil {
++		return err
+ 	}
+ 
+ 	fmt.Printf("\nDeleting %d group(s)...\n", len(unusedGroups))
+diff --git a/internal/commands/ingress_ports.go b/internal/commands/ingress_ports.go
+index b859aab..d290802 100644
+--- a/internal/commands/ingress_ports.go
++++ b/internal/commands/ingress_ports.go
+@@ -526,8 +526,8 @@ func (s *Service) deleteIngressPort(peerID, allocationID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("ingress port allocation", allocation.Name, allocationID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("ingress port allocation", allocation.Name, allocationID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/peers/"+peerID+"/ingress/ports/"+allocationID, nil)
+@@ -728,8 +728,8 @@ func (s *Service) deleteIngressPeer(ingressPeerID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("ingress peer", peer.PeerID, ingressPeerID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("ingress peer", peer.PeerID, ingressPeerID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/ingress/peers/"+ingressPeerID, nil)
+diff --git a/internal/commands/migrate.go b/internal/commands/migrate.go
+index ed0d8e7..c74bf43 100644
+--- a/internal/commands/migrate.go
++++ b/internal/commands/migrate.go
+@@ -180,7 +180,7 @@ func HandleMigrateCommand(args []string, debug bool) error {
+ 			fmt.Println("Configuration migration skipped.")
+ 			fmt.Println("You can run configuration migration later with:")
+ 			fmt.Println("  netbird-manage migrate --source-token <token> --dest-token <token> --config")
+-			return nil
++			return helpers.ErrCancelled
+ 		}
+ 		fmt.Println()
+ 
+diff --git a/internal/commands/networks.go b/internal/commands/networks.go
+index 974ae91..5967e03 100644
+--- a/internal/commands/networks.go
++++ b/internal/commands/networks.go
+@@ -445,8 +445,8 @@ func (s *Service) deleteNetwork(networkID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("network", network.Name, networkID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("network", network.Name, networkID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/networks/"+networkID, nil)
+@@ -738,8 +738,8 @@ func (s *Service) removeNetworkResource(networkID, resourceID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("network resource", resource.Name, resourceID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("network resource", resource.Name, resourceID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/networks/"+networkID+"/resources/"+resourceID, nil)
+@@ -982,8 +982,8 @@ func (s *Service) removeNetworkRouter(networkID, routerID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("network router", "", routerID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("network router", "", routerID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/networks/"+networkID+"/routers/"+routerID, nil)
+diff --git a/internal/commands/notifications.go b/internal/commands/notifications.go
+index 02f7b3e..a3cbb60 100644
+--- a/internal/commands/notifications.go
++++ b/internal/commands/notifications.go
+@@ -331,8 +331,8 @@ func (s *Service) deleteNotificationChannel(channelID string) error {
+ 		"Event Types": strings.Join(channel.EventTypes, ", "),
+ 	}
+ 
+-	if !helpers.ConfirmSingleDeletion("notification channel", channel.Type, channelID, details) {
+-		return nil
++	if err := helpers.ConfirmSingleDeletion("notification channel", channel.Type, channelID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err := s.Client.MakeRequest("DELETE", "/integrations/notifications/channels/"+channelID, nil)
+diff --git a/internal/commands/peers.go b/internal/commands/peers.go
+index af50064..902379b 100644
+--- a/internal/commands/peers.go
++++ b/internal/commands/peers.go
+@@ -307,8 +307,8 @@ func (s *Service) removePeerByID(peerID string) error {
+ 		details["Groups"] = "None"
+ 	}
+ 
+-	if !helpers.ConfirmSingleDeletion("peer", peer.Name, peer.ID, details) {
+-		return nil
++	if err := helpers.ConfirmSingleDeletion("peer", peer.Name, peer.ID, details); err != nil {
++		return err
+ 	}
+ 
+ 	fmt.Printf("Removing peer '%s' (ID: %s)...\n", peer.Name, peer.ID)
+@@ -347,8 +347,8 @@ func (s *Service) removePeersBatch(idList string) error {
+ 		return fmt.Errorf("no valid peers found to remove")
+ 	}
+ 
+-	if !helpers.ConfirmBulkDeletion("peers", itemList, len(peers)) {
+-		return nil
++	if err := helpers.ConfirmBulkDeletion("peers", itemList, len(peers)); err != nil {
++		return err
+ 	}
+ 
+ 	var succeeded, failed int
+diff --git a/internal/commands/policies.go b/internal/commands/policies.go
+index b6974c3..ac06ddc 100644
+--- a/internal/commands/policies.go
++++ b/internal/commands/policies.go
+@@ -498,8 +498,8 @@ func (s *Service) deletePolicy(policyID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("policy", policy.Name, policyID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("policy", policy.Name, policyID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/policies/"+policyID, nil)
+diff --git a/internal/commands/posture_checks.go b/internal/commands/posture_checks.go
+index 3eaf93c..190c071 100644
+--- a/internal/commands/posture_checks.go
++++ b/internal/commands/posture_checks.go
+@@ -397,8 +397,8 @@ func (s *Service) deletePostureCheck(checkID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("posture check", check.Name, checkID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("posture check", check.Name, checkID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/posture-checks/"+checkID, nil)
+diff --git a/internal/commands/routes.go b/internal/commands/routes.go
+index 767cf79..eb4946e 100644
+--- a/internal/commands/routes.go
++++ b/internal/commands/routes.go
+@@ -599,8 +599,8 @@ func (s *Service) deleteRoute(routeID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("route", "", routeID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("route", "", routeID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", "/routes/"+routeID, nil)
+diff --git a/internal/commands/setup_keys.go b/internal/commands/setup_keys.go
+index 1e19dc8..cbd0d5d 100644
+--- a/internal/commands/setup_keys.go
++++ b/internal/commands/setup_keys.go
+@@ -575,8 +575,8 @@ func (s *Service) deleteSetupKey(keyID string) error {
+ 		"State": formatState(key.State, key.Valid, key.Revoked),
+ 	}
+ 
+-	if !helpers.ConfirmSingleDeletion("setup key", key.Name, key.ID, details) {
+-		return nil
++	if err := helpers.ConfirmSingleDeletion("setup key", key.Name, key.ID, details); err != nil {
++		return err
+ 	}
+ 
+ 	// Perform deletion
+@@ -628,8 +628,8 @@ func (s *Service) deleteSetupKeysBatch(idList string) error {
+ 	}
+ 
+ 	// Confirm bulk deletion
+-	if !helpers.ConfirmBulkDeletion("setup keys", itemList, len(keys)) {
+-		return nil
++	if err := helpers.ConfirmBulkDeletion("setup keys", itemList, len(keys)); err != nil {
++		return err
+ 	}
+ 
+ 	// Process deletions with progress
+@@ -685,8 +685,8 @@ func (s *Service) deleteAllSetupKeys() error {
+ 	}
+ 
+ 	// Prompt for bulk deletion confirmation
+-	if !helpers.ConfirmBulkDeletion("setup keys", keyList, len(keys)) {
+-		return nil
++	if err := helpers.ConfirmBulkDeletion("setup keys", keyList, len(keys)); err != nil {
++		return err
+ 	}
+ 
+ 	// Delete all keys
+diff --git a/internal/commands/tokens.go b/internal/commands/tokens.go
+index 4024836..cccae25 100644
+--- a/internal/commands/tokens.go
++++ b/internal/commands/tokens.go
+@@ -261,8 +261,8 @@ func (s *Service) revokeToken(userID, tokenID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("token", token.Name, tokenID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("token", token.Name, tokenID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err = s.Client.MakeRequest("DELETE", endpoint, nil)
+diff --git a/internal/commands/users.go b/internal/commands/users.go
+index 83f287e..fb25eb2 100644
+--- a/internal/commands/users.go
++++ b/internal/commands/users.go
+@@ -452,8 +452,8 @@ func (s *Service) removeUser(userID string) error {
+ 	}
+ 
+ 	// Ask for confirmation
+-	if !helpers.ConfirmSingleDeletion("user", user.Name, userID, details) {
+-		return nil // User cancelled
++	if err := helpers.ConfirmSingleDeletion("user", user.Name, userID, details); err != nil {
++		return err
+ 	}
+ 
+ 	resp, err := s.Client.MakeRequest("DELETE", "/users/"+userID, nil)
+diff --git a/internal/helpers/helpers.go b/internal/helpers/helpers.go
+index 9b7de25..507d2d6 100644
+--- a/internal/helpers/helpers.go
++++ b/internal/helpers/helpers.go
+@@ -3,6 +3,7 @@ package helpers
+ 
+ import (
+ 	"bufio"
++	"errors"
+ 	"fmt"
+ 	"net"
+ 	"os"
+@@ -10,6 +11,11 @@ import (
+ 	"strings"
+ )
+ 
++// ErrCancelled reports that a confirmation prompt was declined or could not be
++// read. Callers must propagate it instead of returning nil, so a cancelled
++// mutation exits non-zero and automation never mistakes it for success.
++var ErrCancelled = errors.New("operation cancelled")
++
+ var (
+ 	// netbirdCGNATRange is the NetBird CGNAT range (100.64.0.0/10)
+ 	// Parsed once at initialization for performance
+@@ -176,10 +182,14 @@ func ReorderArgsForFlags(args []string) []string {
+ 
+ // ConfirmSingleDeletion shows resource details and asks for Y/N confirmation
+ // Returns true if user confirms, false otherwise
+-func ConfirmSingleDeletion(resourceType, resourceName, resourceID string, details map[string]string) bool {
++// ConfirmSingleDeletion shows what will be removed and asks for confirmation.
++// A declined or unreadable prompt returns an error rather than false: callers
++// previously returned nil on false, so a cancelled delete exited 0 and an agent
++// reading only the exit status believed the resource was gone.
++func ConfirmSingleDeletion(resourceType, resourceName, resourceID string, details map[string]string) error {
+ 	// Skip confirmation if --yes flag was provided
+ 	if SkipConfirmation {
+-		return true
++		return nil
+ 	}
+ 
+ 	fmt.Fprintf(os.Stderr, "\nAbout to remove %s:\n", resourceType)
+@@ -199,15 +209,18 @@ func ConfirmSingleDeletion(resourceType, resourceName, resourceID string, detail
+ 
+ 	fmt.Fprintf(os.Stderr, "\nThis action cannot be undone. Continue? [y/N]: ")
+ 
+-	return ReadYesNo()
++	if ReadYesNo() {
++		return nil
++	}
++	return ErrCancelled
+ }
+ 
+ // ConfirmBulkDeletion shows a summary list and requires typing to confirm
+-// Returns true if user types the correct confirmation text
+-func ConfirmBulkDeletion(resourceType string, items []string, count int) bool {
++// Returns nil if the user types the correct confirmation text
++func ConfirmBulkDeletion(resourceType string, items []string, count int) error {
+ 	// Skip confirmation if --yes flag was provided
+ 	if SkipConfirmation {
+-		return true
++		return nil
+ 	}
+ 
+ 	fmt.Fprintf(os.Stderr, "\nThis will delete %d %s:\n", count, resourceType)
+@@ -230,17 +243,17 @@ func ConfirmBulkDeletion(resourceType string, items []string, count int) bool {
+ 	reader := bufio.NewReader(os.Stdin)
+ 	input, err := reader.ReadString('\n')
+ 	if err != nil {
+-		return false
++		return ErrCancelled
+ 	}
+ 
+ 	input = strings.TrimSpace(input)
+ 
+ 	if input == confirmText {
+-		return true
++		return nil
+ 	}
+ 
+ 	fmt.Fprintln(os.Stderr, "Operation cancelled")
+-	return false
++	return ErrCancelled
+ }
+ 
+ // ReadYesNo reads a y/N response from the user
+diff --git a/internal/helpers/helpers_test.go b/internal/helpers/helpers_test.go
+new file mode 100644
+index 0000000..19c949c
+--- /dev/null
++++ b/internal/helpers/helpers_test.go
+@@ -0,0 +1,42 @@
++package helpers
++
++import (
++	"errors"
++	"testing"
++)
++
++// A declined single delete must surface as an error. Returning nil made the CLI
++// exit 0 while nothing was deleted, so an agent reading the exit status alone
++// believed the resource was gone.
++func TestConfirmSingleDeletionDeclinedIsAnError(t *testing.T) {
++	old := SkipConfirmation
++	SkipConfirmation = true // exercises the accepted path first
++	defer func() { SkipConfirmation = old }()
++
++	if err := ConfirmSingleDeletion("peer", "p", "id", nil); err != nil {
++		t.Fatalf("confirmed delete returned %v", err)
++	}
++
++	SkipConfirmation = false
++	// No stdin reader in a test binary yields EOF, which is the same path a
++	// closed stdin takes in automation.
++	err := ConfirmSingleDeletion("peer", "p", "id", nil)
++	if !errors.Is(err, ErrCancelled) {
++		t.Fatalf("declined delete returned %v, want ErrCancelled", err)
++	}
++}
++
++func TestConfirmBulkDeletionDeclinedIsAnError(t *testing.T) {
++	old := SkipConfirmation
++	SkipConfirmation = true
++	defer func() { SkipConfirmation = old }()
++
++	if err := ConfirmBulkDeletion("groups", []string{"a"}, 1); err != nil {
++		t.Fatalf("confirmed bulk delete returned %v", err)
++	}
++
++	SkipConfirmation = false
++	if err := ConfirmBulkDeletion("groups", []string{"a"}, 1); !errors.Is(err, ErrCancelled) {
++		t.Fatalf("declined bulk delete returned %v, want ErrCancelled", err)
++	}
++}

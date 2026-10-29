@@ -1,0 +1,181 @@
+diff --git a/internal/config/config.go b/internal/config/config.go
+index 78e5d6b..0d07980 100644
+--- a/internal/config/config.go
++++ b/internal/config/config.go
+@@ -17,6 +17,14 @@ const configFileName = ".netbird-manage.json"
+ // DefaultCloudURL is the default NetBird cloud API URL
+ const DefaultCloudURL = "https://api.netbird.io/api"
+ 
++// Env vars. The token and URL are read from the environment first so an agent
++// or a systemd unit can point the CLI at a self-hosted control plane without
++// touching $HOME or writing a config file.
++const (
++	EnvToken  = "NETBIRD_API_TOKEN"
++	EnvAPIURL = "NETBIRD_API_URL"
++)
++
+ // GetConfigPath returns the full path to the configuration file
+ func GetConfigPath() (string, error) {
+ 	homeDir, err := os.UserHomeDir()
+@@ -67,21 +75,34 @@ func TestAndSave(token, managementURL string) error {
+ 	return nil
+ }
+ 
+-// Load loads the API token and URL from the config file or environment variable
++// Load resolves credentials. Environment wins over the config file: an
++// explicitly exported token is an intentional per-invocation override, and
++// without that precedence a stale ~/.netbird-manage.json silently shadows the
++// token an agent was handed.
+ func Load() (*models.Config, error) {
++	apiURL := os.Getenv(EnvAPIURL)
++	if apiURL == "" {
++		apiURL = DefaultCloudURL
++	}
++
++	if token := os.Getenv(EnvToken); token != "" {
++		return &models.Config{
++			Token:         token,
++			ManagementURL: apiURL,
++		}, nil
++	}
++
+ 	configPath, err := GetConfigPath()
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
+-	// Try loading from config file first
+ 	configData, err := os.ReadFile(configPath)
+ 	if err == nil {
+ 		var cfg models.Config
+ 		if err := json.Unmarshal(configData, &cfg); err == nil {
+-			// If URL is somehow empty in file, set default
+ 			if cfg.ManagementURL == "" {
+-				cfg.ManagementURL = DefaultCloudURL
++				cfg.ManagementURL = apiURL
+ 			}
+ 			if cfg.Token != "" {
+ 				return &cfg, nil
+@@ -89,15 +110,5 @@ func Load() (*models.Config, error) {
+ 		}
+ 	}
+ 
+-	// If file doesn't exist or is empty, try environment variable
+-	token := os.Getenv("NETBIRD_API_TOKEN")
+-	if token != "" {
+-		// If using env var, assume default cloud URL
+-		return &models.Config{
+-			Token:         token,
+-			ManagementURL: DefaultCloudURL,
+-		}, nil
+-	}
+-
+ 	return nil, fmt.Errorf("no token found")
+ }
+diff --git a/internal/config/config_test.go b/internal/config/config_test.go
+new file mode 100644
+index 0000000..704ab4b
+--- /dev/null
++++ b/internal/config/config_test.go
+@@ -0,0 +1,101 @@
++package config
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++)
++
++// The environment must win over a stale config file, otherwise an agent given a
++// token in its environment silently talks to whatever the last interactive
++// `connect` left behind.
++func TestEnvTokenBeatsConfigFile(t *testing.T) {
++	home := t.TempDir()
++	t.Setenv("HOME", home)
++	t.Setenv(EnvToken, "env-token")
++	t.Setenv(EnvAPIURL, "https://selfhosted.example/api")
++
++	if err := os.WriteFile(
++		filepath.Join(home, configFileName),
++		[]byte(`{"token":"file-token","management_url":"https://api.netbird.io/api"}`),
++		0o600,
++	); err != nil {
++		t.Fatal(err)
++	}
++
++	cfg, err := Load()
++	if err != nil {
++		t.Fatalf("Load: %v", err)
++	}
++	if cfg.Token != "env-token" {
++		t.Errorf("token = %q, want env-token", cfg.Token)
++	}
++	if cfg.ManagementURL != "https://selfhosted.example/api" {
++		t.Errorf("url = %q, want self-hosted env url", cfg.ManagementURL)
++	}
++}
++
++// A self-hosted URL must be usable with nothing but env vars, so no config file
++// and no $HOME write is required.
++func TestEnvOnlyWithSelfHostedURL(t *testing.T) {
++	t.Setenv("HOME", t.TempDir())
++	t.Setenv(EnvToken, "env-token")
++	t.Setenv(EnvAPIURL, "https://netbird.internal/api")
++
++	cfg, err := Load()
++	if err != nil {
++		t.Fatalf("Load: %v", err)
++	}
++	if cfg.ManagementURL != "https://netbird.internal/api" {
++		t.Errorf("url = %q", cfg.ManagementURL)
++	}
++}
++
++// Without EnvAPIURL the default stays the cloud API.
++func TestEnvTokenDefaultsToCloudURL(t *testing.T) {
++	t.Setenv("HOME", t.TempDir())
++	t.Setenv(EnvToken, "env-token")
++	t.Setenv(EnvAPIURL, "")
++
++	cfg, err := Load()
++	if err != nil {
++		t.Fatalf("Load: %v", err)
++	}
++	if cfg.ManagementURL != DefaultCloudURL {
++		t.Errorf("url = %q, want %q", cfg.ManagementURL, DefaultCloudURL)
++	}
++}
++
++// The file path still works when the environment is empty.
++func TestConfigFileFallback(t *testing.T) {
++	home := t.TempDir()
++	t.Setenv("HOME", home)
++	t.Setenv(EnvToken, "")
++	t.Setenv(EnvAPIURL, "")
++
++	if err := os.WriteFile(
++		filepath.Join(home, configFileName),
++		[]byte(`{"token":"file-token","management_url":"https://netbird.internal/api"}`),
++		0o600,
++	); err != nil {
++		t.Fatal(err)
++	}
++
++	cfg, err := Load()
++	if err != nil {
++		t.Fatalf("Load: %v", err)
++	}
++	if cfg.Token != "file-token" || cfg.ManagementURL != "https://netbird.internal/api" {
++		t.Errorf("got %+v", cfg)
++	}
++}
++
++func TestNoCredentials(t *testing.T) {
++	t.Setenv("HOME", t.TempDir())
++	t.Setenv(EnvToken, "")
++	t.Setenv(EnvAPIURL, "")
++
++	if _, err := Load(); err == nil {
++		t.Fatal("expected an error when neither env nor file supplies a token")
++	}
++}

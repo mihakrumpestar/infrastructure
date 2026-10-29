@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-16,558 non-blank lines, comments included and Markdown excluded.
+17,265 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     131 |
-| modules/den.nix  |     141 |
+| flake.nix        |     136 |
+| modules/den.nix  |     144 |
 | modules/hosts    |     495 |
 | modules/system   |   2,340 |
-| modules/home     |   4,534 |
+| modules/home     |   4,535 |
 | modules/users    |     216 |
-| modules (total)  |   7,726 |
-| packages (total) |   7,925 |
+| modules (total)  |   7,730 |
+| packages (total) |   8,623 |
 | lib (total)      |     776 |
-| **Total**        |  16,558 |
+| **Total**        |  17,265 |
 
 </details>
 <!-- FAST_END -->
@@ -158,6 +158,7 @@ flowchart LR
         local_github_desktop["./packages/github-desktop"]:::local
         local_keepass_config_gen["./packages/keepass-config-gen"]:::local
         local_mutable_file["./lib/mutable-file"]:::local
+        local_netbird_manage["./packages/netbird-manage"]:::local
         local_opencode_plugins["./lib/opencode-plugins"]:::local
         local_virtualhere["./packages/virtualhere"]:::local
     end
@@ -326,6 +327,7 @@ flowchart LR
     local_github_desktop --> flake
     local_keepass_config_gen --> flake
     local_mutable_file --> flake
+    local_netbird_manage --> flake
     local_opencode_plugins --> flake
     local_virtualhere --> flake
     opt_docker --> opt_container_runtime

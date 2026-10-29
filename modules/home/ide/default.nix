@@ -159,6 +159,8 @@
           # cf auth list
           cf-keyring
 
+          netbird-manage
+
           yaak # TODO: test
           scc
           bruno

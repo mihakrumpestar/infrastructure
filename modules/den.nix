@@ -89,6 +89,9 @@
             # CLI, available everywhere as pkgs.nomad / pkgs.nomadx.
             nomad = inputs.nomadx.packages.${prev.stdenv.hostPlatform.system}.nomad;
             nomadx = inputs.nomadx.packages.${prev.stdenv.hostPlatform.system}.nomadx;
+            # Admin CLI for the NetBird management API. Distinct from
+            # pkgs.netbird, which is the client daemon/agent.
+            netbird-manage = inputs.netbird-manage.packages.${prev.stdenv.hostPlatform.system}.default;
           })
           # llm-agents ships OpenCode v2 as `opencode2`, so rename the binary and
           # mainProgram for the home-manager module and service. The old "no auth

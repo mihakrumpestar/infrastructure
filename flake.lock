@@ -540,6 +540,22 @@
       },
       "parent": []
     },
+    "netbird-manage": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./packages/netbird-manage",
+        "type": "path"
+      },
+      "original": {
+        "path": "./packages/netbird-manage",
+        "type": "path"
+      },
+      "parent": []
+    },
     "nix-index-database": {
       "inputs": {
         "nixpkgs": [
@@ -894,6 +910,7 @@
         "mattpocock-skills": "mattpocock-skills",
         "multiverse": "multiverse",
         "mutable-file": "mutable-file",
+        "netbird-manage": "netbird-manage",
         "nix-index-database": "nix-index-database",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs_5",

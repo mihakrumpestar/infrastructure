@@ -115,6 +115,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Admin CLI for the NetBird management API
+    netbird-manage = {
+      url = "./packages/netbird-manage";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # CDP skill + CLI for browser
     browser-harness-js = {
       url = "github:browser-use/browser-harness-js";
