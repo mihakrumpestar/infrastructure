@@ -1,48 +1,3 @@
-# Opencode Agent
-#
-# Multi-Agent Setup Guide
-# =======================
-#
-# This module configures a multi-agent opencode setup with:
-#   - oh-my-opencode-slim: 7-agent orchestration suite (orchestrator, council, etc.)
-#   - Built-in compaction (compaction.auto + keep.tokens) handles context pruning
-#   - Mattpocock skills: code-review, tdd, to-spec, grill-with-docs, etc.
-#
-# Agents available (use @name in chat or switch via agent dropdown):
-#
-#   Primary agents (selectable as default):
-#     plan          - Read-only planning and analysis (default)
-#     build         - Full tool access for implementation
-#     orchestrator  - Multi-agent orchestrator, delegates to specialists
-#
-#   Subagents (invoke with @name):
-#     @council      - Run multiple reviewers in parallel, synthesize one answer
-#     @oracle       - Architecture review, debugging, code review
-#     @explorer     - Fast codebase search and discovery
-#     @librarian    - External docs and library research
-#     @designer     - UI/UX design and implementation
-#     @fixer        - Bounded implementation tasks
-#
-# Skills (invoke with /name):
-#   /evaluate      - Unbiased critical evaluation of anything
-#   /code-review   - Review changes along Standards and Spec axes
-#   /grill-me      - Relentless interview to sharpen a plan
-#   /tdd           - Test-driven development workflow
-#
-# Typical workflows:
-#
-#   1. Planning a feature:
-#      - Use plan agent (default) to analyze and plan
-#      - Switch to orchestrator or build to implement
-#
-#   2. Multi-agent implementation:
-#      - Switch to orchestrator agent
-#      - Describe the task; orchestrator delegates to specialists automatically
-#
-#   3. High-stakes review:
-#      - @council review this architecture for correctness, security, and operability
-#
-#
 # Other tested harneses:
 # - https://github.com/monotykamary/deepseek-harness: too many tool call failures, not that Nix friendly for plugin management
 #
@@ -76,6 +31,9 @@ let
   mattpocockSkillConfigs =
     discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/engineering")
     // discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/productivity");
+
+  # In-repo skills (modules/home/llm/skills/<name>/*), same layout as upstream
+  localSkillConfigs = discoverFiles "opencode/skills" ./skills;
 
   # cdp skill (browser-harness-js: SKILL.md + sdk/) from the upstream repo
   cdpSkillConfigs = discoverFiles "opencode/skills/cdp" inputs.browser-harness-js;
@@ -282,23 +240,8 @@ in
                   disabled = true;
                 };
 
-                # https://github.com/KeithCu/writeragent, maybe there are better ones?
-                writeragent = {
-                  type = "remote";
-                  url = "http://localhost:8765/mcp";
-                  disabled = true;
-                };
-                xactions = {
-                  type = "local";
-                  command = [
-                    "${pkgs.bun}/bin/bunx"
-                    "xactions-mcp"
-                  ];
-                  disabled = true;
-                  environment.XACTIONS_SESSION_COOKIE = "{env:XACTIONS_SESSION_COOKIE}";
-                };
-
                 # Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
+                # Being implemented in https://github.com/langflow-ai/openrag/pull/2063
                 # openrag = {
                 #   type = "local";
                 #   command = [ "uvx" "openrag-mcp" ];
@@ -309,7 +252,7 @@ in
                 # };
               };
 
-              # Ordered ruleset, last match wins. Native v2 shape.
+              # Ordered ruleset, last match wins
               permissions = [
                 {
                   action = "external_directory";
@@ -361,67 +304,7 @@ in
             };
 
             # ~/.config/opencode/AGENTS.md
-            context = ''
-              # MANDATORY RULES
-
-              Be proactive and apply anything else related to this not mentioned here. Apply principles broadly.
-
-              Constantly/always:
-
-              - seek, evaluate and follow dry, kiss, yagni and best coding principles.
-              - use, edit and create shared functions, logics, tests and configurables that will be re-used later on. build and think in blocks and modules.
-              - fully refractor and cleanup.
-              - verify everything is unified and working together.
-              - delegate work to agents to avoid overwhelming your context.
-              - use research agents with exa for anything you are not 100% sure.
-              - awknowledge, analyze, evaluate and act all findings, reproduce if possible, no assumptions allowed. even for low impact ones.
-              - use one single source of truth, for everything.
-              - implement everything at the lowest choking point.
-              - seek, evaluate and act on gaps and improvements for your workflows and the app we are building. everything must be ultra modular, resiliant, reliable, agnostic and dynamic
-              - use, create and maintain broad, deterministic, mechanical, dynamic and intelligent tests, each issues/findings should ideally be found by tests next time.
-
-              - prose and comments should always be concise, sharp witted and pragmatic
-              - DO NOT use em dashes or other standalone dashes.
-              - READ-ONLY for git, gh and cf: run only read operations. Write operations have to be specifically confirmed and autorized by user. Never run write actions by yourself. You may however stage files that need to be for nix.
-              - it is absolutely important to fix, modify or remove current code/behaviour for new features/implementations, instead of leaving things as they are and working aroung them
-
-              Never/avoid:
-
-              - use static configurables inside the codebase.
-              - apply band aids or workarounds. 
-              - over engineer.
-              - word wrapping prose.
-              - create similar or duplicate logics, consts, vars and functs.
-
-              ## MCP tools
-
-              Use tools:
-
-              - `godoc`: for Go/Golang docs
-              - `nixos`: Nix/NixOS docs
-              - `context7`: any other docs
-              - `exa` or `webset`: get search results or queary web
-              - `gh_grep`: search real code examples across public GitHub repositories
-              - `browser-harness-js`: browser automation via CDP (use the cdp skill). The CLI drives the user's Chrome; the REPL server auto-starts on first call and keeps one persistent session. When task is not one-shot, always reuse session to minimize startup time and churn. The user starts Chrome with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`.
-              - `anymd`: read and convert PDF, Office, EPUB, HTML/URLs, images (OCR), and audio/video to Markdown
-              - `codebase-memory-mcp`: code knowledge graph, prefer search_graph/trace_path/get_architecture over grep for structural questions and always use it in codebases as it helps finding connections 
-              - `docs-mcp-server`: whenever user tells you to use it
-              - `writeragent`: MCP for LibreOffice suite
-
-              ## CLI tools
-
-              - `gh`: GitHub CLI: Use `gh` subcommands or `gh api` for GitHub state instead of unauthenticated HTTP calls. For ssh protocol, use host based on `~/.ssh/config.d/keepass.conf`, not the default github.com, as we use ssh agent auth based on host.
-              - `cf`: Cloudflare CLI: Profiles are bound per directory under `~/Projects` (work vs personal), so run `cf` from the project root and let the binding select the profile; pass `--profile <name>` only to override it for one command. Discover the command surface with `cf tools` and `cf <group> --help`, and search Cloudflare docs with `cf docs search "<query>"`. `cf` is beta and some Wrangler commands are not implemented yet.
-              - our projects should be using devenv and go-task
-
-              ## Multi-Agent Patterns
-
-              Use these agents and skills for structured review and verification:
-
-              - `@council`: Run multiple reviewers in parallel and synthesize. Use for high-stakes decisions - reviewing architecture for correctness, security, and operability.
-              - `@oracle`: Architecture and debugging specialist.
-              - `@orchestrator`: Multi-agent orchestrator that delegates to specialists.
-            '';
+            context = ./AGENTS.md;
 
             # Web service (creates opencode-web.service)
             # Attach: opencode --server http://localhost:4096
@@ -462,15 +345,6 @@ in
                   || echo "codebase-memory-mcp-settings: could not enable auto_index" >&2
               '';
 
-          # Electron desktop client (CLI is installed by the HM module)
-          # browser-harness-js CLI: thin wrapper so bun + curl resolve inside
-          # the agent env; the script resolves its Bun REPL (repl.ts) next to
-          # itself in the skill directory and auto-starts it on first use.
-          # bun comes from nixpkgs, so the upstream bun self-installer never
-          # triggers.
-
-          # Code Mode is default-on per MCP server in v2
-          # (mcp.servers.<name>.codemode, default true), so no env var is needed.
           # Serve/CLI share this loopback password (Basic auth is always required).
           home.sessionVariables.OPENCODE_SERVER_PASSWORD = config.my.llm.opencodeServerPassword;
 
@@ -513,6 +387,7 @@ in
             mattpocockSkillConfigs
             // cdpSkillConfigs
             // archifySkillConfigs
+            // localSkillConfigs
             // {
               "opencode/oh-my-opencode-slim.jsonc".text = ''
                 {
@@ -593,42 +468,6 @@ in
 
                 You were interrupted, please continue.
               '';
-
-              "opencode/skills/evaluate/SKILL.md".text = ''
-                ---
-                name: evaluate
-                description: >
-                  Give me an unbiased and unfiltered, and critical evaluation of the _.
-                  Use when user says "review", "evaluate", "critique", "roast", "critic",
-                  or invokes /review. Evaluates anything — code, ideas, architecture,
-                  documents, proposals, designs, tradeoffs.
-                ---
-
-                You are a ruthless, impartial critic. Your job is to give an **unbiased, unfiltered, and critical evaluation** of whatever the user provides.
-
-                ## Principles
-
-                - **No sugarcoating.** If something is bad, say so plainly.
-                - **No false balance.** Don't invent positives just to soften the blow. Real positives only.
-                - **No hedging.** Avoid "it depends" unless it genuinely depends on something the user should consider.
-                - **No politeness filler.** Skip "great job!", "nice work!", "interesting approach". Get to the substance.
-                - **Be specific.** Don't say "this could be improved". Say exactly what is wrong and why.
-                - **Be concrete.** Cite specific lines, patterns, or decisions. No vague hand-waving.
-                - **Prioritize by impact.** Lead with issues that cause real problems — bugs, security holes, perf hits, maintainability nightmares. Style nits go last or get omitted.
-                - **Acknowledge tradeoffs explicitly.** If a design choice has real tradeoffs, lay them out honestly. Don't pretend one side is obviously right.
-                - **Consider context.** A prototype and a production system deserve different levels of scrutiny. Adjust accordingly, but don't lower the bar — be clear about the gap.
-
-                ## Output Format
-
-                1. **Verdict** — One sentence: genuinely good, mixed, or bad. No hedging.
-                2. **Critical issues** — Things that must be fixed. Ordered by severity.
-                3. **Concerns** — Things that are likely problematic but debatable.
-                4. **Strengths** — Real strengths only, if any exist. Omit this section if there are none.
-                5. **Recommendations** — Concrete changes, in priority order. Not "consider X" — say "do X because Y".
-
-                If the subject is good, say so in the verdict honestly — but still identify weaknesses, if there are any.
-              '';
-
             };
         };
       };

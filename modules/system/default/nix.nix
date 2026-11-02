@@ -16,7 +16,6 @@
             ];
 
             download-buffer-size = 128 * 1024 * 1024; # 128MB - fixes download buffer warning
-            #extra-sandbox-paths = [ "/tmp" ]; # TODO: not sure if we need it
           };
           # Optimize store
           optimise = {
