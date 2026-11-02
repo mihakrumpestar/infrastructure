@@ -80,8 +80,8 @@ let
   opencodePluginPins = {
     # Safety gate: blocks destructive commands and secret access
     cc-safety-net = {
-      version = "2.6.19";
-      hash = "sha256-DBRAfiVBCmKKTSNBl/gC8bUJiNXWHl6xsumtXMU5jto=";
+      version = "2.7.2";
+      hash = "sha256-SmIcmCp3EquCv6vr+lVdkF5pGlkfq0V64dIIk5oI6fE=";
     };
 
     # 7-agent orchestration suite (orchestrator, council, etc.)
