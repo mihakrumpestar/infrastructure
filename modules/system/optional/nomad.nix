@@ -299,6 +299,31 @@
             allowedUDPPorts = [ protoPort.serf ];
           });
 
+          # udev's default policy (99-default.link: MACAddressPolicy=persistent)
+          # rewrites veth MACs ~1s after creation: the kernel assigns a random
+          # MAC (addr_assign_type=1) and udev replaces it with a persistent one
+          # derived from machine-id + interface name (addr_assign_type=3).
+          #
+          # Only the bridge CNI path is sensitive to that. CNI's ADD can read the
+          # veth before the rewrite lands, so the cached result in
+          # /var/lib/cni/results records a MAC that no longer exists. Nomad then
+          # runs CNI CHECK on agent restart, the bridge plugin compares the
+          # recorded MAC against the live one and fails with
+          # "Interface vethXXX Mac doesn't match: <mac> not found". Nomad's
+          # recovery destroys the netns and re-ADDs without a CNI DEL, so
+          # host-local answers "duplicate allocation is not allowed", every retry
+          # answers "veth ... already exists", and the allocation is left failed
+          # and never rescheduled.
+          #
+          # Verified on this host: without this, a fresh veth changed MAC within
+          # 2s in 2/2 runs (addr_assign_type 1 -> 3); with it, 3/3 runs kept the
+          # kernel MAC unchanged. .link files are first-match-wins in
+          # lexicographic order, so 50- must sort before 99-default.link.
+          systemd.network.links."50-veth-mac" = {
+            matchConfig.OriginalName = "veth*";
+            linkConfig.MACAddressPolicy = "none";
+          };
+
           # Sequencing only: start after the netbird client units that own
           # the exposed interfaces. `wants` (not requires/Requires) means a
           # failed or missing netbird never blocks or fails nomad: the agent
