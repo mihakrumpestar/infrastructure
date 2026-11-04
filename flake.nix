@@ -20,7 +20,7 @@
     };
 
     impermanence = {
-      url = "github:mihakrumpestar/impermanence/fix-initrd-user-permissions"; # github:nix-community/impermanence
+      url = "github:nix-community/impermanence"; # TODO: fix later: github:mihakrumpestar/impermanence/fix-initrd-user-permissions
       inputs = {
         nixpkgs.follows = ""; # Only used for dev
         home-manager.follows = ""; # Only used for dev
@@ -77,8 +77,6 @@
       url = "github:openchamber/openchamber";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    llm-agents.url = "github:numtide/llm-agents.nix";
 
     # Fleet tooling: pins the Nomad package used by the agents and the
     # job schema consumed by the nomadx CLI.
@@ -157,12 +155,4 @@
     {
       inherit (den.flake) nixosConfigurations;
     };
-
-  # Numtide llm-agents.nix binary cache
-  nixConfig = {
-    extra-substituters = [ "https://cache.numtide.com" ];
-    extra-trusted-public-keys = [
-      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
-    ];
-  };
 }

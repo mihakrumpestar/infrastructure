@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-17,148 non-blank lines, comments included and Markdown excluded.
+17,114 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     134 |
-| modules/den.nix  |     144 |
+| flake.nix        |     126 |
+| modules/den.nix  |     123 |
 | modules/hosts    |     495 |
-| modules/system   |   2,363 |
+| modules/system   |   2,358 |
 | modules/home     |   4,397 |
 | modules/users    |     216 |
-| modules (total)  |   7,615 |
+| modules (total)  |   7,589 |
 | packages (total) |   8,623 |
 | lib (total)      |     776 |
-| **Total**        |  17,148 |
+| **Total**        |  17,114 |
 
 </details>
 <!-- FAST_END -->
@@ -142,7 +142,6 @@ flowchart LR
         input_import_tree["import-tree"]:::input
         input_infrastructure_secrets["infrastructure-secrets"]:::input
         input_lanzaboote["lanzaboote"]:::input
-        input_llm_agents["llm-agents"]:::input
         input_mattpocock_skills["mattpocock-skills"]:::input
         input_multiverse["multiverse"]:::input
         input_nix_index_database["nix-index-database"]:::input
@@ -311,7 +310,6 @@ flowchart LR
     input_import_tree --> flake
     input_infrastructure_secrets --> flake
     input_lanzaboote --> flake
-    input_llm_agents --> flake
     input_mattpocock_skills --> flake
     input_multiverse --> flake
     input_nix_index_database --> flake

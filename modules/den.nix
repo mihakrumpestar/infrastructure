@@ -78,13 +78,18 @@
           inputs.nur.overlays.default
           inputs.nix-vscode-extensions.overlays.default
           inputs.obsidian-extensions.overlays.default
-          inputs.llm-agents.overlays.shared-nixpkgs
           (_: prev: {
             consul-cni = inputs.consul-cni.packages.${prev.stdenv.hostPlatform.system}.default;
             github-desktop = inputs.github-desktop.packages.${prev.stdenv.hostPlatform.system}.default;
             # The weekly nixpkgs input predates cf; multiverse's store-path
             # index serves the Hydra-built package without evaluating nixpkgs.
             cf = inputs.multiverse.legacyPackages.${prev.stdenv.hostPlatform.system}.fast.latest.cf;
+            # weekly moved peewee to 4.x before aw-core stopped pinning 3.*, so
+            # python3Packages.aw-core fails its runtime deps check and takes
+            # activitywatch (and home-manager) with it. Hydra's build of the
+            # same version substitutes, so serve that instead of evaluating.
+            activitywatch =
+              inputs.multiverse.legacyPackages.${prev.stdenv.hostPlatform.system}.fast.latest.activitywatch;
             # Fleet tooling from the nomadx pin: the agent package and the
             # CLI, available everywhere as pkgs.nomad / pkgs.nomadx.
             nomad = inputs.nomadx.packages.${prev.stdenv.hostPlatform.system}.nomad;
@@ -93,32 +98,6 @@
             # pkgs.netbird, which is the client daemon/agent.
             netbird-manage = inputs.netbird-manage.packages.${prev.stdenv.hostPlatform.system}.default;
           })
-          # llm-agents ships OpenCode v2 as `opencode2`, so rename the binary and
-          # mainProgram for the home-manager module and service. The old "no auth
-          # serve" blocker no longer exists: v2 `serve` always requires basic auth.
-          # The wrapper keeps the version in its name so lib.getVersion reports
-          # 2.1.4, which is what makes the home-manager module use v2 behaviour.
-          (
-            final: prev:
-            let
-              opencode2 = final.llm-agents.opencode2;
-            in
-            {
-              opencode =
-                prev.runCommand "opencode-${opencode2.version}"
-                  {
-                    inherit (opencode2) version;
-                    nativeBuildInputs = [ prev.makeWrapper ];
-                    meta = opencode2.meta // {
-                      mainProgram = "opencode";
-                    };
-                  }
-                  ''
-                    mkdir -p $out/bin
-                    makeWrapper ${opencode2}/bin/opencode2 $out/bin/opencode
-                  '';
-            }
-          )
         ];
 
         imports = [

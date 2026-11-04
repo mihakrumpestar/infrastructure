@@ -264,14 +264,13 @@
                 };
               };
 
-              initrd.systemd = mkIf (config.my.disks.encryptRoot != false) {
-                enable = true;
+              initrd.systemd = {
                 fido2.enable = fido2Enabled;
                 tpm2.enable = tpm2Enabled;
 
                 # Sometimes on reboots the FIDO2 key is not detected immediately,
                 # so we reset the crypted service, instead of resetting (repluging) the FIDO2 key
-                services."systemd-cryptsetup@crypted" = {
+                services."systemd-cryptsetup@crypted" = mkIf (config.my.disks.encryptRoot != false) {
                   overrideStrategy = "asDropin";
                   serviceConfig.TimeoutStartSec = "12s";
                 };
