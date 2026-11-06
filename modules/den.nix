@@ -90,6 +90,9 @@
             # same version substitutes, so serve that instead of evaluating.
             activitywatch =
               inputs.multiverse.legacyPackages.${prev.stdenv.hostPlatform.system}.fast.latest.activitywatch;
+            # OpenChamber requires OpenCode to be certain version, taking it from there keeps the pair in lockstep instead
+            # of chasing nixpkgs weekly
+            opencode = inputs.openchamber.packages.${prev.stdenv.hostPlatform.system}.opencode-cli;
             # Fleet tooling from the nomadx pin: the agent package and the
             # CLI, available everywhere as pkgs.nomad / pkgs.nomadx.
             nomad = inputs.nomadx.packages.${prev.stdenv.hostPlatform.system}.nomad;
