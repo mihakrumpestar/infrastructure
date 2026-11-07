@@ -44,9 +44,10 @@
         settings = {
           # Theme
           useSystemTheme = false;
-          themeId = "mono-plus-dark";
+          themeId = "github-dark";
           themeVariant = "dark";
-          darkThemeId = "mono-plus-dark";
+          darkThemeId = "github-dark";
+          lightThemeId = "github-light";
 
           # Defaults
           defaultModel = "gateway/default";
@@ -64,6 +65,11 @@
           expandReasoningWhileStreaming = true;
           usageDisplayMode = "usage";
 
+          # Composer
+          largeTextPasteBehavior = "inline-double-paste";
+          allowPromptingSubagentSessions = true;
+          savePastedImagesAsFiles = true;
+
           # Notifications
           nativeNotificationsEnabled = true;
           notifyOnCompletion = true;
@@ -77,6 +83,10 @@
           showDeletionDialog = true;
           autoDeleteEnabled = true;
 
+          # Permissions: new sessions accept a tool request unless the safety
+          # net (the Jev classifier) says the user should decide.
+          permissionDefaultMode = "safety";
+
           # Terminal
           terminalShell = "zsh";
 
@@ -84,8 +94,60 @@
           weekStartPreference = "monday";
           timeFormatPreference = "24h";
 
+          # Voice
+          dictationEnabled = true;
+          dictationAutoSend = true;
+          sttProvider = "local";
+          sttLocalModel = "parakeet-tdt-0.6b-v3-int8";
+
           # Server
           desktopLocalPort = 4097;
+        };
+
+        # The Jev classifier answers on Plexus' System One endpoint with the
+        # gateway key, so the pick is a file pair in the data dir, not a
+        # setting: classification.json names the source, classifier-endpoint.json
+        # holds the URL, model and key (the app's own shape and mode). The app
+        # rereads both on every use, so a rewrite applies without a restart.
+        # A user unit after agenix, which is what decrypts the key.
+        openchamber-classifier = pkgs.writeShellApplication {
+          name = "openchamber-classifier";
+          runtimeInputs = [
+            pkgs.jq
+            pkgs.coreutils
+            pkgs.diffutils
+          ];
+          text = ''
+            : "''${GATEWAY_API_BASE:?GATEWAY_API_BASE is not set}"
+            : "''${GATEWAY_API_KEY:?GATEWAY_API_KEY is not set}"
+
+            data_dir="''${OPENCHAMBER_DATA_DIR:-$HOME/.config/openchamber}"
+            source="$data_dir/classification.json"
+            endpoint="$data_dir/classifier-endpoint.json"
+
+            install -d -m 700 "$data_dir"
+
+            # Write only on change, so a login does not touch the mtimes.
+            commit() {
+              if cmp -s "$1" "$2"; then
+                rm -f "$1"
+              else
+                chmod "$3" "$1"
+                mv "$1" "$2"
+              fi
+            }
+
+            jq -n '{version: 1, source: "custom"}' > "$source.new"
+            commit "$source.new" "$source" 600
+
+            # No trailing slash on the base, so the path is appended once.
+            jq -n \
+              --arg url "''${GATEWAY_API_BASE%/}/v1/decisions" \
+              --arg model "decision" \
+              --arg key "$GATEWAY_API_KEY" \
+              '{version: 1, endpoint: {url: $url, model: $model, key: $key}}' > "$endpoint.new"
+            commit "$endpoint.new" "$endpoint" 600
+          '';
         };
 
         # The app keeps instance facts in settings.json and the profile in
@@ -150,8 +212,10 @@
               || bail "could not merge $settings" "$settings.new"
             commit "$settings.new" "$settings"
 
-            # Profile: each key as { value, updatedAt }. An unchanged value keeps
-            # its stamp. A file we cannot parse is left alone: the app pauses
+            # Profile: each key as { value, updatedAt }. A managed key is
+            # replaced whole, dropping any per-surface overrides, so the NixOS
+            # value is what every surface reads; an unchanged value keeps its
+            # stamp. A file we cannot parse is left alone: the app pauses
             # profile writes on it, so replacing it would drop unreadable state.
             if [ -s "$prefs" ] && ! jq -e '
                 type == "object" and .version == 1 and (.fields | type) == "object"
@@ -164,11 +228,28 @@
 
             jq --slurpfile o "$profileOverlay" --argjson now "$(date +%s%3N)" '
               .fields |= reduce ($o[0] | to_entries[]) as $e (.;
-                .[$e.key] = (if .[$e.key].value == $e.value
-                              then .[$e.key]
-                              else { value: $e.value, updatedAt: $now } end))
+                (if (.[$e.key] | type) == "object" then .[$e.key] else {} end) as $prev
+                | .[$e.key] = {
+                    value: $e.value,
+                    updatedAt: (if $prev.value == $e.value then ($prev.updatedAt // $now) else $now end),
+                  })
             ' "$prefs" > "$prefs.new" || bail "could not merge $prefs" "$prefs.new"
             commit "$prefs.new" "$prefs"
+          '';
+        };
+
+        # sherpa-onnx-node (local dictation) links libstdc++ from the compiler
+        # toolchain. Electron and bun do not put it on the dynamic loader path,
+        # so the addon's dlopen fails and dictation reports the addon missing.
+        sherpaLibPath = "${pkgs.stdenv.cc.cc.lib}/lib";
+
+        openchamber-local = pkgs.symlinkJoin {
+          name = "openchamber-local-wrapped";
+          paths = [ source.openchamber ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/openchamber \
+              --prefix LD_LIBRARY_PATH : ${sherpaLibPath}
           '';
         };
 
@@ -185,6 +266,7 @@
           nativeBuildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
             wrapProgram $out/bin/openchamber-desktop \
+              --prefix LD_LIBRARY_PATH : ${sherpaLibPath} \
               --set-default OPENCODE_SKIP_START true \
               --set-default OPENCODE_HOST http://127.0.0.1:4096 \
               --set-default OPENCODE_SERVER_PASSWORD ${config.my.llm.opencodeServerPassword} \
@@ -197,8 +279,23 @@
           "writeBoundary"
         ] "${openchamber-settings-sync}/bin/openchamber-settings-sync";
 
+        # After agenix, so the gateway key is decrypted before it is read.
+        systemd.user.services.openchamber-classifier = {
+          Unit = {
+            Description = "Point OpenChamber's Jev classifier at Plexus";
+            After = [ "agenix.service" ];
+            Requires = [ "agenix.service" ];
+          };
+          Service = {
+            Type = "oneshot";
+            EnvironmentFile = config.age.secrets."llm_agent.env".path;
+            ExecStart = "${openchamber-classifier}/bin/openchamber-classifier";
+          };
+          Install.WantedBy = [ "default.target" ];
+        };
+
         home.packages = [
-          source.openchamber
+          openchamber-local
           openchamber-desktop-local
         ];
       };
