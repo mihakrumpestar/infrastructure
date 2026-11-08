@@ -1,18 +1,9 @@
 # Docs MCP Server
-{ inputs, ... }:
-let
-  secretsDir = inputs.infrastructure-secrets;
-in
 {
   home.llm-mcp = {
     homeManager =
       { config, pkgs, ... }:
       {
-        age.secrets."llm_agent.env" = {
-          file = "${secretsDir}/secrets/users/krumpy-miha/llm_agent.env.age";
-          path = "${config.home.homeDirectory}/.agenix/secrets/llm_agent.env";
-        };
-
         # Endpoints:
         # http://localhost:6280 (MCP+server+web dashboard)
         # http://localhost:6280/mcp (streamableHttp)

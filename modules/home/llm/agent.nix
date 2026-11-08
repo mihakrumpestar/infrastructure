@@ -4,7 +4,6 @@
 # Many of them can be found at https://github.com/numtide/llm-agents.nix
 { inputs, ... }:
 let
-  secretsDir = inputs.infrastructure-secrets;
   mattpocockSkillsDir = inputs.mattpocock-skills;
 
   # Recursively discover all files in a directory and map them to a config prefix
@@ -126,11 +125,6 @@ in
         };
 
         config = {
-          age.secrets."llm_agent.env" = {
-            file = "${secretsDir}/secrets/users/krumpy-miha/llm_agent.env.age";
-            path = "${config.home.homeDirectory}/.agenix/secrets/llm_agent.env";
-          };
-
           # OpenCode is driven through OpenChamber (home.llm-ui), which themes
           # itself from its own settings.json, so the stylix opencode target
           # would only add an unused stylix theme plus a cli.json just to point

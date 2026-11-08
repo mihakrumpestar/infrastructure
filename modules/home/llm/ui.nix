@@ -42,7 +42,10 @@
 
         # Re-asserted on each activation; UI changes revert on the next switch.
         settings = {
-          # Theme
+          # Theme. themeVariant is a derived key: the VS Code settings panel
+          # drops it when it writes, so a theme change there shows the system
+          # theme until the next activation re-asserts it. It still pins the
+          # first launch of a fresh home, which is why it stays managed.
           useSystemTheme = false;
           themeId = "github-dark";
           themeVariant = "dark";
@@ -83,8 +86,9 @@
           showDeletionDialog = true;
           autoDeleteEnabled = true;
 
-          # Permissions: new sessions accept a tool request unless the safety
-          # net (the Jev classifier) says the user should decide.
+          # Permissions: a new session accepts a tool request unless the safety
+          # net (Jev) says the user should decide. Existing sessions keep the
+          # mode they were given; the shield in the composer changes one.
           permissionDefaultMode = "safety";
 
           # Terminal
@@ -118,14 +122,20 @@
             pkgs.diffutils
           ];
           text = ''
-            : "''${GATEWAY_API_BASE:?GATEWAY_API_BASE is not set}"
-            : "''${GATEWAY_API_KEY:?GATEWAY_API_KEY is not set}"
+            # No secret, no endpoint: the app then holds every permission
+            # request, which is the safe side, so this is a warning, not a
+            # failed unit on a host where decryption did not run.
+            if [ -z "''${GATEWAY_API_BASE:-}" ] || [ -z "''${GATEWAY_API_KEY:-}" ]; then
+              echo "openchamber-classifier: GATEWAY_API_BASE/GATEWAY_API_KEY are unset, leaving the classifier unconfigured" >&2
+              exit 0
+            fi
 
             data_dir="''${OPENCHAMBER_DATA_DIR:-$HOME/.config/openchamber}"
             source="$data_dir/classification.json"
             endpoint="$data_dir/classifier-endpoint.json"
 
-            install -d -m 700 "$data_dir"
+            # Create only: an existing directory keeps its mode and ACLs.
+            [ -d "$data_dir" ] || install -d -m 700 "$data_dir"
 
             # Write only on change, so a login does not touch the mtimes.
             commit() {
@@ -181,7 +191,8 @@
             settings="$data_dir/settings.json"
             prefs="$data_dir/preferences.json"
 
-            install -d -m 700 "$data_dir"
+            # Create only: an existing directory keeps its mode and ACLs.
+            [ -d "$data_dir" ] || install -d -m 700 "$data_dir"
 
             # Move src over dst at mode 600, only when the content changed.
             commit() {
@@ -279,16 +290,21 @@
           "writeBoundary"
         ] "${openchamber-settings-sync}/bin/openchamber-settings-sync";
 
-        # After agenix, so the gateway key is decrypted before it is read.
+        # A user unit after agenix, which decrypts the key; PartOf makes a
+        # secret rotation restart it too. The optional EnvironmentFile keeps a
+        # host without the secret from ending up with a failed unit: the
+        # script reports it and the app holds every request instead.
         systemd.user.services.openchamber-classifier = {
           Unit = {
             Description = "Point OpenChamber's Jev classifier at Plexus";
             After = [ "agenix.service" ];
             Requires = [ "agenix.service" ];
+            PartOf = [ "agenix.service" ];
           };
           Service = {
             Type = "oneshot";
-            EnvironmentFile = config.age.secrets."llm_agent.env".path;
+            EnvironmentFile = "-${config.age.secrets."llm_agent.env".path}";
+            UMask = "0077";
             ExecStart = "${openchamber-classifier}/bin/openchamber-classifier";
           };
           Install.WantedBy = [ "default.target" ];
