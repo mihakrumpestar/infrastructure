@@ -43,6 +43,17 @@
     }
   },
   // Markdown
+  // The bundled markdown-math extension treats $...$ as inline TeX, collapsing
+  // the spaces, so prose like "costs $2.58M per year ... at $24k" turns into
+  // italic gibberish. Disable it; the repo has no math.
+  "markdown.math.enabled": false,
+  // Markdown All in One ships its own KaTeX plugin that patches the built-in
+  // preview independently of the setting above.
+  "markdown.extension.math.enabled": false,
+  // MPE keeps KaTeX for real math but only for \(...\) inline and $$...$$
+  // blocks, so dollar amounts and shell snippets stay literal.
+  "markdown-preview-enhanced.mathInlineDelimiters": [["\\(", "\\)"]],
+  "markdown-preview-enhanced.previewTheme": "github-dark.css",
   "markdownlint": {
     "lintWorkspaceGlobs": [
       "**/*.{md,qmd}",
