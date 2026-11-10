@@ -185,6 +185,10 @@
         programs.devenv = {
           enable = true;
           enableZshIntegration = true;
+
+          # Keep the prompt clean; starship's nix_shell module already shows
+          # the active devenv environment.
+          settings.shell.prompt_prefix = false;
         };
 
         xdg.configFile."secretspec/config.toml".text = ''
