@@ -54,7 +54,7 @@
 ## MCP tools
 
 - `godoc` Go, `nixos` Nix/NixOS, `context7` other libraries
-- `keenable` search, `gh_grep` real code, `xactions` X/Twitter
+- `keenable` search, `gh_grep` real code, `tweetapi` X/Twitter
 - `anymd` PDF, Office, EPUB, HTML, images
 - `codebase-memory-mcp` for structure before grep
 - `docs-mcp-server` disabled by default, enable when asked

@@ -208,15 +208,19 @@ in
                   url = "{env:GATEWAY_API_BASE}/mcp/keenable";
                   headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
                 };
-                xactions = {
-                  type = "remote";
-                  url = "{env:GATEWAY_API_BASE}/mcp/xactions";
-                  headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
-                };
-                # Public remote MCPs (no auth)
+                # Public remote MCP
                 gh_grep = {
                   type = "remote";
                   url = "https://mcp.grep.app";
+                };
+
+                # X/Twitter reads: search, profiles, timelines, lists, communities.
+                # The hosted MCP is OAuth-only (no static key), so it bypasses the
+                # gateway and keeps its tokens in the OpenCode auth store.
+                # One-time setup: `opencode mcp auth tweetapi`
+                tweetapi = {
+                  type = "remote";
+                  url = "https://mcp.tweetapi.com/mcp";
                 };
 
                 # Local MCPs
