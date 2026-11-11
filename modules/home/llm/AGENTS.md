@@ -3,64 +3,79 @@
 ## General
 
 - delegate work to agents to avoid overwhelming your context
-- always use skills that are appropriate for the task, they will help to guide you to a better result
-- use `/council`, `/oracle` and a verifier agent whenever we are practically done with the task, need/want more assertion that we really are on the right path or simply be more thorough
+- batch independent tool calls in one turn, and put related shell steps in one command; waiting call by call wastes wall clock
+- agents are reached with `subagent` or `@name` (`@explorer`, `@oracle`, `@designer`, `@fixer`, `@council`), not slash commands
+- subagents can load skills, so name the skill and let them read the method; council seats (`councillor-*`) cannot
+- use skills appropriate to the task; every skill is model-invocable, so load them when the request matches and follow them literally when the user starts one
+- use `/council`, `/oracle` and a verifier agent whenever we are practically done or want more assertion that we are on the right path
+- oracle is also worth it mid-task when a change touches multiple files, when a claim enters a deliverable, or after a failed fix
+- if topics diverge, start a new session with a short carried summary
 
 ## Plan
 
-- use `/ask-matt` skill, if the task at hand is more complicated than simple change
-- always try to understand the problem properly and in depth, use `/research` skill
-- always gather knowledge/docs and test, to get proper understanding on the matter
-- for the 2 points above, use `/grill-with-docs` skill
+- restate the request as the checklist a reviewer would accept, and answer the sibling questions in the same turn or say why not
+- when a reference file or "like before" is named, read it first and copy its layout, naming and task names, then diff
+- use `/research` and parallel `explorer` lanes, then state the mechanism in two lines before writing code
+- when the user states a fact or preference, record it and re-check it before every later edit to the same deliverable
 
-## Research
+## Scope
 
-- use `/explorer` and `/librarien` agents
+- implement the smallest change that satisfies the literal request; extras go into "proposed, not built"
+- never add linting, validation, wrappers, scripts, docs or CI gates that were not asked for; when the user says minimal, delete instead of add
+- decide reversible things yourself and note the assumption; ask only when the answer is irreversible or unknowable from here
+
+## Verify
+
+- verify the effect, not the mechanism: read the produced file, load the deployed page, measure the pixels
+- never write Done, Fixed, Deployed or Verified without the command and its output, or the artifact you inspected; name what stayed unverified
+- reproduce the user's exact input and symptom before fixing and after
+- lanes run only the check for their own scope; `task ci` once at the end
 
 ## Code/config
 
-- seek, evaluate and follow dry, kiss, yagni and best coding principles
-- have no need for backwards compatibility, unless the user asks for it
-- focus on performance and memory usage
-- code should be minimal and easy to read
-- code should try to fit in reusable modules, that handle all the logic, so that code/logic is never duplicated or misused
-- verify everything is unified and working together
-- always fully refractor and cleanup
-- always use one single source of truth
-- always try to have broad, deterministic and intelligent tests
-- use table driven tests if possible, to minimize code and do to not repeat
-- acknowledge, analyze, evaluate and act all findings, reproduce if possible, no assumptions allowed. even for low impact ones
-- for editing, use `/fixer agent`
+- dry, kiss, yagni; no backwards compatibility unless asked
+- one source of truth, no duplicated logic, no second path for the same job
+- performance and memory matter on hot paths and boot or per-request code
+- delete what the change replaced; no dead code
+- comments only for the invariant, caller contract or phenomenon, one or two lines
+- table driven tests where cases are data, deterministic, covering the contract
+- act on every finding, including low impact ones; reproduce instead of assuming
+- for editing, use `/fixer`
 
 ## Prose/docs/code comments
 
-- use `/writing-for-agents` skill
-- they should always be concise, easy to understand and show examples if applicable
-- never use em dashes or other standalone dashes
-- never word wrap prose (eg. markdown, etc.)
-- code comments should not be needed, unless the code does non-obvious things, and even then, they should be concise and describe/list the logic effecting it, callers, data or the underlying phenomenon
+- concise and concrete, with an example where it helps
+- write for the named audience, give every number its denominator
+- delete what the audience cannot act on, then re-read once as a non-specialist
+- no em dashes or standalone dashes
+- no word wrapping
+- use `writing-for-agents` for docs and specs, `archify` for diagrams
 
 ## MCP tools
 
-Use tools:
-
-- `godoc`: for Go/Golang docs
-- `nixos`: Nix/NixOS docs
-- `context7`: any other docs than the above 2
-- `exa` or `webset`: get search results or query web
-- `gh_grep`: search real code examples across public GitHub repositories
-- `anymd`: read and convert PDF, Office, EPUB, HTML/URLs, images (OCR), and audio/video to Markdown
-- `codebase-memory-mcp`: code knowledge graph, prefer search_graph/trace_path/get_architecture over grep for structural questions and always use it in codebases as it helps finding connections
-- `docs-mcp-server`: whenever user tells you to use it
+- `godoc` Go, `nixos` Nix/NixOS, `context7` other libraries
+- `keenable` search, `gh_grep` real code, `xactions` X/Twitter
+- `anymd` PDF, Office, EPUB, HTML, images
+- `codebase-memory-mcp` for structure before grep
+- `docs-mcp-server` disabled by default, enable when asked
 
 ## CLI tools
 
-- `browser-harness-js`: browser automation via CDP (use the `/cdp` skill). The CLI drives the user's Chrome; the REPL server auto-starts on first call and keeps one persistent session. When task is not one-shot, always reuse session to minimize startup time and churn. The user/or you start Chrome with `chromium --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`. Note that it will not be auto-detected, you will have to use the port directly.
-- `gh`: GitHub CLI: Use `gh` subcommands or `gh api` for GitHub state instead of unauthenticated HTTP calls. For ssh protocol, use host based on `~/.ssh/config.d/keepass.conf`, not the default github.com, as we use ssh agent auth based on SSH host.
-- `cf`: Cloudflare CLI: Profiles are bound per directory under `~/Projects` (work vs personal), so run `cf` from the project root and let the binding select the profile; pass `--profile <name>` only to override it for one command. Discover the command surface with `cf tools` and `cf <group> --help`, and search Cloudflare docs with `cf docs search "<query>"`. `cf` is beta and some Wrangler commands are not implemented yet.
-- read-only for git, gh, cf, and netbird-manage: run only read operations. Write operations have to be specifically confirmed and authorized by user. Never run write actions by yourself. You may however stage files that need to be for you to test changes, eg. for Nix.
+- `browser-harness-js` for CDP (`/cdp`), Chrome on `--user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`, reuse one session
+- `gh` for GitHub state, ssh hosts from `~/.ssh/config.d/keepass.conf`
+- `cf` from the project root; `cf tools`, `cf <group> --help`, `cf docs search "<query>"`
+- read-only for git, gh, cf and netbird-manage: no commit, push, tag, reset, checkout, rm or mv without confirmation; staging only to test a Nix build
+- never write to a credential store: KeePassXC, `secret-tool store`, `secretspec set` or `delete`, SOPS, a live `.env`
+- never copy classified or personal data into a deliverable; report it and let the user decide
+- no destructive or broad shell operation without listing and quoting the target set
+
+## Files and shell
+
+- read with `read`, search with `grep`, discover with `glob`; never `cat`, `head`, `tail`, `sed -n` for code
+- project commands: `devenv shell -- task <name>`, or `./.devenv/profile/bin/task <name>`; bare `task` is not on PATH
+- helper binaries are often absent: `nix shell nixpkgs#file nixpkgs#binutils -c ...`, not `nix run`
+- keep the project root to tracked entrypoints; scratch goes in a named subdirectory and is cleaned before reporting
 
 ## Projects
 
-- our projects should be using devenv and go-task
-- project commands should be invoked with `task <subcommand> ...` from devenv, as all the tools, CLIs, and programming languages the project uses should be defined in it
+- every repo uses devenv and go-task; languages, CLIs and checks live in `devenv.nix`, CI is `task ci`

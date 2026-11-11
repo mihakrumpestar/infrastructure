@@ -31,6 +31,26 @@ let
     discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/engineering")
     // discoverFiles "opencode/skills" (mattpocockSkillsDir + "/skills/productivity");
 
+  # Upstream marks several skills user-invocable-only with
+  # `disable-model-invocation: true`, which OpenCode maps to autoinvoke:false and
+  # hides from the model. Strip it from every SKILL.md so the agent can start any
+  # skill, for local and upstream skills alike.
+  stripModelInvocationFlag =
+    configs:
+    builtins.mapAttrs (
+      name: value:
+      if builtins.match "opencode/skills/[^/]+/SKILL\\.md" name != null then
+        {
+          text =
+            builtins.replaceStrings
+              [ "disable-model-invocation: true\r\n" "disable-model-invocation: true\n" ]
+              [ "" "" ]
+              (builtins.readFile value.source);
+        }
+      else
+        value
+    ) configs;
+
   # In-repo skills (modules/home/llm/skills/<name>/*), same layout as upstream
   localSkillConfigs = discoverFiles "opencode/skills" ./skills;
 
@@ -176,17 +196,21 @@ in
                 gateway-management = {
                   type = "remote";
                   url = "{env:GATEWAY_API_BASE}/mcp/plexus";
-                  disabled = true;
-                  headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
+                  headers."x-admin-key" = "{env:GATEWAY_ADMIN_KEY}";
                 };
                 context7 = {
                   type = "remote";
                   url = "{env:GATEWAY_API_BASE}/mcp/context7";
                   headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
                 };
-                exa = {
+                keenable = {
                   type = "remote";
-                  url = "{env:GATEWAY_API_BASE}/mcp/exa";
+                  url = "{env:GATEWAY_API_BASE}/mcp/keenable";
+                  headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
+                };
+                xactions = {
+                  type = "remote";
+                  url = "{env:GATEWAY_API_BASE}/mcp/xactions";
                   headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
                 };
                 # Public remote MCPs (no auth)
@@ -378,10 +402,9 @@ in
           # Skills: mattpocock (remote) + local (inline)
           # Local skills override remote skills on name collision
           xdg.configFile =
-            mattpocockSkillConfigs
-            // cdpSkillConfigs
-            // archifySkillConfigs
-            // localSkillConfigs
+            stripModelInvocationFlag (
+              mattpocockSkillConfigs // cdpSkillConfigs // archifySkillConfigs // localSkillConfigs
+            )
             // {
               "opencode/oh-my-opencode-slim.jsonc".text = ''
                 {
@@ -403,27 +426,27 @@ in
                       // Subagents follow the primary session model
                       "explorer": {
                         "inheritModelFrom": "session",
+                        "skills": ["*"],
                         "mcps": ["*"]
                       },
                       "oracle": {
                         "inheritModelFrom": "session",
-                        "skills": ["simplify"],
+                        "skills": ["*"],
                         "mcps": ["*"]
                       },
                       "council": {
                         "inheritModelFrom": "session",
-                        "mcps": ["*"]
-                      },
-                      "librarian": {
-                        "inheritModelFrom": "session",
+                        "skills": ["*"],
                         "mcps": ["*"]
                       },
                       "designer": {
                         "inheritModelFrom": "session",
+                        "skills": ["*"],
                         "mcps": ["*"]
                       },
                       "fixer": {
                         "inheritModelFrom": "session",
+                        "skills": ["*"],
                         "mcps": ["*"]
                       }
                     }
