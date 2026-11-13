@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-17,294 non-blank lines, comments included and Markdown excluded.
+17,405 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -38,15 +38,15 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | Component        |   Lines |
 |:-----------------|--------:|
 | flake.nix        |     128 |
-| modules/den.nix  |     129 |
+| modules/den.nix  |     130 |
 | modules/hosts    |     495 |
-| modules/system   |   2,377 |
+| modules/system   |   2,487 |
 | modules/home     |   4,550 |
 | modules/users    |     216 |
-| modules (total)  |   7,767 |
+| modules (total)  |   7,878 |
 | packages (total) |   8,623 |
 | lib (total)      |     776 |
-| **Total**        |  17,294 |
+| **Total**        |  17,405 |
 
 </details>
 <!-- FAST_END -->
@@ -174,6 +174,7 @@ flowchart LR
         sys_impermanence["impermanence"]:::aspect
         sys_locale["locale"]:::aspect
         sys_networking["networking"]:::aspect
+        sys_nix_cache["nix-cache"]:::aspect
         sys_nix["nix"]:::aspect
         sys_secrets["secrets"]:::aspect
         sys_shell["shell"]:::aspect
@@ -259,6 +260,7 @@ flowchart LR
     den --> sys_locale
     den --> sys_networking
     den --> sys_nix
+    den --> sys_nix_cache
     den --> sys_secrets
     den --> sys_shell
     den --> sys_style

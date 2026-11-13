@@ -4,6 +4,7 @@
     deadnix
     flake-checker
     go-task
+    go
     mermaid-cli
     nixfmt-tree
     statix

@@ -60,6 +60,7 @@
         den.aspects.networking
         den.aspects.secrets
         den.aspects.nix
+        den.aspects.nix-cache
         den.aspects.locale
         den.aspects.style
       ];
