@@ -35,6 +35,7 @@ EXCLUDE_DIRS = {
     ".devbox",
     ".devenv",
     "infrastructure-secrets",
+    "secrets",
     "node_modules",
     "devbox.d",
     "bin",

@@ -73,10 +73,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    openchamber = {
-      url = "github:openchamber/openchamber";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # Keep its own nixpkgs
+    openchamber.url = "github:openchamber/openchamber";
 
     # Fleet tooling: pins the Nomad package used by the agents and the
     # job schema consumed by the nomadx CLI.
@@ -132,6 +130,11 @@
 
     archify = {
       url = "github:tt-a1i/archify";
+      flake = false;
+    };
+
+    security-audit-skill = {
+      url = "github:cloudflare/security-audit-skill";
       flake = false;
     };
 

@@ -176,6 +176,25 @@
                           };
                         };
                       }
+                      {
+                        name = "org.kde.plasma.systemmonitor.diskusage";
+                        config = {
+                          CurrentPreset = "org.kde.plasma.systemmonitor";
+                          Appearance = {
+                            chartFace = "org.kde.ksysguard.piechart";
+                            title = "Disk Usage";
+                            updateRateLimit = 1000;
+                          };
+                          Sensors = {
+                            highPrioritySensorIds = ''["disk/all/used"]'';
+                            lowPrioritySensorIds = ''["disk/all/total"]'';
+                            totalSensors = ''["disk/all/usedPercent"]'';
+                          };
+                          SensorColors = {
+                            "disk/all/used" = "46,157,174";
+                          };
+                        };
+                      }
                       "org.kde.plasma.icontasks"
                       "org.kde.plasma.marginsseparator"
                       "org.kde.plasma.systemtray"

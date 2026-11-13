@@ -161,9 +161,7 @@
 
           netbird-manage
 
-          yaak # TODO: test
           scc
-          bruno
           devbox
         ];
 

@@ -31,8 +31,8 @@ def run(cmd: list[str], cwd: Path | None = None, timeout: float | None = None):
 
 
 def nix_eval_json(attr: str, apply: str | None = None, timeout: float | None = None):
-    """Evaluate ``path:.#<attr>`` to JSON, returning None on any failure."""
-    cmd = ["nix", "eval", "--json", f"path:.#{attr}"]
+    """Evaluate the local flake to JSON, returning None on any failure."""
+    cmd = ["nix", "eval", "--json", f"git+file://{REPO_ROOT}#{attr}"]
     if apply:
         cmd += ["--apply", apply]
     result = run(cmd, timeout=timeout)
@@ -45,8 +45,8 @@ def nix_eval_json(attr: str, apply: str | None = None, timeout: float | None = N
 
 
 def nix_eval_raw(attr: str, timeout: float | None = None) -> str:
-    """Evaluate ``path:.#<attr>`` to a raw string, empty on failure."""
-    result = run(["nix", "eval", "--raw", f"path:.#{attr}"], timeout=timeout)
+    """Evaluate the local flake to a raw string, empty on failure."""
+    result = run(["nix", "eval", "--raw", f"git+file://{REPO_ROOT}#{attr}"], timeout=timeout)
     return result.stdout.strip() if result.returncode == 0 else ""
 
 

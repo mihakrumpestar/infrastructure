@@ -16,6 +16,11 @@ tasks:
     cmds:
       - pyinfra deploy/inventory.py deploy/deploy.py {{.CLI_ARGS}}
 
+  deploy:
+    desc: Deploy the fleet with panix (panix.deploy.yml). Add "-- --dry-run" to preview.
+    cmds:
+      - nix run github:mihakrumpestar/panix -- deploy -c panix.deploy.yml {{.CLI_ARGS}}
+
   update:
     desc: Update everything
     cmds:
@@ -26,12 +31,7 @@ tasks:
     desc: |
       Can also update a specific input with: task update-inputs -- <input-name>
     cmds:
-      - nix flake update --flake 'path:{{.ROOT_DIR}}' {{.CLI_ARGS}}
-
-  update-secrets:
-    desc: Update secrets
-    cmds:
-      - task update -- infrastructure-secrets
+      - nix flake update --flake 'git+file://{{.ROOT_DIR}}' {{.CLI_ARGS}}
 
   update-opencode-plugins:
     desc: |

@@ -62,6 +62,12 @@ let
   # archify/ subdirectory; node comes from the IDE home packages.
   archifySkillConfigs = discoverFiles "opencode/skills/archify" (inputs.archify + "/archify");
 
+  # security-audit skill: six-phase vulnerability audit workflow (SKILL.md,
+  # attack-class references, report schema, zero-dependency .cjs validators)
+  securityAuditSkillConfigs = discoverFiles "opencode/skills/security-audit" (
+    inputs.security-audit-skill + "/skills/security-audit"
+  );
+
   # Every gateway model shares one shape; only the id (and display name) differ.
   gatewayModels = builtins.listToAttrs (
     map
@@ -99,13 +105,13 @@ let
   opencodePluginPins = {
     # Safety gate: blocks destructive commands and secret access
     cc-safety-net = {
-      version = "2.7.2";
-      hash = "sha256-SmIcmCp3EquCv6vr+lVdkF5pGlkfq0V64dIIk5oI6fE=";
+      version = "2.7.12";
+      hash = "sha256-K6NpfsLDi7vp34yxsIBoa669U7boQfRfAVhcU4Tlwls=";
     };
 
     # 7-agent orchestration suite (orchestrator, council, etc.)
     oh-my-opencode-slim = {
-      version = "3.0.6";
+      version = "3.0.7";
       hash = null;
     };
   };
@@ -407,7 +413,11 @@ in
           # Local skills override remote skills on name collision
           xdg.configFile =
             stripModelInvocationFlag (
-              mattpocockSkillConfigs // cdpSkillConfigs // archifySkillConfigs // localSkillConfigs
+              mattpocockSkillConfigs
+              // cdpSkillConfigs
+              // archifySkillConfigs
+              // securityAuditSkillConfigs
+              // localSkillConfigs
             )
             // {
               "opencode/oh-my-opencode-slim.jsonc".text = ''

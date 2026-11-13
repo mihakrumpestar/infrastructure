@@ -9,7 +9,7 @@ The installer is [pve-autoinstall](https://github.com/mihakrumpestar/pve-autoins
 From the repository root:
 
 ```sh
-nix run github:mihakrumpestar/pve-autoinstall -- ../infrastructure-secrets/secrets/pve.nix
+nix run github:mihakrumpestar/pve-autoinstall -- secrets/secrets/pve.nix
 ```
 
 Boot each host from its ISO. The answer is embedded, so no network service is needed during installation.

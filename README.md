@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-17,257 non-blank lines, comments included and Markdown excluded.
+17,294 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     126 |
-| modules/den.nix  |     126 |
+| flake.nix        |     128 |
+| modules/den.nix  |     129 |
 | modules/hosts    |     495 |
-| modules/system   |   2,358 |
-| modules/home     |   4,537 |
+| modules/system   |   2,377 |
+| modules/home     |   4,550 |
 | modules/users    |     216 |
-| modules (total)  |   7,732 |
+| modules (total)  |   7,767 |
 | packages (total) |   8,623 |
 | lib (total)      |     776 |
-| **Total**        |  17,257 |
+| **Total**        |  17,294 |
 
 </details>
 <!-- FAST_END -->
@@ -152,6 +152,7 @@ flowchart LR
         input_obsidian_extensions["obsidian-extensions"]:::input
         input_openchamber["openchamber"]:::input
         input_plasma_manager["plasma-manager"]:::input
+        input_security_audit_skill["security-audit-skill"]:::input
         input_stylix["stylix"]:::input
         local_consul_cni["./packages/consul-cni"]:::local
         local_github_desktop["./packages/github-desktop"]:::local
@@ -320,6 +321,7 @@ flowchart LR
     input_obsidian_extensions --> flake
     input_openchamber --> flake
     input_plasma_manager --> flake
+    input_security_audit_skill --> flake
     input_stylix --> flake
     local_consul_cni --> flake
     local_github_desktop --> flake

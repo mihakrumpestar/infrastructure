@@ -165,7 +165,7 @@ def _build_toplevel(host: str) -> tuple[str | None, str | None]:
         [
             "nix",
             "build",
-            f"path:.#nixosConfigurations.{host}.config.system.build.toplevel",
+            f"git+file://{REPO_ROOT}#nixosConfigurations.{host}.config.system.build.toplevel",
             "--no-link",
             "--print-out-paths",
         ]

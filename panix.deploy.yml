@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mihakrumpestar/panix/main/gen/panix-schema.yaml
+
+# Below is not a comment (writing it as a comment prevents from yaml syntaks errors),
+# it is Golang template function definition
+# {{define "cryptenroll"}}systemd-cryptenroll --unlock-key-file=/tmp/disko-encryption-password.txt --tpm2-device=auto --tpm2-with-pin=no --tpm2-pcrs="" --wipe-slot=all {{.}}{{end}}
+
+anchor_bootstrap: &bootstrap_defaults
+  disk_encryption_keys:
+    - local_path: /tmp/disko-encryption-password.txt
+      remote_path: /tmp/disko-encryption-password.txt
+
+flags:
+  timeout: 5500s
+  local_machine_hostname: tmp
+
+fleet:
+  flakes:
+    infrastructure:
+      url: .
+      installables:
+        nixosConfigurations:
+          personal-workstation:
+            machines:
+              personal-workstation:
+                bootstrap:
+                  <<: *bootstrap_defaults
+                  # Run after reboot manually, since FIDO2 key needs to get unlocked interactively
+                  # systemd-cryptenroll --fido2-device=auto --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
+
+              fake:
+                ssh:
+                  hostname: fake
+                  username: root
+                  port: 22
+
+          personal-laptop:
+            machines:
+              personal-laptop:
+                bootstrap:
+                  <<: *bootstrap_defaults
+                  # Run after reboot manually, since FIDO2 key needs to get unlocked interactively
+                  # systemd-cryptenroll --fido2-device=auto --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
+
+          mihakrumpestar-work-laptop:
+            machines:
+              mihakrumpestar-work-laptop:
+                bootstrap:
+                  <<: *bootstrap_defaults
+                  # Run after reboot manually, since FIDO2 key needs to get unlocked interactively
+                  # systemd-cryptenroll --fido2-device=auto --fido2-with-client-pin=no --fido2-with-user-presence=yes --wipe-slot=all /dev/nvme0n1p2
+
+          server-01:
+            machines:
+              server-01:
+                bootstrap:
+                  <<: *bootstrap_defaults
+                  #ssh:
+                  #  hostname: 10.0.200.11
+                  #  identity_file: temp_key
+                  post_bootstrap_hooks:
+                    - |
+                      {{template "cryptenroll" "/dev/sda2"}}
+
+          server-03:
+            machines:
+              server-03:
+                bootstrap:
+                  <<: *bootstrap_defaults
+                  post_bootstrap_hooks:
+                    - |
+                      {{template "cryptenroll" "/dev/sda2"}}
+
+          personal-vps-02:
+            nix:
+              copy_flags:
+                - --substitute-on-destination # Make transfers faster on public instances
+            machines:
+              personal-vps-02:
+
+          kiosk:
+            machines:
+              kiosk:
+                bootstrap:
+                  <<: *bootstrap_defaults
+                  #ssh:
+                  #  hostname: 10.0.200.75
+                  #  identity_file: temp_key
+                  post_bootstrap_hooks:
+                    - |
+                      {{template "cryptenroll" "/dev/nvme0n1p2"}}

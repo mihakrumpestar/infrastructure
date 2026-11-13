@@ -13,3 +13,6 @@ generated/
 # devenv
 .devenv/
 .pre-commit-config.yaml
+
+# Private secrets repo checked out as a repo
+secrets/
