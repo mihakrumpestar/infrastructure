@@ -31,6 +31,8 @@
           };
 
           networking.homeWifi.enable = true;
+
+          nixCache.builder = true;
         };
 
         home-manager.users."krumpy-miha" = {

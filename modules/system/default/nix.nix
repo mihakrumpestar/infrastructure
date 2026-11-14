@@ -16,6 +16,13 @@
             ];
 
             download-buffer-size = 128 * 1024 * 1024; # 128MB - fixes download buffer warning
+
+            # Third-party cache. Cachix publishes priority 41, so query order
+            # is cache.nixos.org (40) and then this.
+            substituters = [ "https://nix-community.cachix.org" ];
+            trusted-public-keys = [
+              "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+            ];
           };
           # Optimize store
           optimise = {

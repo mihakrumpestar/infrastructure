@@ -90,19 +90,39 @@ in
 
         age.secrets."pam_u2f" = {
           file = "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/pam_u2f.age";
-          mode = "0444"; # KDE screensaver does not have root rights to access the config
+          # kscreenlocker's PAM worker runs as the logged-in user (no setuid anywhere in that
+          # path), and pam_u2f opens the authfile with its own euid. Keep it world-readable:
+          # restricting it to a group couples the lock screen to group membership, and a
+          # mismatch is a silent lockout because pam_u2f is `sufficient` and pam_deny is the
+          # only other auth line. The file holds key handles and public keys, not secrets.
+          mode = "0444";
         };
 
+        # FIDO2 PIN (keyboard, not the OnlyKey keypad PIN), needed by pamu2fcfg and every login:
+        #   onlykey-cli set-pin     # or change-pin
+        #
+        # The authfile is bound to one relying party (rpId), so it must be generated with the
+        # same value as `origin` below, or every assertion fails and login is denied:
+        #   F=secrets/users/krumpy-miha/pam_u2f
+        #   pamu2fcfg -o pam://nixos -i pam://nixos -u krumpy-miha --pin-verification > "$F"
+        #
+        # Second key later: same command with -n, appended to the same file (one tap each),
+        # because a repeated username on its own line replaces the earlier one.
+        #   pamu2fcfg -o pam://nixos -i pam://nixos -u krumpy-miha --pin-verification -n >> "$F"
+        #
         # Docs: https://wiki.nixos.org/wiki/Yubikey
         security.pam = {
           u2f = {
             enable = true;
-            # control = "required"; # then you have to enter password too (strange logic but ok)
             settings = {
-              authfile = config.age.secrets."pam_u2f".path; # Generate using: pamu2fcfg -u username -o pam://hostname
-              interactive = true; # Needed so that it does not wait for device if it is not present on KDE screensaver
+              authfile = config.age.secrets."pam_u2f".path;
               cue = true;
-              userpresence = 1;
+              pinverification = 1;
+              # The authfile's credentials are bound to one rpId. Without this, pam_u2f uses
+              # "pam://$HOSTNAME" and every assertion fails with FIDO_ERR_NO_CREDENTIALS.
+              # Must equal `pamu2fcfg -o`. appid is legacy (old-format credentials only) and
+              # defaults to origin.
+              origin = "pam://nixos";
             };
           };
           services = {
@@ -118,7 +138,7 @@ in
         # Bounds the whole login(1) PAM conversation incl. the u2f wait: shadow's login arms
         # alarm(LOGIN_TIMEOUT) at startup and only cancels it after successful auth.
         # Affects only the "login" service, not sudo or the KDE screensaver. Default is 60.
-        security.loginDefs.settings.LOGIN_TIMEOUT = 13;
+        security.loginDefs.settings.LOGIN_TIMEOUT = 30;
 
         # Test pam:
         # nix-shell -p pamtester

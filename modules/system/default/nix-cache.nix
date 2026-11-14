@@ -51,12 +51,18 @@ in
           exit 0
         '';
 
-        hookConf = pkgs.writeText "nix-cache-hook.conf" ''
-          post-build-hook = /etc/nix-cache-upload
-        '';
+        # Every host gets this file, but only builders point nix at a hook.
+        # A host that stops being a builder would otherwise keep a dangling
+        # post-build-hook from an earlier generation.
+        hookConf = pkgs.writeText "nix-cache-hook.conf" (
+          if config.my.nixCache.builder then
+            "post-build-hook = /etc/nix-cache-upload\n"
+          else
+            "# nix-cache: read-only host, builds are not uploaded\n"
+        );
 
         # Home Manager owns ~/.config/nix/nix.conf for its users, so only the
-        # remaining builders get a file from tmpfiles.
+        # remaining users are handled here.
         hookUsers = lib.filterAttrs (
           name: user:
           isBuilder name user && !(builtins.hasAttr name config.home-manager.users) && user.home != null
@@ -71,57 +77,69 @@ in
         );
       in
       {
-        age.secrets."nix-cache-aws-credentials" = {
-          file = "${secretsDir}/secrets/services/nix-cache/aws-credentials.age";
-          owner = "root";
-          group = "root";
-          mode = "0400";
+        options.my.nixCache.builder = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Upload local builds to the personal binary cache. Every host reads from it; only builders hold the signing key.";
         };
 
-        age.secrets."nix-cache-signing-key" = {
-          file = "${secretsDir}/secrets/services/nix-cache/signing-key.age";
-          owner = "root";
-          group = "root";
-          mode = "0400";
-        };
-
-        environment.etc."nix-cache-upload".source = uploadHook;
-
-        nix.settings = {
-          substituters = [ cacheUrl ];
-          trusted-public-keys = [ cache.publicKey ];
-          secret-key-files = [ signingKeyPath ];
-        };
-
-        # nix-daemon runs as root and resolves credentials through the AWS
-        # SDK's shared credentials file. HOME is not set for system
-        # services, so point the SDK at the decrypted agenix secret.
-        systemd.services.nix-daemon = {
-          after = [ "agenix-install-secrets.service" ];
-          environment = {
-            HOME = "/root";
-            AWS_SHARED_CREDENTIALS_FILE = credentialsPath;
+        config = {
+          # The bucket rejects unauthenticated requests, so readers need the
+          # credentials as well as the public key.
+          age.secrets."nix-cache-aws-credentials" = {
+            file = "${secretsDir}/secrets/services/nix-cache/aws-credentials.age";
+            owner = "root";
+            group = "root";
+            mode = "0400";
           };
+
+          nix.settings = {
+            # priority 60 sorts this last, after cache.nixos.org (40),
+            # nix-community (41) and cache.nixos-cuda.org (50): if a public
+            # cache has the path, take it from there.
+            substituters = [ "${cacheUrl}&priority=60" ];
+            trusted-public-keys = [ cache.publicKey ];
+            secret-key-files = lib.mkIf config.my.nixCache.builder [ signingKeyPath ];
+          };
+
+          # nix-daemon runs as root and resolves credentials through the AWS
+          # SDK's shared credentials file. HOME is not set for system
+          # services, so point the SDK at the decrypted agenix secret.
+          systemd.services.nix-daemon = {
+            after = [ "agenix-install-secrets.service" ];
+            environment = {
+              HOME = "/root";
+              AWS_SHARED_CREDENTIALS_FILE = credentialsPath;
+            };
+          };
+
+          home-manager.sharedModules = [
+            (
+              { config, osConfig, ... }:
+              let
+                user = osConfig.users.users.${config.home.username} or null;
+              in
+              lib.mkIf (osConfig.my.nixCache.builder && user != null && isBuilder config.home.username user) {
+                nix.settings.post-build-hook = "/etc/nix-cache-upload";
+              }
+            )
+          ];
+
+          # Writers need the signing key on top of the read credentials. A
+          # host without it cannot push, even with the S3 keys.
+          age.secrets."nix-cache-signing-key" = lib.mkIf config.my.nixCache.builder {
+            file = "${secretsDir}/secrets/services/nix-cache/signing-key.age";
+            owner = "root";
+            group = "root";
+            mode = "0400";
+          };
+
+          environment.etc = lib.mkIf config.my.nixCache.builder {
+            "nix-cache-upload".source = uploadHook;
+          };
+
+          systemd.tmpfiles.rules = hookUserRules;
         };
-
-        systemd.tmpfiles.rules = hookUserRules;
-
-        home-manager.sharedModules = [
-          (
-            {
-              config,
-              osConfig,
-              lib,
-              ...
-            }:
-            let
-              user = osConfig.users.users.${config.home.username} or null;
-            in
-            lib.mkIf (user != null && isBuilder config.home.username user) {
-              nix.settings.post-build-hook = "/etc/nix-cache-upload";
-            }
-          )
-        ];
       };
   };
 }
