@@ -90,12 +90,14 @@ in
 
         age.secrets."pam_u2f" = {
           file = "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/pam_u2f.age";
-          # kscreenlocker's PAM worker runs as the logged-in user (no setuid anywhere in that
-          # path), and pam_u2f opens the authfile with its own euid. Keep it world-readable:
-          # restricting it to a group couples the lock screen to group membership, and a
-          # mismatch is a silent lockout because pam_u2f is `sufficient` and pam_deny is the
-          # only other auth line. The file holds key handles and public keys, not secrets.
-          mode = "0444";
+          # kscreenlocker's PAM worker runs as the logged-in user (no setuid in that path) and
+          # pam_u2f opens the authfile with its own euid, so uid 1000 needs read access; it gets
+          # it through its primary group. Root keeps ownership: an authfile owned by that uid is
+          # writable by every one of its processes, and pam_u2f is `sufficient` for login, sudo
+          # and kde, so a user-writable authfile is a passwordless sudo. Group must resolve on
+          # every host or the screen lock silently stops accepting the key.
+          mode = "0440";
+          group = "users";
         };
 
         # FIDO2 PIN (keyboard, not the OnlyKey keypad PIN), needed by pamu2fcfg and every login:
