@@ -61,6 +61,7 @@
 ## CLI tools
 
 - `browser-harness-js` for CDP (`/cdp`), Chrome on `--user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`, reuse one session
+- `spt` for Super Productivity tasks, notes and time on the desktop; `spt --help` is the whole interface, the app must be running
 - `gh` for GitHub state, ssh hosts from `~/.ssh/config.d/keepass.conf`
 - `cf` from the project root; `cf tools`, `cf <group> --help`, `cf docs search "<query>"`
 - read-only for git, gh, cf and netbird-manage: no commit, push, tag, reset, checkout, rm or mv without confirmation; staging only to test a Nix build

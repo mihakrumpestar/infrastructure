@@ -17,6 +17,7 @@ in
       home.storage
       home.home-apps
       home.note-taking
+      home.task-app
       home.ide
       home.llm
       home.password-manager

@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-17,450 non-blank lines, comments included and Markdown excluded.
+18,531 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -41,12 +41,12 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | modules/den.nix  |     130 |
 | modules/hosts    |     501 |
 | modules/system   |   2,532 |
-| modules/home     |   4,522 |
-| modules/users    |     238 |
-| modules (total)  |   7,923 |
+| modules/home     |   5,602 |
+| modules/users    |     239 |
+| modules (total)  |   9,004 |
 | packages (total) |   8,623 |
 | lib (total)      |     776 |
-| **Total**        |  17,450 |
+| **Total**        |  18,531 |
 
 </details>
 <!-- FAST_END -->
@@ -357,6 +357,7 @@ flowchart LR
     user_krumpy_miha --> home_scripts
     user_krumpy_miha --> home_ssh
     user_krumpy_miha --> home_storage
+    user_krumpy_miha --> home_task_app
     user_krumpy_miha --> home_web_browser
 
 ```
