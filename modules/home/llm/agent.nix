@@ -261,13 +261,6 @@ in
                   command = [ "${pkgs.codebase-memory-mcp}/bin/codebase-memory-mcp" ];
                 };
 
-                # Not needed most of the time and/or add a lot to context
-                "docs-mcp-server" = {
-                  type = "remote";
-                  url = "http://127.0.0.1:6280/mcp";
-                  disabled = true;
-                };
-
                 # Waiting for https://github.com/langflow-ai/openrag/issues/981#issuecomment-3947831540
                 # Being implemented in https://github.com/langflow-ai/openrag/pull/2063
                 # openrag = {
@@ -278,6 +271,8 @@ in
                 #     OPENRAG_API_KEY = "orag_your_api_key_here";
                 #   };
                 # };
+
+                # Above one or docs-mcp for document search
               };
 
               # Ordered ruleset, last match wins

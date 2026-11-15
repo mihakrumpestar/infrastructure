@@ -29,6 +29,11 @@
 
           networking.homeWifi.enable = true;
         };
+
+        # Allow PCI runtime PM for the RTL8852BE (wlo1).
+        services.udev.extraRules = ''
+          ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10ec", ATTR{device}=="0xb85b", ATTR{power/control}="auto"
+        '';
       };
   };
 }
