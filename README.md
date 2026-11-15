@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-17,353 non-blank lines, comments included and Markdown excluded.
+17,450 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -40,13 +40,13 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | flake.nix        |     128 |
 | modules/den.nix  |     130 |
 | modules/hosts    |     501 |
-| modules/system   |   2,514 |
-| modules/home     |   4,443 |
+| modules/system   |   2,532 |
+| modules/home     |   4,522 |
 | modules/users    |     238 |
-| modules (total)  |   7,826 |
+| modules (total)  |   7,923 |
 | packages (total) |   8,623 |
 | lib (total)      |     776 |
-| **Total**        |  17,353 |
+| **Total**        |  17,450 |
 
 </details>
 <!-- FAST_END -->
@@ -218,6 +218,7 @@ flowchart LR
         home_storage_bisync["storage/bisync"]:::aspect
         home_storage["storage"]:::aspect
         home_storage_mount["storage/mount"]:::aspect
+        home_task_app["task-app"]:::aspect
         home_web_browser_policies["web-browser/policies"]:::aspect
         home_web_browser["web-browser"]:::aspect
     end

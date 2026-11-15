@@ -2,7 +2,12 @@
 {
   den.aspects.plasma = {
     nixos =
-      { config, lib, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       {
         options.my.de.plasma = {
           kiosk = lib.mkEnableOption "Kiosk mode for Plasma";
@@ -323,6 +328,20 @@
             pulse.enable = true;
             #jack.enable = true; # Only if you need it
           };
+
+          /*
+            kscreenlocker's PAM worker holds the FIDO2 token handle across
+            sleep and cannot use the re-enumerated device after resume: every
+            unlock attempt fails and typed secrets are answered into a
+            conversation that never started ("Received prompt response, but no
+            pending prompt was found"). A greeter started after resume
+            authenticates fine, and KSldApp restarts the lock when the greeter
+            exits unexpectedly, so replace it on every resume. Seen on 6.8.2,
+            2026-11-15.
+          */
+          powerManagement.resumeCommands = ''
+            ${pkgs.procps}/bin/pkill -f 'libexec/kscreenlocker_greet' || true
+          '';
         };
       };
   };
