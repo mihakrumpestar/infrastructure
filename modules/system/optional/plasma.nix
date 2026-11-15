@@ -250,14 +250,18 @@
                   batteryLevels = {
                     lowLevel = 10; # 0 to 100
                     criticalLevel = 5; # 0 to 100
-                    criticalAction = "sleep";
+                    criticalAction = "hibernate";
                   };
 
+                  # Closing the lid turns the panel off but keeps the session
+                  # awake; the idle timer below hibernates it, because no RTC
+                  # alarm fires here and s2idle costs ~1%/h. Resume needs the
+                  # FIDO2 token since the image lives on the LUKS volume.
                   battery = rec {
                     powerProfile = "powerSaving";
                     powerButtonAction = "showLogoutScreen";
-                    whenSleepingEnter = "standbyThenHibernate";
-                    whenLaptopLidClosed = "sleep";
+                    whenSleepingEnter = "standby";
+                    whenLaptopLidClosed = "turnOffScreen";
                     inhibitLidActionWhenExternalMonitorConnected = true;
 
                     dimDisplay = {
@@ -271,7 +275,7 @@
                     };
 
                     autoSuspend = {
-                      action = "sleep";
+                      action = "hibernate";
                       idleTimeout = turnOffDisplay.idleTimeout + 20; # In seconds
                     };
                   };
@@ -279,8 +283,8 @@
                   lowBattery = rec {
                     powerProfile = "powerSaving";
                     powerButtonAction = "showLogoutScreen";
-                    whenSleepingEnter = "standbyThenHibernate";
-                    whenLaptopLidClosed = "sleep";
+                    whenSleepingEnter = "standby";
+                    whenLaptopLidClosed = "turnOffScreen";
 
                     dimDisplay = {
                       enable = true;
@@ -293,7 +297,7 @@
                     };
 
                     autoSuspend = {
-                      action = "sleep";
+                      action = "hibernate";
                       idleTimeout = turnOffDisplay.idleTimeout + 20;
                     };
 
