@@ -111,13 +111,13 @@ func TestGenerateWritesHostsFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "gh", "hosts.yml")
 	o := options{Output: path, LogFile: path + ".log"}
 
-	err := generateWith(o, staticSource([]ghauth.Account{{Host: "github.com", User: "mihakrumpestar"}}, nil))
+	err := generateWith(o, staticSource([]ghauth.Account{{Host: "github.com", User: "octocat"}}, nil))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	got := readOutput(t, path)
-	for _, want := range []string{"github.com:", "user: mihakrumpestar", "users:", "mihakrumpestar: null"} {
+	for _, want := range []string{"github.com:", "user: octocat", "users:", "octocat: null"} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("output missing %q:\n%s", want, got)
 		}

@@ -58,12 +58,23 @@ Add `git.name` and `git.email` to an `ssh_hosts` line. The entry must also have 
 
 ```text
 ssh_hosts:
-  github-personal HostName=ssh.github.com Port=443 User=git git.name=Miha git.email=me@example.com
+  github-personal HostName=ssh.github.com Port=443 User=git git.name=Example git.email=me@example.com
 ssh_sign:
   me@example.com
 ```
 
-This writes `~/.config/git/keepass-identities/github-personal` with `name`, `email`, and `signingkey`, plus an `include.conf` fragment that maps the SSH alias to that identity. With `git.enable`, `include.conf` is added to the global git config. Remotes must be scp-like `[user@]<alias>:path`; `ssh://` and remotes without a user are not matched.
+This writes `~/.config/git/keepass-identities/github-personal` with `name`, `email`, and `signingkey`, plus an `include.conf` fragment that maps the SSH alias to that identity. With `git.enable`, `include.conf` is added to the global git config. The alias rules match scp-like remotes that use the alias, `[user@]<alias>:path`.
+
+Add `git.orgs` with one or more comma-separated repository owners to select the identity by owner instead:
+
+```text
+ssh_hosts:
+  github-personal HostName=ssh.github.com Port=443 User=git git.name=Example git.email=me@example.com git.orgs=example-org
+ssh_sign:
+  me@example.com
+```
+
+`git.orgs` matches the owner in `https://<host>/<org>/**`, `ssh://<host>/<org>/**`, and scp-like `<host>:<org>/**` remotes, so it applies regardless of URL form. Owners are literal names: a value containing whitespace, `/`, `:`, or any of `*?[]!` is dropped.
 
 ### SSH private key
 
