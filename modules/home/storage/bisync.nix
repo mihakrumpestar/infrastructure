@@ -11,7 +11,7 @@
         ...
       }:
       let
-        rcloneConfigPath = config.age.secrets."rclone_config".path;
+        rcloneConfigPath = config.sops.secrets.rclone_conf.path;
 
         # Sync engine: rclone bisync. This module wraps it with the
         # failure handling and observability that production use requires.
@@ -84,9 +84,9 @@
                 Documentation = "man:rclone(1) man:inotifywait(1)";
                 # network-online.target does not exist in the user manager, so
                 # the real protections are the staggered start delay plus the
-                # 15 min heartbeat retry. agenix.service ordering matters:
+                # 15 min heartbeat retry. sops-nix.service ordering matters:
                 # ExecStart consumes the decrypted rclone.conf.
-                After = [ "agenix.service" ];
+                After = [ "sops-nix.service" ];
               };
               Service = {
                 Type = "simple";

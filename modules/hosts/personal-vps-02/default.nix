@@ -1,7 +1,7 @@
 { den, inputs, ... }:
 let
   secretsDir = inputs.infrastructure-secrets;
-  data = import "${secretsDir}/secrets/users/root/data.nix";
+  data = (import "${secretsDir}/secrets/data.nix").root;
 in
 {
   den.aspects.personal-vps-02 = {

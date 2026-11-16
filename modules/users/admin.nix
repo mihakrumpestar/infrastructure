@@ -8,8 +8,11 @@
         ...
       }:
       {
-        age.secrets."admin_hashedPassword" = {
-          file = "${inputs.infrastructure-secrets}/secrets/users/root/admin_hashedPassword.age";
+        # Only the servers run this aspect, so only they receive the hash.
+        sops.secrets.admin_hashedPassword = {
+          sopsFile = "${inputs.infrastructure-secrets}/secrets/sops/servers.yaml";
+          key = "admin/hashed_password";
+          neededForUsers = true;
         };
 
         users.users.admin = {
@@ -26,7 +29,7 @@
             "tss"
             "netbird" # NetBird control socket access (services.netbird in networking.nix)
           ];
-          hashedPasswordFile = config.age.secrets."admin_hashedPassword".path;
+          hashedPasswordFile = config.sops.secrets.admin_hashedPassword.path;
           openssh.authorizedKeys.keys = [ ];
         };
 

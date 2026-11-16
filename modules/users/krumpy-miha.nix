@@ -4,7 +4,7 @@
   ...
 }:
 let
-  data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
+  data = (import "${inputs.infrastructure-secrets}/secrets/data.nix").root;
   keepassDatabase = "~/Documents/digital-identity/KeePass.kdbx";
 in
 {
@@ -89,8 +89,9 @@ in
           "nwjs-0.102.1"
         ];
 
-        age.secrets."pam_u2f" = {
-          file = "${inputs.infrastructure-secrets}/secrets/users/krumpy-miha/pam_u2f.age";
+        sops.secrets."pam_u2f" = {
+          sopsFile = "${inputs.infrastructure-secrets}/secrets/sops/krumpy-miha.yaml";
+          key = "krumpy-miha/pam_u2f";
           # kscreenlocker's PAM worker runs as the logged-in user (no setuid in that path) and
           # pam_u2f opens the authfile with its own euid, so uid 1000 needs read access; it gets
           # it through its primary group. Root keeps ownership: an authfile owned by that uid is
@@ -105,9 +106,13 @@ in
         #   onlykey-cli set-pin     # or change-pin
         #
         # The authfile is bound to one relying party (rpId), so it must be generated with the
-        # same value as `origin` below, or every assertion fails and login is denied:
-        #   F=secrets/users/krumpy-miha/pam_u2f
+        # same value as `origin` below, or every assertion fails and login is denied.
+        # The value lives in sops, so generate it in a temp file and put it back:
+        #   cd secrets
+        #   F=$(mktemp)
+        #   task get -- '["krumpy-miha"]["pam_u2f"]' secrets/sops/krumpy-miha.yaml > "$F"
         #   pamu2fcfg -o pam://nixos -i pam://nixos -u krumpy-miha --pin-verification > "$F"
+        #   task edit -- secrets/sops/krumpy-miha.yaml   # replace the pam_u2f block with the file contents
         #
         # Second key later: same command with -n, appended to the same file (one tap each),
         # because a repeated username on its own line replaces the earlier one.
@@ -118,7 +123,7 @@ in
           u2f = {
             enable = true;
             settings = {
-              authfile = config.age.secrets."pam_u2f".path;
+              authfile = config.sops.secrets."pam_u2f".path;
               cue = true;
               pinverification = 1;
               # The authfile's credentials are bound to one rpId. Without this, pam_u2f uses

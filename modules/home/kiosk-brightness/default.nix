@@ -23,9 +23,9 @@ in
         };
       in
       {
-        age.secrets.brightness-server-token = {
-          file = "${secretsDir}/secrets/users/public-user/brightness-server-token.env.age";
-          path = "${config.home.homeDirectory}/.agenix/secrets/brightness-server-token";
+        sops.secrets.brightness_env = {
+          sopsFile = "${secretsDir}/secrets/sops/home-network.yaml";
+          key = "kiosk/brightness_env";
         };
 
         home.packages = with pkgs; [
@@ -38,13 +38,13 @@ in
             Description = "Brightness Control REST API Server";
             After = [
               "graphical-session.target"
-              "agenix.service"
+              "sops-nix.service"
             ];
-            Requires = [ "agenix.service" ];
+            Requires = [ "sops-nix.service" ];
           };
           Service = {
             Type = "simple";
-            EnvironmentFile = config.age.secrets.brightness-server-token.path;
+            EnvironmentFile = config.sops.secrets.brightness_env.path;
             ExecStart = "${brightness-server}/bin/brightness-server";
             Restart = "on-failure";
             RestartSec = 5;

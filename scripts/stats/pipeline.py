@@ -68,7 +68,7 @@ class HostFacts:
     de: str | None = None
     hmUsers: list[str] = field(default_factory=list)
     services: int | None = None
-    ageSecrets: int | None = None
+    sopsSecrets: int | None = None
 
 
 @dataclass
@@ -125,7 +125,7 @@ let
     de = if plasma == true then "plasma" else if gnome == true then "gnome" else null;
     hmUsers = safe (builtins.attrNames c.home-manager.users);
     services = safe (builtins.length (builtins.attrNames c.systemd.services));
-    ageSecrets = safe (builtins.length (builtins.attrNames c.age.secrets));
+    sopsSecrets = safe (builtins.length (builtins.attrNames c.sops.secrets));
   };
 in
 map mkHost (builtins.attrNames cfg)

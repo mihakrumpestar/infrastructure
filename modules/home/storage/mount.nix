@@ -11,7 +11,7 @@
         ...
       }:
       let
-        rcloneConfigPath = config.age.secrets."rclone_config".path;
+        rcloneConfigPath = config.sops.secrets.rclone_conf.path;
 
         rcloneMountBase = {
           # Template unit rclone@.service; rclone@nextcloud-personal is
@@ -21,7 +21,7 @@
             Documentation = "man:rclone(1)";
             After = [
               "network-online.target"
-              "agenix.service"
+              "sops-nix.service"
             ];
             Wants = [ "network-online.target" ];
             StartLimitIntervalSec = "120s";

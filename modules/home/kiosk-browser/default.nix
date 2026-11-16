@@ -1,7 +1,7 @@
 { inputs, ... }:
 let
   secretsDir = inputs.infrastructure-secrets;
-  data = import "${secretsDir}/secrets/users/public-user/data.nix";
+  data = (import "${secretsDir}/secrets/data.nix")."public-user";
 in
 {
   home.kiosk-browser = {
@@ -39,13 +39,13 @@ in
         #       mkdir -p "${profileDir}"
         #     fi
         #
-        #     if [ ! -f "${config.age.secrets.client-cert-p12.path}" ]; then
+        #     if [ ! -f "${config.sops.secrets.client-cert-p12.path}" ]; then
         #       echo "Certificate file not found"
         #       exit 1
         #     fi
         #
         #     echo "Importing client certificate..."
-        #     pk12util -i "${config.age.secrets.client-cert-p12.path}" -d "${profileDir}" -W ""
+        #     pk12util -i "${config.sops.secrets.client-cert-p12.path}" -d "${profileDir}" -W ""
         #
         #     touch "${certImportedMarker}"
         #     echo "Certificate imported successfully"
@@ -53,9 +53,10 @@ in
         # };
       in
       {
-        # age.secrets.client-cert-p12 = {
-        #   file = "${secretsDir}/secrets/users/public-user/client-cert.p12.age";
-        #   path = "${config.home.homeDirectory}/.agenix/secrets/client-cert.p12";
+        # sops.secrets.client-cert-p12 = {
+        #   sopsFile = "${secretsDir}/secrets/sops/home-network.yaml";
+        #   key = "kiosk/client_cert_p12";
+        #   path = "${config.home.homeDirectory}/.config/sops-nix/secrets/client-cert.p12";
         # };
 
         stylix.targets.librewolf.profileNames = [ "default" ];
@@ -109,9 +110,9 @@ in
         #     Description = "Import client certificate into Librewolf profile";
         #     After = [
         #       "graphical-session.target"
-        #       "agenix.service"
+        #       "sops-nix.service"
         #     ];
-        #     Requires = [ "agenix.service" ];
+        #     Requires = [ "sops-nix.service" ];
         #   };
         #   Service = {
         #     Type = "oneshot";

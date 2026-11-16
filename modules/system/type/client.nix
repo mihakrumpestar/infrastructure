@@ -1,6 +1,6 @@
 { den, inputs, ... }:
 let
-  data = import "${inputs.infrastructure-secrets}/secrets/users/root/data.nix";
+  data = (import "${inputs.infrastructure-secrets}/secrets/data.nix").root;
 in
 {
   den.aspects.client = {

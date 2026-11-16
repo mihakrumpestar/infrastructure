@@ -35,13 +35,15 @@ in
           };
         };
 
-        home.mutableFile.".config/backrest/config.json".source = pkgs.replaceVars ./config.json {
-          inherit (config.home) homeDirectory;
-          digital_identity_password_path = config.age.secrets."backups_password".path;
+        sops.secrets.backups_password = {
+          sopsFile = "${secretsDir}/secrets/sops/krumpy-miha.yaml";
+          key = "krumpy-miha/backups_password";
         };
 
-        age.secrets."backups_password".file =
-          "${secretsDir}/secrets/users/krumpy-miha/backups_password.age";
+        home.mutableFile.".config/backrest/config.json".source = pkgs.replaceVars ./config.json {
+          inherit (config.home) homeDirectory;
+          digital_identity_password_path = config.sops.secrets.backups_password.path;
+        };
       };
   };
 }

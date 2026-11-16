@@ -113,7 +113,7 @@
         # setting: classification.json names the source, classifier-endpoint.json
         # holds the URL, model and key (the app's own shape and mode). The app
         # rereads both on every use, so a rewrite applies without a restart.
-        # A user unit after agenix, which is what decrypts the key.
+        # A user unit after sops-nix, which is what renders the env file.
         openchamber-classifier = pkgs.writeShellApplication {
           name = "openchamber-classifier";
           runtimeInputs = [
@@ -290,20 +290,20 @@
           "writeBoundary"
         ] "${openchamber-settings-sync}/bin/openchamber-settings-sync";
 
-        # A user unit after agenix, which decrypts the key; PartOf makes a
+        # A user unit after sops-nix, which renders the env file; PartOf makes a
         # secret rotation restart it too. The optional EnvironmentFile keeps a
         # host without the secret from ending up with a failed unit: the
         # script reports it and the app holds every request instead.
         systemd.user.services.openchamber-classifier = {
           Unit = {
             Description = "Point OpenChamber's Jev classifier at Plexus";
-            After = [ "agenix.service" ];
-            Requires = [ "agenix.service" ];
-            PartOf = [ "agenix.service" ];
+            After = [ "sops-nix.service" ];
+            Requires = [ "sops-nix.service" ];
+            PartOf = [ "sops-nix.service" ];
           };
           Service = {
             Type = "oneshot";
-            EnvironmentFile = "-${config.age.secrets."llm_agent.env".path}";
+            EnvironmentFile = "-${config.sops.secrets.llm_agent_env.path}";
             UMask = "0077";
             ExecStart = "${openchamber-classifier}/bin/openchamber-classifier";
           };

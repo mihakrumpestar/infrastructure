@@ -1,6 +1,8 @@
 { inputs, ... }:
 let
   secretsDir = inputs.infrastructure-secrets;
+  data = import "${secretsDir}/secrets/data.nix";
+  inherit (data) wifi;
 in
 {
   den.aspects.networking = {
@@ -13,10 +15,54 @@ in
         };
 
         config = {
-          age.secrets.homeWifi = lib.mkIf config.my.networking.homeWifi.enable {
-            file = "${secretsDir}/secrets/users/homeWifi.nmconnection.age";
-            path = "/etc/NetworkManager/system-connections/homeWifi.nmconnection";
-          };
+          sops.secrets = lib.mkIf config.my.networking.homeWifi.enable (
+            lib.mapAttrs' (
+              ap: _:
+              lib.nameValuePair "${ap}_psk" {
+                sopsFile = "${secretsDir}/secrets/sops/home-network.yaml";
+                key = "wifi/${ap}/psk";
+              }
+            ) wifi
+          );
+
+          # The rendered file is symlinked into /etc, so NetworkManager reads it
+          # through /run/secrets.
+          sops.templates = lib.mkIf config.my.networking.homeWifi.enable (
+            lib.mapAttrs' (
+              ap: apConfig:
+              let
+                secret = "${ap}_psk";
+              in
+              lib.nameValuePair "nmconnection-${ap}" {
+                content = ''
+                  [connection]
+                  id=${ap}
+                  uuid=${apConfig.uuid}
+                  type=wifi
+
+                  [wifi]
+                  mode=infrastructure
+                  ssid=${apConfig.ssid}
+
+                  [wifi-security]
+                  key-mgmt=wpa-psk
+                  psk=${config.sops.placeholder.${secret}}
+
+                  [ipv4]
+                  method=auto
+
+                  [ipv6]
+                  addr-gen-mode=default
+                  method=auto
+
+                  [proxy]'';
+                path = "/etc/NetworkManager/system-connections/${ap}.nmconnection";
+                mode = "0400";
+                # Apply a PSK change without waiting for the next NM restart.
+                reloadUnits = [ "NetworkManager.service" ];
+              }
+            ) wifi
+          );
 
           # systemd-resolved is NetBird's supported Linux DNS backend (per-link
           # DNS and split domains over D-Bus). On NetworkManager hosts this also

@@ -1,25 +1,5 @@
 {
   "nodes": {
-    "agenix": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1792507013,
-        "narHash": "sha256-8tKjSQajD3mUND1GaAuaWTcuyUpgcGsh5V+l4ibzC7U=",
-        "owner": "ryantm",
-        "repo": "agenix",
-        "rev": "5e5b88a0c8e56f291a108c2fe9934054d9745b2e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ryantm",
-        "repo": "agenix",
-        "type": "github"
-      }
-    },
     "archify": {
       "flake": false,
       "locked": {
@@ -411,11 +391,11 @@
     "infrastructure-secrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1794669003,
-        "narHash": "sha256-Hl/iqjB+9cP7D0Lp8QYGGreXqf4lJybghSUdSNzKehk=",
+        "lastModified": 1794863886,
+        "narHash": "sha256-luZnN9YtuO8mncIHmJCdXIdkGOhw5Nko5kvKOKnNEhQ=",
         "ref": "main",
-        "rev": "2b0e7ac6548aab2b05bcf591426bfcaaac700de2",
-        "revCount": 95,
+        "rev": "5eb455ce09644e6dc0cbc92e92a605a8dfa66874",
+        "revCount": 97,
         "type": "git",
         "url": "ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git"
       },
@@ -846,7 +826,6 @@
     },
     "root": {
       "inputs": {
-        "agenix": "agenix",
         "archify": "archify",
         "browser-harness-js": "browser-harness-js",
         "consul-cni": "consul-cni",
@@ -873,6 +852,7 @@
         "opencode-plugins": "opencode-plugins",
         "plasma-manager": "plasma-manager",
         "security-audit-skill": "security-audit-skill",
+        "sops-nix": "sops-nix",
         "stylix": "stylix",
         "virtualhere": "virtualhere"
       }
@@ -911,6 +891,26 @@
       "original": {
         "owner": "cloudflare",
         "repo": "security-audit-skill",
+        "type": "github"
+      }
+    },
+    "sops-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794624949,
+        "narHash": "sha256-3q/hxp/flW1PnV3Dx+H3p8kHGEHJ7251BqVMNsAAB9E=",
+        "owner": "Mic92",
+        "repo": "sops-nix",
+        "rev": "11e5885d241743ff0193465d533b20e754bc3ce0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Mic92",
+        "repo": "sops-nix",
         "type": "github"
       }
     },

@@ -87,7 +87,7 @@ def render_host_overview_table(doc: Measurements) -> str:
             "n/a" if failed else _count(closure.systemPackages),
             home,
             _count(facts.services) if facts else "n/a",
-            _count(facts.ageSecrets) if facts else "n/a",
+            _count(facts.sopsSecrets) if facts else "n/a",
         ])
     return _table(
         rows,

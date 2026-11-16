@@ -1,7 +1,7 @@
 { inputs, ... }:
 let
   secretsDir = inputs.infrastructure-secrets;
-  cache = import "${secretsDir}/secrets/services/nix-cache/config.nix";
+  cache = (import "${secretsDir}/secrets/data.nix")."nix-cache";
 
   cacheUrl = "s3://${cache.bucket}?region=${cache.region}&endpoint=${cache.endpoint}";
 in
@@ -15,8 +15,8 @@ in
         ...
       }:
       let
-        credentialsPath = config.age.secrets."nix-cache-aws-credentials".path;
-        signingKeyPath = config.age.secrets."nix-cache-signing-key".path;
+        credentialsPath = config.sops.secrets.nix_cache_aws_credentials.path;
+        signingKeyPath = config.sops.secrets.nix_cache_signing_key.path;
 
         # Builders are root and members of this group. wheel already is in
         # trusted-users, which post-build-hook requires. A separate group
@@ -86,11 +86,10 @@ in
         config = {
           # The bucket rejects unauthenticated requests, so readers need the
           # credentials as well as the public key.
-          age.secrets."nix-cache-aws-credentials" = {
-            file = "${secretsDir}/secrets/services/nix-cache/aws-credentials.age";
-            owner = "root";
-            group = "root";
-            mode = "0400";
+          sops.secrets.nix_cache_aws_credentials = {
+            sopsFile = "${secretsDir}/secrets/sops/cache-read.yaml";
+            key = "nix_cache/aws_credentials";
+            restartUnits = [ "nix-daemon.service" ];
           };
 
           nix.settings = {
@@ -104,9 +103,9 @@ in
 
           # nix-daemon runs as root and resolves credentials through the AWS
           # SDK's shared credentials file. HOME is not set for system
-          # services, so point the SDK at the decrypted agenix secret.
+          # services, so point the SDK at the rendered file.
           systemd.services.nix-daemon = {
-            after = [ "agenix-install-secrets.service" ];
+            after = [ "sops-install-secrets.service" ];
             environment = {
               HOME = "/root";
               AWS_SHARED_CREDENTIALS_FILE = credentialsPath;
@@ -126,12 +125,12 @@ in
           ];
 
           # Writers need the signing key on top of the read credentials. A
-          # host without it cannot push, even with the S3 keys.
-          age.secrets."nix-cache-signing-key" = lib.mkIf config.my.nixCache.builder {
-            file = "${secretsDir}/secrets/services/nix-cache/signing-key.age";
-            owner = "root";
-            group = "root";
-            mode = "0400";
+          # host without it cannot push, even with the S3 keys. Only the two
+          # builder hosts are recipients of cache-write.yaml.
+          sops.secrets.nix_cache_signing_key = lib.mkIf config.my.nixCache.builder {
+            sopsFile = "${secretsDir}/secrets/sops/cache-write.yaml";
+            key = "nix_cache/signing_key";
+            restartUnits = [ "nix-daemon.service" ];
           };
 
           environment.etc = lib.mkIf config.my.nixCache.builder {

@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-18,602 non-blank lines, comments included and Markdown excluded.
+18,653 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -40,13 +40,13 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | flake.nix        |     128 |
 | modules/den.nix  |     130 |
 | modules/hosts    |     501 |
-| modules/system   |   2,532 |
+| modules/system   |   2,575 |
 | modules/home     |   5,602 |
-| modules/users    |     239 |
-| modules (total)  |   9,004 |
+| modules/users    |     247 |
+| modules (total)  |   9,055 |
 | packages (total) |   8,694 |
 | lib (total)      |     776 |
-| **Total**        |  18,602 |
+| **Total**        |  18,653 |
 
 </details>
 <!-- FAST_END -->
@@ -132,7 +132,6 @@ flowchart LR
     classDef config fill:#64748b,stroke:#cbd5e1,stroke-width:1px,color:#ffffff
 
     subgraph Inputs[Inputs]
-        input_agenix["agenix"]:::input
         input_archify["archify"]:::input
         input_browser_harness_js["browser-harness-js"]:::input
         input_den["den"]:::input
@@ -153,6 +152,7 @@ flowchart LR
         input_openchamber["openchamber"]:::input
         input_plasma_manager["plasma-manager"]:::input
         input_security_audit_skill["security-audit-skill"]:::input
+        input_sops_nix["sops-nix"]:::input
         input_stylix["stylix"]:::input
         local_consul_cni["./packages/consul-cni"]:::local
         local_github_desktop["./packages/github-desktop"]:::local
@@ -302,7 +302,6 @@ flowchart LR
     host_server_01 --> type_server
     host_server_03 --> host_server_03_hardware
     host_server_03 --> type_server
-    input_agenix --> flake
     input_archify --> flake
     input_browser_harness_js --> flake
     input_den --> flake
@@ -323,6 +322,7 @@ flowchart LR
     input_openchamber --> flake
     input_plasma_manager --> flake
     input_security_audit_skill --> flake
+    input_sops_nix --> flake
     input_stylix --> flake
     local_consul_cni --> flake
     local_github_desktop --> flake

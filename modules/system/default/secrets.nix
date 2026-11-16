@@ -15,16 +15,10 @@ in
         inherit (config.networking) hostName;
         inherit (config.my.secrets) useTpm;
 
-        # age does not find executable file "age-with-tpm" in env by default
-        age-with-tpm =
-          let
-            wrapped = pkgs.age.withPlugins (ps: [ ps.age-plugin-tpm ]);
-          in
-          wrapped.overrideAttrs (old: {
-            meta = (old.meta or { }) // {
-              mainProgram = "age";
-            };
-          });
+        # sops resolves AGE-PLUGIN-* identities by executing age-plugin-<name>
+        # from the unit PATH, so the plugin has to be in sops.age.plugins.
+        # A TPM identity is a handle, the private key never leaves the TPM.
+        identityFile = "${secretsDir}/secrets/hosts/${hostName}.txt";
       in
       {
         options.my.secrets.useTpm = lib.mkOption {
@@ -34,45 +28,57 @@ in
         };
 
         config = {
+          # /etc is populated during activation, before any unit starts, so the
+          # identity is in place for sops-install-secrets-for-users. That unit
+          # is ordered before userborn, which in turn runs before
+          # systemd-tmpfiles, so a tmpfiles-created identity would be too late.
+          environment.etc = lib.mkIf useTpm {
+            "sops-nix/age-keys.txt".source = identityFile;
+          };
 
-          # systemctl status agenix-install-secrets.service
-          age =
-            lib.optionalAttrs useTpm {
-              # builtins.readFile is eager — only set identityPaths for TPM hosts,
-              # agenix defaults to SSH host keys otherwise
-              identityPaths = [
-                (pkgs.writeText "age_identitiy" (builtins.readFile (secretsDir + "/secrets/hosts/${hostName}.txt")))
-              ];
-            }
-            // {
-              ageBin = lib.getExe age-with-tpm;
-            };
+          sops.age = lib.mkIf useTpm {
+            keyFile = "/etc/sops-nix/age-keys.txt";
+            plugins = [ pkgs.age-plugin-tpm ];
+            # No silent fallback to SSH host keys on TPM hosts.
+            sshKeyPaths = [ ];
+          };
+
+          # personal-vps-02 has no TPM and keeps the default sshKeyPaths
+          # (OpenSSH host keys). A recipient encrypted to the raw ssh-ed25519
+          # key cannot be unwrapped by that path: sops-nix converts the private
+          # key to an age identity with ssh-to-age, so the recipient in
+          # .sops.yaml must be the age1 form derived the same way.
+          # GPG host keys are never used on any host.
+          sops.gnupg.sshKeyPaths = [ ];
+
+          assertions = lib.optional useTpm {
+            assertion = builtins.pathExists identityFile;
+            message = "sops: identity file missing for host ${hostName}: ${identityFile}";
+          };
+
+          # A TPM or driver hang here blocks sysinit and therefore sshd, and the
+          # units are Type=oneshot with no timeout of their own.
+          systemd.services.sops-install-secrets.serviceConfig.TimeoutStartSec = "60s";
 
           home-manager.sharedModules = [
             {
-              # systemctl status --user agenix.service
-              age =
-                lib.optionalAttrs useTpm {
-                  inherit (config.age) identityPaths;
-                }
-                // {
-                  package = age-with-tpm;
-                };
+              # systemctl --user status sops-nix.service
+              # The HM module decrypts on its own: same identity, its own
+              # plugin path, and an explicit key source because its assertion
+              # does not count plugins.
+              sops.age = lib.mkIf useTpm {
+                keyFile = "/etc/sops-nix/age-keys.txt";
+                plugins = [ pkgs.age-plugin-tpm ];
+              };
             }
           ];
 
           environment.systemPackages = with pkgs; [
-            age-with-tpm
+            age
             age-plugin-tpm
           ];
 
-          services.userborn.enable = true; # For agenix
-
-          # agenix-install-secrets.service has Before=systemd-sysusers.service,
-          # but userborn replaces systemd-sysusers — without this, userborn can
-          # race ahead of agenix and fail to read hashedPasswordFile for users.
-          # Seems like https://github.com/ryantm/agenix/issues/345 does nto work in this particular case
-          systemd.services.userborn.after = [ "agenix-install-secrets.service" ];
+          services.userborn.enable = true; # Reads hashedPasswordFile at boot
 
           security.tpm2 = lib.mkIf useTpm {
             enable = true;

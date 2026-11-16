@@ -109,7 +109,7 @@
           imports = [
             inputs.disko.nixosModules.disko
             inputs.impermanence.nixosModules.impermanence
-            inputs.agenix.nixosModules.default
+            inputs.sops-nix.nixosModules.sops
             inputs.lanzaboote.nixosModules.lanzaboote
             inputs.stylix.nixosModules.stylix
             inputs.nix-index-database.nixosModules.default
@@ -125,7 +125,7 @@
             sharedModules = [
               inputs.plasma-manager.homeModules.plasma-manager
               inputs.nix-index-database.homeModules.default
-              inputs.agenix.homeManagerModules.default
+              inputs.sops-nix.homeManagerModules.sops
               inputs.mutable-file.homeModules.default
               inputs.keepass-config-gen.homeManagerModules.ssh-config-gen
               inputs.keepass-config-gen.homeManagerModules.remmina-config-gen

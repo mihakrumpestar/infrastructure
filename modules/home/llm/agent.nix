@@ -334,7 +334,7 @@ in
             web = {
               enable = true;
               # GATEWAY_API_KEY + GATEWAY_API_BASE for the service env
-              environmentFile = config.age.secrets."llm_agent.env".path;
+              environmentFile = config.sops.secrets.llm_agent_env.path;
               extraArgs = [
                 "--hostname"
                 "127.0.0.1"
@@ -345,8 +345,8 @@ in
           };
 
           systemd.user.services.opencode-web.Unit = {
-            Wants = [ "agenix.service" ];
-            After = [ "agenix.service" ];
+            Wants = [ "sops-nix.service" ];
+            After = [ "sops-nix.service" ];
           };
 
           # v2 serve always requires Basic auth; TUI/CLI get the password via
