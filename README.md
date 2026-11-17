@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-18,754 non-blank lines, comments included and Markdown excluded.
+18,681 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -41,12 +41,12 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | modules/den.nix  |     130 |
 | modules/hosts    |     501 |
 | modules/system   |   2,575 |
-| modules/home     |   5,630 |
+| modules/home     |   5,557 |
 | modules/users    |     256 |
-| modules (total)  |   9,092 |
+| modules (total)  |   9,019 |
 | packages (total) |   8,751 |
 | lib (total)      |     776 |
-| **Total**        |  18,754 |
+| **Total**        |  18,681 |
 
 </details>
 <!-- FAST_END -->
@@ -54,26 +54,27 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 ---
 
 <!-- HEAVY_START -->
-_Heavy tier: refreshed manually with `task generate-heavy`, budgeted under 5 minutes; package counts come from the built closures. Last measured 2026-09-21._
+_Heavy tier: refreshed manually with `task generate-heavy`, budgeted under 5 minutes; package counts come from the built closures. Last measured 2026-11-17._
 
 ### Fleet
 
 One row per host, from the built system and home profiles.
 
-| Host                 | Desktop   |   Closure (GiB) |   System pkgs |   Home pkgs |   Services |   Secrets |
-|:---------------------|:----------|----------------:|--------------:|------------:|-----------:|----------:|
-| kiosk                | plasma    |           10.61 |         1,421 |         523 |         98 |         1 |
-| personal-laptop      | plasma    |           38.07 |         6,485 |       5,772 |        100 |         2 |
-| personal-vps-02      | n/a       |            4.34 |           734 |         n/a |         81 |         1 |
-| personal-workstation | plasma    |           39.25 |         6,564 |       5,775 |        100 |         2 |
-| server-01            | n/a       |            6.22 |           713 |         n/a |         87 |         1 |
-| server-03            | n/a       |            4.48 |           691 |         n/a |         76 |         1 |
+| Host                       | Desktop   |   Closure (GiB) |   System pkgs |   Home pkgs |   Services |   Secrets |
+|:---------------------------|:----------|----------------:|--------------:|------------:|-----------:|----------:|
+| kiosk                      | plasma    |           11.01 |         1,437 |         519 |         98 |         2 |
+| mihakrumpestar-work-laptop | plasma    |           38.43 |         6,524 |       5,588 |        107 |         3 |
+| personal-laptop            | plasma    |           38.16 |         6,517 |       5,588 |        106 |         3 |
+| personal-vps-02            | n/a       |            4.09 |           677 |         n/a |         82 |         2 |
+| personal-workstation       | plasma    |           39.16 |         6,575 |       5,591 |        106 |         4 |
+| server-01                  | n/a       |            6.28 |           683 |         n/a |         88 |         2 |
+| server-03                  | n/a       |            4.53 |           660 |         n/a |         79 |         2 |
 
 ![Closure footprint chart: store footprint per host in GiB](assets/stats/closure-size.svg)
 
 ![Package counts chart: system and home package counts per host, from the built closures](assets/stats/package-counts.svg)
 
-Union closure 40.91 GiB; summing the hosts separately gives 102.97 GiB, so 60% is shared.
+Union closure 40.79 GiB; summing the hosts separately gives 141.67 GiB, so 71% is shared.
 
 ### Closure reuse
 
@@ -84,14 +85,15 @@ Share of each row host's closure that also appears in the column host's closure.
 <details>
 <summary>Reuse matrix</summary>
 
-| Host                 |   kiosk |   personal-laptop |   personal-vps-02 |   personal-workstation |   server-01 |   server-03 |
-|:---------------------|--------:|------------------:|------------------:|-----------------------:|------------:|------------:|
-| kiosk                |         |               95% |               48% |                    95% |         51% |         50% |
-| personal-laptop      |     23% |                   |               12% |                   100% |         12% |         12% |
-| personal-vps-02      |     83% |               88% |                   |                    88% |         87% |         88% |
-| personal-workstation |     23% |               98% |               12% |                        |         12% |         12% |
-| server-01            |     88% |               87% |               88% |                    87% |             |         92% |
-| server-03            |     90% |               90% |               93% |                    90% |         95% |             |
+| Host                       |   kiosk |   mihakrumpestar-work-laptop |   personal-laptop |   personal-vps-02 |   personal-workstation |   server-01 |   server-03 |
+|:---------------------------|--------:|-----------------------------:|------------------:|------------------:|-----------------------:|------------:|------------:|
+| kiosk                      |         |                          94% |               95% |               48% |                    94% |         49% |         49% |
+| mihakrumpestar-work-laptop |     23% |                              |               99% |               12% |                    99% |         12% |         12% |
+| personal-laptop            |     23% |                          99% |                   |               12% |                   100% |         12% |         12% |
+| personal-vps-02            |     86% |                          89% |               89% |                   |                    89% |         90% |         90% |
+| personal-workstation       |     22% |                          99% |               99% |               12% |                        |         12% |         12% |
+| server-01                  |     88% |                          87% |               87% |               88% |                    87% |             |         92% |
+| server-03                  |     90% |                          90% |               90% |               93% |                    90% |         96% |             |
 
 </details>
 <!-- HEAVY_END -->

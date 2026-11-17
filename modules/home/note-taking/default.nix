@@ -1,4 +1,8 @@
-{ ... }:
+{ inputs, ... }:
+let
+  languageToolServer =
+    (import "${inputs.infrastructure-secrets}/secrets/data.nix").krumpy-miha.languagetool_server;
+in
 {
   home.note-taking =
     let
@@ -6,82 +10,7 @@
     in
     {
       homeManager =
-        { pkgs, lib, ... }:
-        let
-          # TaskNotes takes `customStatuses` wholesale (built-ins must be
-          # repeated), cannot persist UI edits (read-only data.json, see the
-          # communityPlugins comment), and matches statuses by `value`.
-          humanize =
-            id:
-            let
-              spaced = lib.strings.replaceStrings [ "-" ] [ " " ] id;
-            in
-            lib.strings.toUpper (lib.substring 0 1 spaced) + lib.substring 1 (-1) spaced;
-
-          mkStatus =
-            {
-              id,
-              value ? id,
-              label ? humanize id,
-              color,
-              isCompleted ? false,
-              excludeFromCycle ? false,
-              autoArchive ? false,
-              autoArchiveDelay ? 5,
-            }:
-            {
-              inherit
-                id
-                value
-                label
-                color
-                isCompleted
-                excludeFromCycle
-                autoArchive
-                autoArchiveDelay
-                ;
-            };
-
-          mkMarker =
-            { id, color }:
-            mkStatus {
-              inherit id color;
-              excludeFromCycle = true;
-            };
-
-          taskStatuses = lib.imap0 (i: status: status // { order = i; }) (
-            # Built-in statuses (must match the plugin's defaults).
-            [
-              (mkStatus {
-                id = "none";
-                color = "#cccccc";
-              })
-              (mkStatus {
-                id = "open";
-                color = "#808080";
-              })
-              (mkStatus {
-                id = "in-progress";
-                color = "#0066cc";
-              })
-              (mkStatus {
-                id = "done";
-                color = "#00aa00";
-                isCompleted = true;
-              })
-            ]
-            ++ [
-              (mkMarker {
-                id = "recurring";
-                color = "#6366f1";
-              })
-              (mkMarker {
-                id = "celebration"; # Birthdays and name days (god).
-                color = "#f59e0b";
-              })
-            ]
-          );
-        in
+        { pkgs, ... }:
         {
           programs.obsidian = {
             enable = true;
@@ -109,7 +38,9 @@
                 #"daily-notes"
                 "editor-status"
                 "file-explorer"
-                #"file-recovery"
+                # Snapshot store behind Time Machine's version history; also
+                # what obsidian-version-history-diff reads. Device local.
+                "file-recovery"
                 #"footnotes"
                 "global-search"
                 #"graph"
@@ -151,18 +82,9 @@
                   };
                 }
                 table-editor-obsidian
-                {
-                  pkg = tasknotes;
-                  settings = {
-                    moveArchivedTasks = true;
-                    archiveFolder = "TaskNotes/Archive";
-                    taskCreationDefaults.defaultScheduledDate = "none"; # Don't pre-set the "scheduled" field on new tasks.
-                    calendarViewSettings.locale = "en-GB"; # day/month/year
-                    customStatuses = taskStatuses;
-                    starterNoteCreated = true;
-                    lastSeenVersion = tasknotes.version;
-                  };
-                }
+                nextcloud-sync
+                time-machine
+                obsidian-version-history-diff
                 {
                   pkg = enhance-navigate-pane;
                   settings = {
@@ -172,6 +94,8 @@
                 {
                   pkg = obsidian-languagetool-plugin;
                   settings = {
+                    serverUrl = languageToolServer;
+                    urlMode = "custom";
                     pickyMode = true;
                     englishVeriety = "en-US";
                   };
