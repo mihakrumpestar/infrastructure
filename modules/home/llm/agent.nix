@@ -62,6 +62,12 @@ let
   # archify/ subdirectory; node comes from the IDE home packages.
   archifySkillConfigs = discoverFiles "opencode/skills/archify" (inputs.archify + "/archify");
 
+  # uiautomator2 skill: Android device automation through u2cli, from upstream
+  # master (the uvx wrapper below pulls the CLI unpinned too).
+  uiautomator2SkillConfigs = discoverFiles "opencode/skills/uiautomator2" (
+    inputs.uiautomator2 + "/skills/uiautomator2"
+  );
+
   # security-audit skill: six-phase vulnerability audit workflow (SKILL.md,
   # attack-class references, report schema, zero-dependency .cjs validators)
   securityAuditSkillConfigs = discoverFiles "opencode/skills/security-audit" (
@@ -140,6 +146,24 @@ in
           runtimeInputs = [ pkgs.bun ];
           text = ''
             exec bunx @tokscale/cli "$@"
+          '';
+        };
+
+        # Android device automation for agents (uiautomator2 skill drives it).
+        # uvx resolves the wheel on first use into ~/.cache/uv; --python keeps
+        # it on nixpkgs' interpreter instead of downloading one. coreutils
+        # serves uv's generated shim; the auto-started u2cli server inherits
+        # this PATH, which is how it finds adb.
+        u2cli = pkgs.writeShellApplication {
+          name = "u2cli";
+          runtimeInputs = [
+            pkgs.uv
+            pkgs.python3
+            pkgs.android-tools
+            pkgs.coreutils
+          ];
+          text = ''
+            exec uvx --python ${pkgs.python3}/bin/python3 --from uiautomator2 u2cli "$@"
           '';
         };
       in
@@ -378,6 +402,9 @@ in
             # Token usage and cost tracker dashboard.
             tokscale
 
+            # Android device automation CLI behind the uiautomator2 skill.
+            u2cli
+
             # Code intelligence MCP server; on PATH for the CLI (index/config/
             # query). MCP entry lives in settings.mcp.servers above.
             pkgs.codebase-memory-mcp
@@ -412,6 +439,7 @@ in
               // cdpSkillConfigs
               // archifySkillConfigs
               // securityAuditSkillConfigs
+              // uiautomator2SkillConfigs
               // localSkillConfigs
             )
             // {

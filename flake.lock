@@ -854,6 +854,7 @@
         "security-audit-skill": "security-audit-skill",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
+        "uiautomator2": "uiautomator2",
         "virtualhere": "virtualhere"
       }
     },
@@ -1082,6 +1083,22 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "uiautomator2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794894810,
+        "narHash": "sha256-gX3zItUA8VZ/Yz0PNtI9ZWp8GcmrEzqAkaMMmEZILC4=",
+        "owner": "openatx",
+        "repo": "uiautomator2",
+        "rev": "96f581d3b95efdf16105b767a5d5401c73f7ec0e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "openatx",
+        "repo": "uiautomator2",
         "type": "github"
       }
     },

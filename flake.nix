@@ -115,6 +115,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Android automation for the agent setup: source of the u2cli skill, which
+    # follows the same upstream the uvx wrapper in modules/home/llm/agent.nix
+    # installs.
+    uiautomator2 = {
+      url = "github:openatx/uiautomator2";
+      flake = false;
+    };
+
     # CDP skill + CLI for browser
     browser-harness-js = {
       url = "github:browser-use/browser-harness-js";

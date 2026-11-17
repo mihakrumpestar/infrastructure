@@ -61,6 +61,7 @@
 ## CLI tools
 
 - `browser-harness-js` for CDP (`/cdp`), Chrome on `--user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`, reuse one session
+- `u2cli` for Android device automation: `device-info`, `dump-hierarchy`, `screenshot`, `click --text`, `swipe`, `app-start`, `shell`; add `-s <serial>` with several devices, `u2cli kill-server` when its state goes stale
 - `spt` for Super Productivity tasks, notes and time on the desktop; `spt --help` is the whole interface, the app must be running
 - `gh` for GitHub state, ssh hosts from `~/.ssh/config.d/keepass.conf`
 - `cf` from the project root; `cf tools`, `cf <group> --help`, `cf docs search "<query>"`

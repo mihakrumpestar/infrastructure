@@ -28,7 +28,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-18,722 non-blank lines, comments included and Markdown excluded.
+18,754 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -37,16 +37,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     128 |
+| flake.nix        |     135 |
 | modules/den.nix  |     130 |
 | modules/hosts    |     501 |
 | modules/system   |   2,575 |
-| modules/home     |   5,605 |
+| modules/home     |   5,630 |
 | modules/users    |     256 |
-| modules (total)  |   9,067 |
+| modules (total)  |   9,092 |
 | packages (total) |   8,751 |
 | lib (total)      |     776 |
-| **Total**        |  18,722 |
+| **Total**        |  18,754 |
 
 </details>
 <!-- FAST_END -->
@@ -154,6 +154,7 @@ flowchart LR
         input_security_audit_skill["security-audit-skill"]:::input
         input_sops_nix["sops-nix"]:::input
         input_stylix["stylix"]:::input
+        input_uiautomator2["uiautomator2"]:::input
         local_consul_cni["./packages/consul-cni"]:::local
         local_github_desktop["./packages/github-desktop"]:::local
         local_keepass_config_gen["./packages/keepass-config-gen"]:::local
@@ -324,6 +325,7 @@ flowchart LR
     input_security_audit_skill --> flake
     input_sops_nix --> flake
     input_stylix --> flake
+    input_uiautomator2 --> flake
     local_consul_cni --> flake
     local_github_desktop --> flake
     local_keepass_config_gen --> flake
