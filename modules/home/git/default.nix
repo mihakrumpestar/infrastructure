@@ -62,6 +62,10 @@
               defaultBranch = "main";
             };
 
+            pull = {
+              rebase = true;
+            };
+
             alias =
               let
                 mkAcpAlias =

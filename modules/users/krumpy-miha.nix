@@ -140,6 +140,15 @@ in
             "sudo".unixAuth = false; # Prevent password prompts
             "kde".unixAuth = false; # KDE screensaver
             "kde".allowNullPassword = lib.mkForce false;
+            # The lock screen stops retrying after 4 failed auths within 2 s, and
+            # pam_u2f fails instantly when the key is missing or reconnecting. Slow
+            # each failure to 3 s so it keeps retrying. Built-in failDelay needs unixAuth.
+            "kde".rules.auth.faildelay = {
+              order = config.security.pam.services."kde".rules.auth.u2f.order + 100;
+              control = "optional";
+              modulePath = "${pkgs.linux-pam}/lib/security/pam_faildelay.so";
+              settings.delay = 3000000; # microseconds
+            };
           };
         };
 
