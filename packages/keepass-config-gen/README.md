@@ -76,6 +76,23 @@ ssh_sign:
 
 `git.orgs` matches the owner in `https://<host>/<org>/**`, `ssh://<host>/<org>/**`, and scp-like `<host>:<org>/**` remotes, so it applies regardless of URL form. Owners are literal names: a value containing whitespace, `/`, `:`, or any of `*?[]!` is dropped.
 
+Add `git.redirect` with one or more comma-separated hosts to make the identity claim every remote for those hosts:
+
+```text
+ssh_hosts:
+  github-personal HostName=ssh.github.com Port=443 User=git git.name=Example git.email=me@example.com git.orgs=example-org git.redirect=github.com
+ssh_sign:
+  me@example.com
+```
+
+For each redirect host, the generated `include.conf` adds `url.*.insteadOf` entries that rewrite the remote URL to the identity's SSH alias before git connects:
+
+- `https://<host>/` becomes `git@<alias>:`
+- `git@<host>:` becomes `git@<alias>:`
+- `ssh://git@<host>/` becomes `ssh://git@<alias>/`
+
+This is host-wide on this machine: every repository whose remote names the host will use this identity, including https remotes. Clones made with an https URL therefore switch to the alias on the next fetch. Redirect hosts are literal names: a value containing whitespace, `/`, `:`, or any of `*?[]!` is dropped.
+
 ### SSH private key
 
 Attach the OpenSSH private key to the entry (Advanced -> Attachments) and select it in the SSH Agent tab. If the key is passphrase-protected, put the passphrase in the entry's Password field. Unencrypted keys are parsed directly.
