@@ -245,6 +245,11 @@
                   publish_node_metrics = true;
                 };
 
+                # Bootstrap the cluster once, then use the returned management token:
+                #   nomad acl bootstrap
+                #   export NOMAD_TOKEN=<Secret ID>
+                acl.enabled = true;
+
                 client = {
                   enabled = true;
                   # CNI binaries for group network mode=bridge (Nomad
