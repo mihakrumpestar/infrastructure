@@ -35,9 +35,6 @@
 
                 "browser.startup.page" = 3; # 0=blank, 1=home, 2=last visited page, 3=resume previous session
 
-                "general.useragent.override" =
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0"; # Does not work when resistFingerprinting is enabled
-
               };
               #extraConfig = builtins.readFile "${pkgs.arkenfox-userjs}/user.js"; # TODO: this currently overrides our settings above as it applies it later
               userChrome = builtins.readFile ./userChrome.css;

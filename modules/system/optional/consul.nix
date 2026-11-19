@@ -48,13 +48,6 @@
             # consul-cni (Connect transparent proxy) via cni_path.
             my.nomad.extraCniDirs = [ "${pkgs.consul-cni}/bin" ];
 
-            # consul-cni iptables matches (--uid-owner, conntrack); preload
-            # needed when security.lockKernelModules is on.
-            boot.kernelModules = [
-              "xt_owner"
-              "xt_conntrack"
-            ];
-
             # Consul may not be up when nomad starts.
             systemd.services.nomad = {
               after = [ "consul.service" ];

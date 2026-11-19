@@ -4,7 +4,6 @@
   # Shared Firefox/Mozilla browser policies — hardened baseline
   mkBrowserPolicies =
     {
-      extensionUpdate ? true,
       extraPolicies ? { },
     }:
     lib.recursiveUpdate {
@@ -19,7 +18,6 @@
       DisableProfileRefresh = true; # Disable the Refresh Firefox button on about:support and support.mozilla.org
       DisableSetDesktopBackground = true; # Remove the "Set As Desktop Background..." menuitem when right clicking on an image, because Nix is the only thing that can manage the background
       DisplayMenuBar = "default-off";
-      DisablePocket = true;
       DisableTelemetry = true;
       DisableFormHistory = true;
       DisablePasswordReveal = true;
@@ -39,8 +37,6 @@
         Enabled = true;
         Locked = true;
       };
-
-      inherit extensionUpdate;
 
       FirefoxSuggest = {
         WebSuggestions = false;
@@ -62,7 +58,6 @@
         MoreFromMozilla = false; # Don't show the "More from Mozilla" section in Preferences
         SkipOnboarding = true; # Don't show onboarding messages on the new tab page
         UrlbarInterventions = false; # Don't offer suggestions in the URL bar
-        WhatsNew = false; # Remove the "What's New" icon and menuitem
       };
       UseSystemPrintDialog = true;
       /*
@@ -104,8 +99,10 @@
     "browser.aboutConfig.showWarning" = false; # disable about:config warning
     "reader.parse-on-load.enabled" = false; # Disable "Reader view"
 
-    "ui.systemUsesDarkTheme" = 1; # Dark theme preferred
-    "layout.css.prefers-color-scheme.content-override" = 0; # Force dark mode
+    # 2 = Auto: prefers-color-scheme follows the active theme, which follows the
+    # system scheme. browser.theme.content-theme is owned by the theme system at
+    # runtime, so setting it here would be inert.
+    "layout.css.prefers-color-scheme.content-override" = 2;
 
     "browser.toolbars.bookmarks.visibility" = "never";
 
@@ -113,34 +110,62 @@
     "findbar.highlightAll" = true;
 
     "browser.urlbar.shortcuts.bookmarks" = false;
-    "browser.proton.toolbar.version" = 3; # Enable toolbar
-    "browser.theme.toolbar-theme" = 0; # Same as above
-
-    "dom.events.asyncClipboard.clipboardItem" = true;
+    "browser.proton.toolbar.version" = 3; # CustomizableUI migration stamp, no-op once >= 3
+    "browser.theme.toolbar-theme" = 0; # 0=dark, overwritten at runtime by the active theme
 
     "network.protocol-handler.external.mailto" = false; # Remove annoying "add application for mailto links"
 
     # Configure home button behavior
     "browser.startup.homepage_override.mstone" = "ignore";
-    "browser.toolbarbuttons.introduced.pocket-button" = false;
 
     # Session and navigation
     "browser.uidensity" = 1; # Compact mode
 
-    # Privacy
-    "privacy.resistFingerprinting" = true; # Instead of using CanvasBlocker extension
-    "privacy.resistFingerprinting.pbmode" = true;
-    "privacy.resistFingerprinting.autoDeclineNoUserInputCanvasPrompts" = true;
-
-    #"privacy.fingerprintingProtection" = true; # Still want time zone
-    #"privacy.fingerprintingProtection.overrides" = "+AllTargets,-JSDateTimeUTC";
+    # Privacy: FPP instead of RFP. RFP cannot be partially relaxed (every
+    # RFPTarget returns true in RFP mode), so it forces UTC, light
+    # prefers-color-scheme, canvas placeholder and reduced WebGL. FPP runs the
+    # same engine with all targets on minus the ones we need to work.
+    # +AllTargets first so new upstream targets default to on.
+    "privacy.resistFingerprinting" = false;
+    "privacy.resistFingerprinting.pbmode" = false;
+    "privacy.fingerprintingProtection" = true;
+    "privacy.fingerprintingProtection.pbmode" = true;
+    # Under RFP the remote override list was inert; under FPP it is live, and
+    # Mozilla's collection already relaxes canvas and WebGL on google.com and
+    # bing.com. Disable it so the effective set is only what this file says.
+    "privacy.fingerprintingProtection.remoteOverrides.enabled" = false;
+    "privacy.fingerprintingProtection.overrides" =
+      "+AllTargets,"
+      + "-JSDateTimeUTC," # real timezone
+      + "-CSSPrefersColorScheme," # real prefers-color-scheme
+      # Canvas: exact first-party readback with no noise and no prompt, while
+      # CanvasExtractionFromThirdPartiesIsBlocked stays ON so embedded frames
+      # still get a placeholder. Measured: first-party 18,52,86,255 (the drawn
+      # colour), third-party random.
+      + "-CanvasRandomization,"
+      + "-EfficientCanvasRandomization,"
+      + "-CanvasImageExtractionPrompt,"
+      + "-CanvasExtractionBeforeUserInputIsBlocked,"
+      # WebGL: renderer/vendor strings real; capability limits (2048 caps,
+      # precision ranges) stay guarded, they carry more entropy than the string.
+      + "-WebGLRenderInfo,"
+      + "-WebGLRandomization,"
+      + "-WebGLRendererConstant,"
+      + "-WebGLVendorSanitize,"
+      + "-WebGLVendorConstant,"
+      + "-WebGLVendorRandomize";
 
     "privacy.donottrackheader.enabled" = true;
+
+    # WebGL works out of the box: LibreWolf gates it behind a per-site
+    # permission prompt (librewolf.webgl.prompt), and an unanswered permission
+    # surfaces as "WebGL is currently disabled." Turning the prompt off removes
+    # the gate; webgl.disabled already defaults to false in LibreWolf's cfg.
+    "librewolf.webgl.prompt" = false;
 
     # Fix font
     "gfx.font_rendering.cleartype_params.force_gdi_classic_for_families" = "";
     "gfx.font_rendering.cleartype_params.force_gdi_classic_max_size" = 6;
-    "gfx.font_rendering.directwrite.use_gdi_table_loading" = false;
     "gfx.font_rendering.cleartype_params.rendering_mode" = 5;
 
     "gfx.webrender.quality.force-subpixel-aa-where-possible" = true;

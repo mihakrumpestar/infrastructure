@@ -74,6 +74,7 @@ in
             "lpadmin" # CUPS admin: manage printers/queues without sudo
             "tss"
             "plugdev" # Old onlykey
+            "disk"
             "networkmanager"
             "netbird" # NetBird control socket access (services.netbird in networking.nix)
           ];
