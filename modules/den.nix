@@ -24,13 +24,8 @@
       users.krumpy-miha.classes = [ "homeManager" ];
     };
 
-    server-01 = {
-      includes = [ den.aspects.server-01 ];
-      users.admin = { };
-    };
-
-    server-03 = {
-      includes = [ den.aspects.server-03 ];
+    vm-01 = {
+      includes = [ den.aspects.vm-01 ];
       users.admin = { };
     };
 

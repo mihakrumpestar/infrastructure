@@ -17,6 +17,7 @@
 
         my = {
           disks = {
+            platform = "physical";
             bootDisk = "/dev/nvme0n1";
             swapSize = "16G";
             encryptRoot = "tpm2";

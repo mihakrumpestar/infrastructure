@@ -25,10 +25,12 @@ in
 
         my = {
           disks = {
-            bootLoader = "grub";
+            platform = "guest";
             bootDisk = "/dev/vda";
-            swapSize = null; # No swap
           };
+
+          # disable since we are using ext4
+          impermanence.enable = false;
 
           nomad.enable = true;
         };

@@ -16,9 +16,8 @@ NixOS configuration repository for managing multiple hosts using flakes.
 |:---|:---|:---|:---|:---|:---|:---|:---|
 | personal-workstation | Client | Lanzaboote | FIDO2 | FIDO2 | TPM | Default | Full |
 | personal-laptop | Client | Lanzaboote | FIDO2 | FIDO2 | TPM | Default | Full |
-| server-01 | Server | Lanzaboote | TPM2 | Password | TPM | Default | None |
-| server-03 | Server | systemd-boot | TPM2 | Password | TPM | Default | None |
-| personal-vps-02 | Server and VM guest | GRUB | None | Password | SSH key | Default | None |
+| vm-01 | Server and VM guest | GRUB | None | Password | SSH key | Disabled | None |
+| personal-vps-02 | Server and VM guest | GRUB | None | Password | SSH key | Disabled | None |
 | kiosk | Client (kiosk) | Lanzaboote | TPM2 | Auto | TPM | Full | Kiosk only |
 
 ## Build statistics
@@ -28,7 +27,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-18,700 non-blank lines, comments included and Markdown excluded.
+18,731 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -38,15 +37,15 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 | Component        |   Lines |
 |:-----------------|--------:|
 | flake.nix        |     135 |
-| modules/den.nix  |     130 |
-| modules/hosts    |     501 |
-| modules/system   |   2,573 |
+| modules/den.nix  |     126 |
+| modules/hosts    |     401 |
+| modules/system   |   2,708 |
 | modules/home     |   5,582 |
 | modules/users    |     252 |
-| modules (total)  |   9,038 |
+| modules (total)  |   9,069 |
 | packages (total) |   8,751 |
 | lib (total)      |     776 |
-| **Total**        |  18,700 |
+| **Total**        |  18,731 |
 
 </details>
 <!-- FAST_END -->
@@ -54,7 +53,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 ---
 
 <!-- HEAVY_START -->
-_Heavy tier: refreshed manually with `task generate-heavy`, budgeted under 5 minutes; package counts come from the built closures. Last measured 2026-11-17._
+_Heavy tier: refreshed manually with `task generate-heavy`, budgeted under 5 minutes; package counts come from the built closures. Last measured 2026-11-19._
 
 ### Fleet
 
@@ -63,18 +62,17 @@ One row per host, from the built system and home profiles.
 | Host                       | Desktop   |   Closure (GiB) |   System pkgs |   Home pkgs |   Services |   Secrets |
 |:---------------------------|:----------|----------------:|--------------:|------------:|-----------:|----------:|
 | kiosk                      | plasma    |           11.01 |         1,437 |         519 |         98 |         2 |
-| mihakrumpestar-work-laptop | plasma    |           38.43 |         6,524 |       5,588 |        107 |         3 |
-| personal-laptop            | plasma    |           38.16 |         6,517 |       5,588 |        106 |         3 |
-| personal-vps-02            | n/a       |            4.09 |           677 |         n/a |         82 |         2 |
-| personal-workstation       | plasma    |           39.16 |         6,575 |       5,591 |        106 |         4 |
-| server-01                  | n/a       |            6.28 |           683 |         n/a |         88 |         2 |
-| server-03                  | n/a       |            4.53 |           660 |         n/a |         79 |         2 |
+| mihakrumpestar-work-laptop | plasma    |           38.43 |         6,527 |       5,588 |        107 |         3 |
+| personal-laptop            | plasma    |           38.16 |         6,520 |       5,588 |        106 |         3 |
+| personal-vps-02            | n/a       |            4.09 |           676 |         n/a |         74 |         2 |
+| personal-workstation       | plasma    |           39.16 |         6,578 |       5,591 |        106 |         4 |
+| vm-01                      | n/a       |            3.69 |           650 |         n/a |         71 |         2 |
 
 ![Closure footprint chart: store footprint per host in GiB](assets/stats/closure-size.svg)
 
 ![Package counts chart: system and home package counts per host, from the built closures](assets/stats/package-counts.svg)
 
-Union closure 40.79 GiB; summing the hosts separately gives 141.67 GiB, so 71% is shared.
+Union closure 39.76 GiB; summing the hosts separately gives 134.56 GiB, so 70% is shared.
 
 ### Closure reuse
 
@@ -85,15 +83,14 @@ Share of each row host's closure that also appears in the column host's closure.
 <details>
 <summary>Reuse matrix</summary>
 
-| Host                       |   kiosk |   mihakrumpestar-work-laptop |   personal-laptop |   personal-vps-02 |   personal-workstation |   server-01 |   server-03 |
-|:---------------------------|--------:|-----------------------------:|------------------:|------------------:|-----------------------:|------------:|------------:|
-| kiosk                      |         |                          94% |               95% |               48% |                    94% |         49% |         49% |
-| mihakrumpestar-work-laptop |     23% |                              |               99% |               12% |                    99% |         12% |         12% |
-| personal-laptop            |     23% |                          99% |                   |               12% |                   100% |         12% |         12% |
-| personal-vps-02            |     86% |                          89% |               89% |                   |                    89% |         90% |         90% |
-| personal-workstation       |     22% |                          99% |               99% |               12% |                        |         12% |         12% |
-| server-01                  |     88% |                          87% |               87% |               88% |                    87% |             |         92% |
-| server-03                  |     90% |                          90% |               90% |               93% |                    90% |         96% |             |
+| Host                       |   kiosk |   mihakrumpestar-work-laptop |   personal-laptop |   personal-vps-02 |   personal-workstation |   vm-01 |
+|:---------------------------|--------:|-----------------------------:|------------------:|------------------:|-----------------------:|--------:|
+| kiosk                      |         |                          94% |               95% |               47% |                    94% |     46% |
+| mihakrumpestar-work-laptop |     23% |                              |               99% |               11% |                    99% |     11% |
+| personal-laptop            |     23% |                          99% |                   |               11% |                   100% |     11% |
+| personal-vps-02            |     88% |                          90% |               90% |                   |                    89% |     94% |
+| personal-workstation       |     22% |                          99% |               99% |               11% |                        |     11% |
+| vm-01                      |     90% |                          90% |               90% |               97% |                    90% |         |
 
 </details>
 <!-- HEAVY_END -->
@@ -174,6 +171,8 @@ flowchart LR
     subgraph SystemAspects[System Aspects]
         sys_core["core"]:::aspect
         sys_disks["disks"]:::aspect
+        sys_disks_guest["disks/guest"]:::aspect
+        sys_disks_physical["disks/physical"]:::aspect
         sys_impermanence["impermanence"]:::aspect
         sys_locale["locale"]:::aspect
         sys_networking["networking"]:::aspect
@@ -237,10 +236,8 @@ flowchart LR
         host_personal_vps_02_hardware["hardware"]:::config
         host_personal_workstation["personal-workstation"]:::hosts
         host_personal_workstation_hardware["hardware"]:::config
-        host_server_01["server-01"]:::hosts
-        host_server_01_hardware["hardware"]:::config
-        host_server_03["server-03"]:::hosts
-        host_server_03_hardware["hardware"]:::config
+        host_vm_01["vm-01"]:::hosts
+        host_vm_01_hardware["hardware"]:::config
     end
 
     subgraph Users[Users]
@@ -255,8 +252,7 @@ flowchart LR
     den --> host_personal_laptop
     den --> host_personal_vps_02
     den --> host_personal_workstation
-    den --> host_server_01
-    den --> host_server_03
+    den --> host_vm_01
     den --> sys_core
     den --> sys_disks
     den --> sys_impermanence
@@ -301,10 +297,9 @@ flowchart LR
     host_personal_workstation --> opt_podman
     host_personal_workstation --> opt_virtualization
     host_personal_workstation --> type_client
-    host_server_01 --> host_server_01_hardware
-    host_server_01 --> type_server
-    host_server_03 --> host_server_03_hardware
-    host_server_03 --> type_server
+    host_vm_01 --> host_vm_01_hardware
+    host_vm_01 --> type_server
+    host_vm_01 --> type_vm_guest
     input_archify --> flake
     input_browser_harness_js --> flake
     input_den --> flake
@@ -338,6 +333,8 @@ flowchart LR
     opt_docker --> opt_container_runtime
     opt_nomad --> opt_podman
     opt_podman --> opt_container_runtime
+    sys_disks --> sys_disks_guest
+    sys_disks --> sys_disks_physical
     sys_shell --> sys_shell_fonts
     sys_shell --> sys_shell_packages
     sys_shell --> sys_shell_starship

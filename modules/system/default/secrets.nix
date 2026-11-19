@@ -43,11 +43,11 @@ in
             sshKeyPaths = [ ];
           };
 
-          # personal-vps-02 has no TPM and keeps the default sshKeyPaths
-          # (OpenSSH host keys). A recipient encrypted to the raw ssh-ed25519
-          # key cannot be unwrapped by that path: sops-nix converts the private
-          # key to an age identity with ssh-to-age, so the recipient in
-          # .sops.yaml must be the age1 form derived the same way.
+          # The VPS hosts (vm-01, personal-vps-02) have no TPM and keep the
+          # default sshKeyPaths (OpenSSH host keys). A recipient encrypted to
+          # the raw ssh-ed25519 key cannot be unwrapped by that path: sops-nix
+          # converts the private key to an age identity with ssh-to-age, so the
+          # recipient in .sops.yaml must be the age1 form derived the same way.
           # GPG host keys are never used on any host.
           sops.gnupg.sshKeyPaths = [ ];
 

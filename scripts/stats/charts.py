@@ -44,9 +44,8 @@ CHART_HEIGHTS = {
 
 
 def short_host(host: str) -> str:
-    """Heatmap axis label: ``personal-laptop`` -> ``laptop``, ``server-01`` -> ``srv-01``."""
-    short = host.removeprefix("personal-")
-    return "srv-" + short[7:] if short.startswith("server-") else short
+    """Heatmap axis label: ``personal-laptop`` -> ``laptop``."""
+    return host.removeprefix("personal-")
 
 
 def _import_pyplot():
