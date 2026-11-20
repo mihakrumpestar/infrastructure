@@ -1,82 +1,77 @@
 # Agents
 
-## General
+Three rules outrank the rest:
 
-- delegate work to agents to avoid overwhelming your context
-- batch independent tool calls in one turn, and put related shell steps in one command; waiting call by call wastes wall clock
-- agents are reached with `subagent` or `@name` (`@explorer`, `@oracle`, `@designer`, `@fixer`, `@council`), not slash commands
-- subagents can load skills, so name the skill and let them read the method; council seats (`councillor-*`) cannot
-- use skills appropriate to the task; every skill is model-invocable, so load them when the request matches and follow them literally when the user starts one
-- use `/council`, `/oracle` and a verifier agent whenever we are practically done or want more assertion that we are on the right path
-- oracle is also worth it mid-task when a change touches multiple files, when a claim enters a deliverable, or after a failed fix
-- if topics diverge, start a new session with a short carried summary
-
-## Plan
-
-- restate the request as the checklist a reviewer would accept, and answer the sibling questions in the same turn or say why not
-- when a reference file or "like before" is named, read it first and copy its layout, naming and task names, then diff
-- use `/research` and parallel `explorer` lanes, then state the mechanism in two lines before writing code
-- when the user states a fact or preference, record it and re-check it before every later edit to the same deliverable
+- do the work that was asked, all of it and nothing else
+- act on evidence, never on assumption
+- anything irreversible or expensive is the user's decision
 
 ## Scope
 
-- implement the smallest change that satisfies the literal request; extras go into "proposed, not built"
-- never add linting, validation, wrappers, scripts, docs or CI gates that were not asked for; when the user says minimal, delete instead of add
-- decide reversible things yourself and note the assumption; ask only when the answer is irreversible or unknowable from here
+- a question gets an answer, a review gets findings, a change request gets the change
+- the request is the contract: every item in it, nothing outside it
+- new project files, options, services, dependencies, docs and refactors are proposals until asked
+- existing choices, ignore rules and exclusions are decisions; change only what the request names
 
-## Verify
+## Evidence
 
-- verify the effect, not the mechanism: read the produced file, load the deployed page, measure the pixels
-- never write Done, Fixed, Deployed or Verified without the command and its output, or the artifact you inspected; name what stayed unverified
-- reproduce the user's exact input and symptom before fixing and after
-- lanes run only the check for their own scope; `task ci` once at the end
+- confirm the repo and directory before the first change
+- follow the repo's existing path; never invent a parallel one
+- reproduce the problem before fixing it, and check the same symptom after
+- a test that cannot fail for the same reason proves nothing
+- two failed attempts, including a timeout, mean stop and re-diagnose
+- say what you did not verify
 
-## Code/config
+## Cost
 
-- dry, kiss, yagni; no backwards compatibility unless asked
-- one source of truth, no duplicated logic, no second path for the same job
-- performance and memory matter on hot paths and boot or per-request code
-- delete what the change replaced; no dead code
-- comments only for the invariant, caller contract or phenomenon, one or two lines
-- table driven tests where cases are data, deterministic, covering the contract
-- act on every finding, including low impact ones; reproduce instead of assuming
-- for editing, use `/fixer`
+- cheapest check first; one expensive run per question
+- stop when the answer is known; match effort to the request
+- long runs: state the cost, background, report progress once, never poll
 
-## Prose/docs/code comments
+## Risk
 
-- concise and concrete, with an example where it helps
-- write for the named audience, give every number its denominator
-- delete what the audience cannot act on, then re-read once as a non-specialist
-- no em dashes or standalone dashes
-- no word wrapping
-- use `writing-for-agents` for docs and specs, `archify` for diagrams
+- ask before anything that can lose data, lock the user out, publish, take minutes, or change a running system
+- state the blast radius: what changes, what becomes public, who consumes it
+- test on copies and throwaways; never risk the only login path or the user's live data
+- never read or print secrets, or write to a credential store unless user confirms it
 
-## MCP tools
+## Code
 
-- `godoc` Go, `nixos` Nix/NixOS, `context7` other libraries
-- `keenable` search, `gh_grep` real code, `tweetapi` X/Twitter
-- `anymd` PDF, Office, EPUB, HTML, images
-- `codebase-memory-mcp` for structure before grep
+- match the code around you; one source of truth
+- types at the boundaries
+- check every consumer before changing a shared setting
+- delete what you replace; no dead code or dead config
+- comments only for what the code cannot say
 
-## CLI tools
+## Communication
 
-- `browser-harness-js` for CDP (`/cdp`), Chrome on `--user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222`, reuse one session
-- `u2cli` for Android device automation: `device-info`, `dump-hierarchy`, `screenshot`, `click --text`, `swipe`, `app-start`, `shell`; add `-s <serial>` with several devices, `u2cli kill-server` when its state goes stale
-- `spt` for Super Productivity tasks, notes and time on the desktop; `spt --help` is the whole interface, the app must be running
-- `gh` for GitHub state, ssh hosts from `~/.ssh/config.d/keepass.conf`
-- `cf` from the project root; `cf tools`, `cf <group> --help`, `cf docs search "<query>"`
-- read-only for git, gh, cf and netbird-manage: no commit, push, tag, reset, checkout, rm or mv without confirmation; staging only to test a Nix build
-- never write to a credential store: KeePassXC, `secret-tool store`, `secretspec set` or `delete`, SOPS, a live `.env`
-- never copy classified or personal data into a deliverable; report it and let the user decide
-- no destructive or broad shell operation without listing and quoting the target set
+- when corrected, fix first and reply in one line
+- lead with the result; say what changed, what you ran, what is unverified
+- report what you observed, not what you remember
+- report findings you notice; do not silently fix or ignore them
+- commit, push or deploy only when asked
 
-## Files and shell
+## Environment
 
-- read with `read`, search with `grep`, discover with `glob`; never `cat`, `head`, `tail`, `sed -n` for code
-- project commands: `devenv shell -- task <name>`, or `./.devenv/profile/bin/task <name>`; bare `task` is not on PATH
-- helper binaries are often absent: `nix shell nixpkgs#file nixpkgs#binutils -c ...`, not `nix run`
-- keep the project root to tracked entrypoints; scratch goes in a named subdirectory and is cleaned before reporting
+- agents: the `subagent` tool with its `agent` argument; skills load by name; `explorer` verify, `@oracle` reviews, `@council` decides
+- every skill is model-invocable; council seats cannot load skills
+- MCP: `godoc` Go, `nixos` Nix/NixOS, `context7` libraries, `gh_grep` code, `keenable` web, `anymd` documents, `codebase-memory-mcp` structure
+- devenv and go-task: `devenv shell -- task <name>`; bare `task` and project binaries are not on PATH; the Taskfile defines the checks
+- helper tools come from `nix shell`, not `nix run`
+- `gh` and `cf` are configured; for git over ssh use the host from `~/.ssh/config.d/keepass.conf`
+- desktop and device CLIs: `spt` for tasks, `u2cli` for Android, `browser-harness-js` for CDP
+- files: read with `read`, search with `grep`, discover with `glob`; scratch in `/tmp/opencode`, removed before reporting
+- one call per tool, several calls per message
 
-## Projects
+## Standing decisions
 
-- every repo uses devenv and go-task; languages, CLIs and checks live in `devenv.nix`, CI is `task ci`
+- no PHP
+- no Consul
+- the simplest working option wins; prefer a built-in over a new component
+- when a value is declared fixed, hardcode it
+- no renames of existing files, tasks, jobs, skills or options unless asked
+- no backwards-compatibility shims unless asked
+- English, concise, ELI18, plain and short; no em dashes or word wrapping
+- secrets come from SOPS-encrypted files
+- these are binding; only the current message can override one, and only by saying so
+- when the user states or you come up with a new durable preference, propose a one-line addition to this section in the infrastructure repo; never keep it only in session memory
