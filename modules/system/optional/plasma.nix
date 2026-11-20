@@ -87,6 +87,18 @@
                   kdeglobals."KFileDialog Settings"."Show hidden files" = true;
 
                   dolphinrc.Settings.HiddenFilesShown = true;
+
+                  # kscreenlocker spawns a fingerprint authenticator only when
+                  # this key is true. There is no fingerprint reader or fprintd
+                  # here, so its worker hangs at the lock screen and swallows
+                  # input until the greeter times it out and restarts.
+                  kscreenlockerrc.Authenticators.Fingerprint = false;
+                  # The regular authenticator is the pam_u2f stack. Without
+                  # this, kscreenlocker hides its PAM prompts and expects a
+                  # plain password field, so the touch cue and the FIDO2 PIN
+                  # prompt are invisible and responses arrive with no pending
+                  # prompt.
+                  kscreenlockerrc.UI.ShowPromptInRegularAuthenticator = true;
                 };
 
                 input = {
@@ -255,18 +267,17 @@
                   batteryLevels = {
                     lowLevel = 10; # 0 to 100
                     criticalLevel = 5; # 0 to 100
-                    criticalAction = "hibernate";
+                    criticalAction = "shutDown";
                   };
 
-                  # Closing the lid turns the panel off but keeps the session
-                  # awake; the idle timer below hibernates it, because no RTC
-                  # alarm fires here and s2idle costs ~1%/h. Resume needs the
-                  # FIDO2 token since the image lives on the LUKS volume.
+                  # Hibernation is disabled on this hardware: resume leaves
+                  # kscreenlocker's FIDO2 lock screen stuck, and the fix is not
+                  # worth it. The battery profiles suspend instead.
                   battery = rec {
                     powerProfile = "powerSaving";
                     powerButtonAction = "showLogoutScreen";
                     whenSleepingEnter = "standby";
-                    whenLaptopLidClosed = "turnOffScreen";
+                    whenLaptopLidClosed = "sleep";
                     inhibitLidActionWhenExternalMonitorConnected = true;
 
                     dimDisplay = {
@@ -280,7 +291,7 @@
                     };
 
                     autoSuspend = {
-                      action = "hibernate";
+                      action = "sleep";
                       idleTimeout = turnOffDisplay.idleTimeout + 20; # In seconds
                     };
                   };
@@ -289,7 +300,7 @@
                     powerProfile = "powerSaving";
                     powerButtonAction = "showLogoutScreen";
                     whenSleepingEnter = "standby";
-                    whenLaptopLidClosed = "turnOffScreen";
+                    whenLaptopLidClosed = "sleep";
 
                     dimDisplay = {
                       enable = true;
@@ -302,7 +313,7 @@
                     };
 
                     autoSuspend = {
-                      action = "hibernate";
+                      action = "sleep";
                       idleTimeout = turnOffDisplay.idleTimeout + 20;
                     };
 
@@ -329,16 +340,8 @@
             #jack.enable = true; # Only if you need it
           };
 
-          /*
-            kscreenlocker's PAM worker holds the FIDO2 token handle across
-            sleep and cannot use the re-enumerated device after resume: every
-            unlock attempt fails and typed secrets are answered into a
-            conversation that never started ("Received prompt response, but no
-            pending prompt was found"). A greeter started after resume
-            authenticates fine, and KSldApp restarts the lock when the greeter
-            exits unexpectedly, so replace it on every resume. Seen on 6.8.2,
-            2026-11-15.
-          */
+          # Replace the lock-screen greeter after resume so its PAM worker
+          # opens the FIDO2 token again instead of keeping the stale handle.
           powerManagement.resumeCommands = ''
             ${pkgs.procps}/bin/pkill -f 'libexec/kscreenlocker_greet' || true
           '';

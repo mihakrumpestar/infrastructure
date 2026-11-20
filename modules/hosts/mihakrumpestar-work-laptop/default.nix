@@ -29,6 +29,8 @@
             encryptRoot = "fido2";
           };
 
+          networking.homeWifi.enable = true;
+
           nomad.enable = true;
 
           nixCache.builder = true;
