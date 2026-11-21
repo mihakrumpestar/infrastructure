@@ -1,8 +1,4 @@
-{ den, inputs, ... }:
-let
-  secretsDir = inputs.infrastructure-secrets;
-  data = (import "${secretsDir}/secrets/data.nix").root;
-in
+{ den, ... }:
 {
   den.aspects.personal-vps-02 = {
     includes = [
@@ -11,7 +7,7 @@ in
       den.aspects.nomad
     ];
     nixos =
-      { lib, ... }:
+      { ... }:
       {
         /*
           Hardware:
@@ -34,10 +30,6 @@ in
 
           nomad.enable = true;
         };
-
-        users.users.root.openssh.authorizedKeys.keys = lib.mkForce [
-          data.ssh_authorized_keys.vps
-        ];
       };
   };
 }

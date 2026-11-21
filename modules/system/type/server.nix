@@ -9,7 +9,7 @@ in
       { ... }:
       {
         users.users.root.openssh.authorizedKeys.keys = [
-          data.ssh_authorized_keys.server
+          data.ssh_authorized_keys.vms
         ];
 
         # All NixOS servers are VPSes or VMs, so the uplink is DHCP-only.

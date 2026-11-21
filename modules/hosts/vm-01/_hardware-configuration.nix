@@ -8,16 +8,17 @@
     (modulesPath + "/profiles/qemu-guest.nix")
   ];
 
-  # KVM guest: virtio for the disk and NIC, ata_piix as the SATA fallback a
-  # provider may hand out instead.
+  # KVM guest: virtio for the disk and NIC, AHCI and USB as board fallbacks.
   boot.initrd.availableKernelModules = [
-    "ata_piix"
+    "uhci_hcd"
+    "ehci_pci"
+    "ahci"
     "virtio_pci"
-    "virtio_blk"
     "sr_mod"
+    "virtio_blk"
   ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ ];
+  boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
