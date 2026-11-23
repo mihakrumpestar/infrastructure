@@ -248,6 +248,7 @@
                 # Bootstrap the cluster once, then use the returned management token:
                 #   nomad acl bootstrap
                 #   export NOMAD_TOKEN=<Secret ID>
+                #   nomad acl token create -name="mgmt" --type=management
                 acl.enabled = true;
 
                 client = {
