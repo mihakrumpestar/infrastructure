@@ -20,7 +20,7 @@
         # registry does not know fails the eval instead of landing in the wrong
         # file, where the app would drop it without a word.
         registry = builtins.fromJSON (
-          builtins.readFile "${inputs.openchamber}/packages/web/server/lib/opencode/settings-registry.json"
+          builtins.readFile "${inputs.openchamber}/packages/web/server/lib/settings/settings-registry.json"
         );
 
         # Only two files exist, so any other scope has no home; a dropped key

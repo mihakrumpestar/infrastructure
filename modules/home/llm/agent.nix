@@ -111,13 +111,13 @@ let
   opencodePluginPins = {
     # Safety gate: blocks destructive commands and secret access
     cc-safety-net = {
-      version = "2.7.12";
-      hash = "sha256-K6NpfsLDi7vp34yxsIBoa669U7boQfRfAVhcU4Tlwls=";
+      version = "2.8.3";
+      hash = "sha256-ewED9Qn3BX6vfNHwqUSJNzLxIujP/ZvjZn3oVZrF7uI=";
     };
 
     # 7-agent orchestration suite (orchestrator, council, etc.)
     oh-my-opencode-slim = {
-      version = "3.0.7";
+      version = "3.0.8";
       hash = null;
     };
   };
