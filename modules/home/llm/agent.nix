@@ -188,7 +188,7 @@ in
             settings = {
               update = "disable";
               default_agent = "orchestrator";
-              model = "gateway/default";
+              model = "openai/gpt-6.2-sol";
               websearch = false; # Using our own via MCP
 
               # Built-in compaction summarizes the older conversation and keeps a
@@ -207,6 +207,7 @@ in
               # Models reference: https://models.dev/api.json
               # When looking to add a provider using the env, check the toml config in
               # https://github.com/anomalyco/models.dev/tree/dev/providers for the specific env var used
+              providers.openai.settings.reasoningEffort = "max";
               providers.gateway = {
                 name = "Gateway";
                 package = "aisdk:@ai-sdk/openai-compatible";
@@ -222,7 +223,7 @@ in
               # Debug: opencode mcp list
               # Note: keep some disabled if not used as they add multiple 1000s tokens to context
               mcp.servers = {
-                # Gateway MCPs
+                # Gateway management
                 gateway-management = {
                   type = "remote";
                   url = "{env:GATEWAY_API_BASE}/mcp/plexus";
@@ -230,13 +231,13 @@ in
                 };
                 context7 = {
                   type = "remote";
-                  url = "{env:GATEWAY_API_BASE}/mcp/context7";
-                  headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
+                  url = "https://mcp.context7.com/mcp";
+                  headers.Authorization = "Bearer {env:CONTEXT7_API_KEY}";
                 };
                 keenable = {
                   type = "remote";
-                  url = "{env:GATEWAY_API_BASE}/mcp/keenable";
-                  headers.Authorization = "Bearer {env:GATEWAY_API_KEY}";
+                  url = "https://api.keenable.ai/mcp";
+                  headers."X-API-Key" = "{env:KEENABLE_API_KEY}";
                 };
                 # Public remote MCP
                 gh_grep = {
@@ -357,7 +358,7 @@ in
             # Attach: opencode --server http://localhost:4096
             web = {
               enable = true;
-              # GATEWAY_API_KEY + GATEWAY_API_BASE for the service env
+              # Gateway, Context7 and Keenable credentials for the service env.
               environmentFile = config.sops.secrets.llm_agent_env.path;
               extraArgs = [
                 "--hostname"
@@ -448,8 +449,7 @@ in
                   "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
                   "preset": "gateway",
                   "autoUpdate": false,
-                  // The plugin's built-in MCPs would overwrite the gateway-proxied MCPs 
-                  // in OpenCode (plugin merges built-ins into the mcp config
+                  // The plugin's built-in MCPs would overwrite the configured MCPs.
                   "disabled_mcps": ["websearch", "gh_grep", "context7"],
                   "multiplexer": {
                     "type": "none"
@@ -493,15 +493,15 @@ in
                     "presets": {
                       "default": {
                         "alpha": {
-                          "model": "gateway/default",
+                          "model": "openai/gpt-6.2-sol",
                           "prompt": "Focus on correctness, bugs, and edge cases."
                         },
                         "beta": {
-                          "model": "gateway/default",
+                          "model": "openai/gpt-6.2-sol",
                           "prompt": "Focus on security, input validation, and data exposure."
                         },
                         "gamma": {
-                          "model": "gateway/default",
+                          "model": "openai/gpt-6.2-sol",
                           "prompt": "Focus on performance, maintainability, and design."
                         }
                       }

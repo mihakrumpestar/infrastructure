@@ -53,7 +53,7 @@
           lightThemeId = "github-light";
 
           # Defaults
-          defaultModel = "gateway/default";
+          defaultModel = "openai/gpt-6.2-sol";
           defaultAgent = "orchestrator";
           defaultFileViewerPreview = false;
           desktopMinimizeToTrayEnabled = true;
@@ -313,6 +313,7 @@
         home.packages = [
           openchamber-local
           openchamber-desktop-local
+          pkgs.t3code
         ];
       };
   };

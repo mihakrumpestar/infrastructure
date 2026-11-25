@@ -391,11 +391,11 @@
     "infrastructure-secrets": {
       "flake": false,
       "locked": {
-        "lastModified": 1795272181,
-        "narHash": "sha256-a81ZroibvvTV3Q7m3W40GHjinkmI19x7W8M0acM1Vyw=",
+        "lastModified": 1795631450,
+        "narHash": "sha256-/quHF+EBK1BiTzo79evVwZauJmbtcMVWf/96CqUEu9w=",
         "ref": "main",
-        "rev": "6897c9ec5eff5e91ce2054d9a9ec33e68d538a72",
-        "revCount": 103,
+        "rev": "2ea63d20af89fc8d7d48b5cbe712c9bafc28d377",
+        "revCount": 104,
         "type": "git",
         "url": "ssh://git@github-personal/mihakrumpestar/infrastructure-secrets.git"
       },
