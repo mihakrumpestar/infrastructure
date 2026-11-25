@@ -27,7 +27,7 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 ### Lines of code
 
-18,757 non-blank lines, comments included and Markdown excluded.
+18,531 non-blank lines, comments included and Markdown excluded.
 
 ![LOC by area chart: non-blank lines of configuration per area](assets/stats/loc-by-area.svg)
 
@@ -36,16 +36,16 @@ _Fast tier: refreshed automatically on every commit (pre-commit hook, task gener
 
 | Component        |   Lines |
 |:-----------------|--------:|
-| flake.nix        |     135 |
-| modules/den.nix  |     126 |
+| flake.nix        |     137 |
+| modules/den.nix  |     123 |
 | modules/hosts    |     423 |
 | modules/system   |   2,711 |
-| modules/home     |   5,583 |
+| modules/home     |   5,358 |
 | modules/users    |     252 |
-| modules (total)  |   9,095 |
+| modules (total)  |   8,867 |
 | packages (total) |   8,751 |
 | lib (total)      |     776 |
-| **Total**        |  18,757 |
+| **Total**        |  18,531 |
 
 </details>
 <!-- FAST_END -->
@@ -148,7 +148,7 @@ flowchart LR
         input_nomadx["nomadx"]:::input
         input_nur["nur"]:::input
         input_obsidian_extensions["obsidian-extensions"]:::input
-        input_openchamber["openchamber"]:::input
+        input_opencode["opencode"]:::input
         input_plasma_manager["plasma-manager"]:::input
         input_security_audit_skill["security-audit-skill"]:::input
         input_sops_nix["sops-nix"]:::input
@@ -318,7 +318,7 @@ flowchart LR
     input_nomadx --> flake
     input_nur --> flake
     input_obsidian_extensions --> flake
-    input_openchamber --> flake
+    input_opencode --> flake
     input_plasma_manager --> flake
     input_security_audit_skill --> flake
     input_sops_nix --> flake

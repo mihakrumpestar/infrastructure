@@ -266,9 +266,6 @@
                 esbenp.prettier-vscode
                 astro-build.astro-vscode
 
-                # AI
-                fedaykindev.openchamber # openchamber.apiUrl
-
                 # Rest
                 #humao.rest-client
 

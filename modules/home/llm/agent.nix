@@ -168,21 +168,31 @@ in
         };
       in
       {
+        options.my.llm.opencodeServerHost = lib.mkOption {
+          type = lib.types.nonEmptyStr;
+          default = "127.0.0.1";
+          description = "OpenCode listen address, also used by T3 Code to connect. Use a concrete address, without brackets for IPv6.";
+        };
+
+        options.my.llm.opencodeServerPort = lib.mkOption {
+          type = lib.types.ints.between 1 65535;
+          default = 4096;
+          description = "Port shared by the OpenCode server and T3 Code provider.";
+        };
+
         options.my.llm.opencodeServerPassword = lib.mkOption {
           type = lib.types.str;
           default = "localhost";
-          description = "Password for the loopback-only opencode v2 server (v2 serve always requires Basic auth).";
+          description = "Password shared by the OpenCode server and its clients (v2 serve always requires Basic auth).";
         };
 
         config = {
-          # OpenCode is driven through OpenChamber (home.llm-ui), which themes
-          # itself from its own settings.json, so the stylix opencode target
-          # would only add an unused stylix theme plus a cli.json just to point
-          # at it.
+          # The T3 Code desktop app themes itself independently of the OpenCode CLI.
           stylix.targets.opencode.enable = false;
 
           programs.opencode = {
             enable = true;
+            package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
 
             # ~/.config/opencode/opencode.json
             settings = {
@@ -362,9 +372,9 @@ in
               environmentFile = config.sops.secrets.llm_agent_env.path;
               extraArgs = [
                 "--hostname"
-                "127.0.0.1"
+                config.my.llm.opencodeServerHost
                 "--port"
-                "4096"
+                (toString config.my.llm.opencodeServerPort)
               ];
             };
           };

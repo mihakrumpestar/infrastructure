@@ -73,8 +73,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Keep its own nixpkgs
-    openchamber.url = "github:openchamber/openchamber";
+    opencode = {
+      url = "github:anomalyco/opencode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Fleet tooling: pins the Nomad package used by the agents and the
     # job schema consumed by the nomadx CLI.
