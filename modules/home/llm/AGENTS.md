@@ -1,66 +1,36 @@
-# Agents
+# Global OpenCode instructions
 
-Three rules outrank the rest:
+## Scope and approval
 
-- act on evidence, never on assumption
-- anything irreversible or expensive is the user's decision
+Confirm the repository, target, and working tree before editing. Make reversible choices within the request and preserve unrelated changes.
 
-## Evidence
+Get explicit authorization before committing, pushing, publishing, deploying, changing a running system, risking data loss or lockout, or starting an expensive or multi-minute run. When asking, name what would change, who or what it affects, and a safer option. Use disposable copies for checks that could affect live data. Preserve the only login path.
 
-- confirm the repo and directory before the first change
-- reproduce the problem before fixing it, and check the same symptom after
-- a test that cannot fail for the same reason proves nothing
-- two failed attempts, including a timeout, mean stop and re-diagnose
-- say what you did not verify
+Use SOPS-encrypted files for secrets. Get explicit authorization before reading plaintext secrets or changing a credential store. Keep secret values out of tool output and replies.
 
-## Cost
+## Verification
 
-- cheapest check first; one expensive run per question
-- stop when the answer is known; match effort to the request
-- long runs: state the cost, background, report progress once, never poll
-
-## Risk
-
-- ask before anything that can lose data, lock the user out, publish, take minutes, or change a running system
-- state the blast radius: what changes, what becomes public, who consumes it
-- test on copies and throwaways; never risk the only login path or the user's live data
-- never read or print secrets, or write to a credential store unless user confirms it
-
-## Code
-
-- match the surrounding code, but always strive to improve it
-- one source of truth
-- check every consumer before changing a shared setting
-- delete what you replace; no dead code or dead config
-- comments only for what the code cannot say
-
-## Communication
-
-- when corrected, fix first and reply in one line
-- lead with the result; say what changed, what you ran, what is unverified
-- report what you observed, not what you remember
-- report findings you notice and act on them; do not ignore them
-- commit, push or deploy only when explicitly asked
-
-## Environment
-
-- agents: `explorer` verify, `@oracle` reviews, `@council` decides
-- always load skills that match the request/theme as they improve your behaviour
-- MCP: `godoc` Go, `nixos` Nix/NixOS, `context7` libraries, `gh_grep` code, `keenable` web, `anymd` PDF/documents, `codebase-memory-mcp` structure
-- devenv and go-task: `devenv shell -- task <name>`; bare `task` and project binaries are not on PATH; the Taskfile defines the checks
-- helper tools come from `nix shell`, not `nix run`
-- `gh` and `cf` are configured; for git over ssh use the host from `~/.ssh/config.d/keepass.conf`
-- desktop and device CLIs: `spt` for tasks, `u2cli` for Android, `browser-harness-js` for CDP
-- files: read with `read`, search with `grep`, discover with `glob`; scratch in `/tmp/opencode`, removed before reporting
-- one call per tool, several calls per message
+- Test every implementation change through the affected entry point before calling it done. Run a focused test or executable check. Reviewing the diff, formatting, and linting do not substitute for testing.
+- For Nix and NixOS, evaluate the affected outputs or host configurations (for example, with `nix eval`). Build the affected package or system closure when the change can alter the build (for example, with `nix build`). Build without switching or activating. Run a behavior test when evaluation and builds cannot demonstrate the requested result.
+- For bugs, reproduce the reported symptom before editing and rerun the same case afterward. If you cannot reproduce it, say what evidence the fix is based on.
+- Trace all consumers before changing a shared setting. Check the behavior through the affected entry points.
+- Verify direct edits yourself. After delegation, reconcile every writer's changes and focused checks before final verification. Use the cheapest checks that satisfy these requirements. If a required check is blocked, report which one and why, and mark the affected behavior unverified.
+- After two failed attempts on the same issue, including timeouts, inspect the failures and revise the diagnosis before trying again. Run approved long jobs in the background and use completion notices when available.
 
 ## Standing decisions
 
-- no PHP
-- no Consul
-- the simplest working option wins; prefer reusable components
-- when a value is declared fixed, hardcode it
-- no backwards-compatibility shims unless asked
-- English, concise, ELI18, plain and short; no em dashes or word wrapping
-- secrets come from SOPS-encrypted files
-- these are binding; only the current message can override one, and only by saying so
+- No PHP or Consul. Add compatibility shims only on explicit request.
+- Choose the simplest working implementation. Reuse existing components, keep one source of truth, and remove what you replace. Hardcode values the user declares fixed.
+
+## Local tools
+
+- Run Taskfile checks with `devenv shell -- task <name>`. Use `nix shell` for temporary helper tools.
+- For Git over SSH, use the host alias in `~/.ssh/config.d/keepass.conf`.
+- Use `spt` for Super Productivity tasks. Load `uiautomator2` for Android automation and `cdp` for Chrome automation.
+- Keep scratch files under `/tmp/opencode` and clean up your own files before reporting.
+
+## Reporting
+
+Lead with the result, the check you ran, and any relevant gap in verification. Flag material findings outside the request separately. Apply corrections before replying and confirm them in one line. Use plain, concise English without em dashes.
+
+Use GitHub-style callouts in reports when a detail needs to stand out. Start with `> [!TYPE]` on its own line and prefix each body line with `>`. Use `NOTE` for useful context, `TIP` for practical advice, `IMPORTANT` for blockers or required actions, `WARNING` for risks that need attention, and `CAUTION` for serious consequences like data loss or lockout. Keep routine status in plain text.

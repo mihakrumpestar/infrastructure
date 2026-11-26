@@ -3,12 +3,18 @@
   fetchurl,
   lib,
   desktop-file-utils,
+  version,
+  versionCheckHook,
 }:
+let
+  binaryName = "vhclientx86_64";
+in
 stdenv.mkDerivation rec {
-  name = "vhclientx86_64";
+  pname = "virtualhere-client-cli";
+  inherit version;
 
   src = fetchurl {
-    url = "https://www.virtualhere.com/sites/default/files/usbclient/${name}";
+    url = "https://www.virtualhere.com/sites/default/files/usbclient/${binaryName}";
     hash = "sha256-1m1BoS4RN8463sH4UZh6K/s8xiypaigGRqvNbZxOxVQ=";
   };
 
@@ -22,20 +28,20 @@ stdenv.mkDerivation rec {
     runHook preInstall
 
     mkdir -p $out/bin
-    cp ${src} $out/bin/${name}
-    chmod 0755 $out/bin/${name}
-    ln -s $out/bin/${name} $out/bin/virtualhere-client-cli
+    cp ${src} $out/bin/${binaryName}
+    chmod 0755 $out/bin/${binaryName}
+    ln -s $out/bin/${binaryName} $out/bin/virtualhere-client-cli
 
     # Icon bytes ship in the GUI package (this binary embeds no artwork);
     # the module co-installs both unconditionally, so the name resolves.
-    # The binary requires UID 0 (the module grants passwordless sudo).
+    # The binary requires UID 0; the terminal lets sudo prompt if needed.
     mkdir -p $out/share/applications
     cat > $out/share/applications/virtualhere-client-cli.desktop <<EOF
     [Desktop Entry]
     Type=Application
     Name=VirtualHere Client Console
     Comment=Use USB devices over the network (command line client)
-    Exec=sudo -E $out/bin/virtualhere-client-cli
+    Exec=sudo -- $out/bin/virtualhere-client-cli
     Icon=virtualhere-client-gui
     Terminal=true
     Categories=Network;System;
@@ -44,6 +50,10 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "--help";
 
   meta = {
     description = "VirtualHere USB Client, command line interface";

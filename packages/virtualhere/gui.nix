@@ -21,9 +21,15 @@
   wayland,
   libsm,
   libx11,
+  version,
+  versionCheckHook,
+  writeShellScript,
+  xvfb-run,
 }:
 stdenv.mkDerivation rec {
-  name = "virtualhere-client-gui";
+  pname = "virtualhere-client-gui";
+  inherit version;
+
   src = fetchurl {
     url = "https://www.virtualhere.com/sites/default/files/usbclient/vhuit64";
     hash = "sha256-8zl9pDpK13PL3TUGreSnYJRgUXnn6gKdJvlOkqvjvvE=";
@@ -69,14 +75,14 @@ stdenv.mkDerivation rec {
     mkdir -p $out/share/icons/hicolor
     python3 ${./extract_icon.py} $out/bin/virtualhere-client-gui virtualhere-client-gui $out/share/icons/hicolor
 
-    # The binary requires UID 0 (the module grants passwordless sudo).
+    # The binary requires UID 0; this launcher relies on passwordless sudo.
     mkdir -p $out/share/applications
     cat > $out/share/applications/virtualhere-client-gui.desktop <<EOF
     [Desktop Entry]
     Type=Application
     Name=VirtualHere Client
     Comment=Use USB devices over the network
-    Exec=sudo -E $out/bin/virtualhere-client-gui
+    Exec=sudo -n -- $out/bin/virtualhere-client-gui
     Icon=virtualhere-client-gui
     StartupWMClass=virtualhere-client-gui
     Terminal=false
@@ -85,6 +91,19 @@ stdenv.mkDerivation rec {
     desktop-file-validate $out/share/applications/virtualhere-client-gui.desktop
 
     runHook postInstall
+  '';
+
+  doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "--help";
+  versionCheckKeepEnvironment = [
+    "out"
+    "TMPDIR"
+  ];
+  # The GUI needs an X display and a writable home even to print help.
+  versionCheckProgram = writeShellScript "virtualhere-client-gui-version-check" ''
+    export HOME="$TMPDIR"
+    exec ${lib.getExe xvfb-run} -a "$out/bin/virtualhere-client-gui" "$@"
   '';
 
   meta = {

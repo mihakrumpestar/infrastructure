@@ -121,7 +121,6 @@
         home.packages = with pkgs; [
           # Latex
           tex-fmt
-          texliveFull # Containes pdflatex and Tex packages required by xournalpp (full is the minimum req to run)
           python313Packages.pygments # For Latex code snippets
 
           # Typst
