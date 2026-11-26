@@ -74,36 +74,6 @@ let
     inputs.security-audit-skill + "/skills/security-audit"
   );
 
-  # Every gateway model shares one shape; only the id (and display name) differ.
-  gatewayModels = builtins.listToAttrs (
-    map
-      (id: {
-        name = id;
-        value = {
-          name = "Gateway: ${id}";
-          capabilities = {
-            input = [
-              "text"
-              "image"
-            ];
-            output = [ "text" ];
-            reasoning = {
-              supported = true;
-            };
-          };
-          limit = {
-            context = 1000000;
-            output = 132000;
-          };
-        };
-      })
-      [
-        "default"
-        "smart"
-        "fast"
-      ]
-  );
-
   # Opencode plugin pins (single source of truth) for the v2 `plugins` config
   # key. hash = null -> exact npm spec (cached under ~/.cache/opencode/npm);
   # hash set -> hermetic store path. See lib/opencode-plugins (flake input).
@@ -171,13 +141,13 @@ in
         options.my.llm.opencodeServerHost = lib.mkOption {
           type = lib.types.nonEmptyStr;
           default = "127.0.0.1";
-          description = "OpenCode listen address, also used by T3 Code to connect. Use a concrete address, without brackets for IPv6.";
+          description = "OpenCode listen address, also used by OpenChamber to connect. Use a concrete address, without brackets for IPv6.";
         };
 
         options.my.llm.opencodeServerPort = lib.mkOption {
           type = lib.types.ints.between 1 65535;
           default = 4096;
-          description = "Port shared by the OpenCode server and T3 Code provider.";
+          description = "OpenCode server port used by OpenChamber.";
         };
 
         options.my.llm.opencodeServerPassword = lib.mkOption {
@@ -187,12 +157,13 @@ in
         };
 
         config = {
-          # The T3 Code desktop app themes itself independently of the OpenCode CLI.
+          # OpenChamber manages its own theme.
           stylix.targets.opencode.enable = false;
 
           programs.opencode = {
             enable = true;
-            package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+            # Match the OpenCode release OpenChamber expects.
+            package = inputs.openchamber.packages.${pkgs.stdenv.hostPlatform.system}.opencode-cli;
 
             # ~/.config/opencode/opencode.json
             settings = {
@@ -218,27 +189,11 @@ in
               # When looking to add a provider using the env, check the toml config in
               # https://github.com/anomalyco/models.dev/tree/dev/providers for the specific env var used
               providers.openai.settings.reasoningEffort = "max";
-              providers.gateway = {
-                name = "Gateway";
-                package = "aisdk:@ai-sdk/openai-compatible";
-                settings = {
-                  baseURL = "{env:GATEWAY_API_BASE}/v1";
-                  apiKey = "{env:GATEWAY_API_KEY}";
-                  chunkTimeout = 60 * 1000;
-                };
-                models = gatewayModels;
-              };
 
               # Use with: `use the <tool_name> tool`
               # Debug: opencode mcp list
               # Note: keep some disabled if not used as they add multiple 1000s tokens to context
               mcp.servers = {
-                # Gateway management
-                gateway-management = {
-                  type = "remote";
-                  url = "{env:GATEWAY_API_BASE}/mcp/plexus";
-                  headers."x-admin-key" = "{env:GATEWAY_ADMIN_KEY}";
-                };
                 context7 = {
                   type = "remote";
                   url = "https://mcp.context7.com/mcp";
@@ -368,7 +323,7 @@ in
             # Attach: opencode --server http://localhost:4096
             web = {
               enable = true;
-              # Gateway, Context7 and Keenable credentials for the service env.
+              # Context7 and Keenable credentials for the service env.
               environmentFile = config.sops.secrets.llm_agent_env.path;
               extraArgs = [
                 "--hostname"

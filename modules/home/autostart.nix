@@ -33,7 +33,7 @@
                 bash -c "sleep 13 && librewolf" &
                 bash -c "sleep 13 && obsidian" &
                 bash -c "sleep 13 && superproductivity" &
-                bash -c "sleep 13 && t3code-desktop" &
+                bash -c "sleep 13 && openchamber-desktop" &
                 echo "Started full user apps"
               '';
             };
