@@ -172,15 +172,11 @@ in
               model = "openai/gpt-6.2-sol";
               websearch = false; # Using our own via MCP
 
-              # Built-in compaction summarizes the older conversation and keeps a
-              # recent verbatim tail. buffer reserves free tokens below the window,
-              # so the 1M models compact at 450k instead of at the default
-              # 1M - max(15%, 16k) = 850k. Models with a smaller window ignore the
-              # buffer and fall back to the native reserve; compact those manually.
+              # Compact at 50% of the active model's usable input window.
               compaction = {
                 auto = true;
-                keep.tokens = 24000;
-                buffer = 550000;
+                keep.tokens = 24000; # Summary + this many tokens from before
+                buffer = "50%";
               };
 
               # Provider configuration
