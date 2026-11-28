@@ -123,7 +123,6 @@
               "extract"
               "eza"
               "gh"
-              "git-commit" # https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git-commit
               "gitfast"
               "git-lfs"
               "golang"
